@@ -320,8 +320,8 @@ progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🔧 Configurando Git..."
 GIT_USER="EriikGabriel"
 GIT_EMAIL="erikgabriel.lins@hotmail.com"
 
-git config --global user.name "$GIT_USER"
-git config --global user.email "$GIT_EMAIL"
+sudo -u "$SUDO_USER" git config --global user.name "$GIT_USER"
+sudo -u "$SUDO_USER" git config --global user.email "$GIT_EMAIL"
 green "✅ Git configurado com sucesso!"
 
 # Criar chave SSH
