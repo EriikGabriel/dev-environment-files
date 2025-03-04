@@ -21,7 +21,7 @@ vscode_version="latest"  # Versão do VS Code (1.93 ou latest)
 show_menu() {
     while true; do
         clear
-        green "🚀 Menu de Configuração do Script"
+        green "🚀 Menu de Configuração do Script - Made by EriikGabriel"
         echo ""
         blue "1. Ativar/Desativar clear do histórico de progresso (Atual: $clear_option)"
         blue "2. Ativar/Desativar instalação de utilitários de entretenimento (Atual: $install_entertainment)"
@@ -134,9 +134,11 @@ progress_bar() {
 
 # Endereço do diretório home do usuário original
 USER_HOME=$(eval echo ~$SUDO_USER)
+# Nome do usuário original
+USER_NAME=$(basename $USER_HOME)
 
 # Total de passos (ajustado para o número total de etapas)
-TOTAL_STEPS=28
+TOTAL_STEPS=29
 CURRENT_STEP=0
 
 yellow "🚀 Iniciando configuração do sistema..."
@@ -390,7 +392,7 @@ fi
 
 # Instalar CLI tools
 progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🛠️ Instalando CLI tools..."
-for package in eza zoxide  fd-find bat git-delta thefuck; do
+for package in fastfetch eza zoxide fd-find bat git-delta thefuck; do
     install_package "$package"
 done
 if ! command -v fzf &> /dev/null; then
@@ -410,6 +412,27 @@ ln -sf /usr/bin/fdfind $USER_HOME/.local/bin/fd
 ln -sf /usr/bin/fzf $USER_HOME/.local/bin/fzf
 green "✅ Links simbólicos criados!"
 
+# Configurar fastfetch
+progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🔧 Configurando fastfetch..."
+if [ ! -f "$USER_HOME/.config/fastfetch/config.jsonc" ]; then
+    # Gerar arquivo de configuração
+    sudo -u $USER_NAME fastfetch --gen-config
+    CONFIG_FILE="/home/$USER_NAME/.config/fastfetch/config.jsonc"
+
+    # Criar diretório de logos e copiar arquivo
+    sudo mkdir -p $USER_HOME/.config/fastfetch/logos
+
+    # Copiar todos os logos
+    sudo cp -r ./fastfetch/logos/* $USER_HOME/.config/fastfetch/logos
+
+    # Substituir arquivo de configuração
+    CONFIG_FILE_NAME="arch"
+    sudo cp ./fastfetch/$CONFIG_FILE_NAME.jsonc $CONFIG_FILE
+    green "✅ fastfetch configurado com sucesso!"
+else
+    blue "✅ Configuração do fastfetch já existe!"
+fi
+
 # Configurar bat
 progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🔧 Configurando bat..."
 if [ ! -d "$USER_HOME/.config/bat/themes" ]; then
@@ -423,18 +446,21 @@ fi
 
 # Configurar Git
 progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🔧 Configurando Git..."
-GIT_USER="EriikGabriel"
-GIT_EMAIL="erikgabriel.lins@hotmail.com"
-
-sudo -u "$SUDO_USER" git config --global user.name "$GIT_USER"
-sudo -u "$SUDO_USER" git config --global user.email "$GIT_EMAIL"
-green "✅ Git configurado com sucesso!"
+if ! git config user.name &> /dev/null || ! git config user.email &> /dev/null; then
+    sudo -u "$SUDO_USER" git config --global user.name "$GIT_USER"
+    sudo -u "$SUDO_USER" git config --global user.email "$GIT_EMAIL"
+    green "✅ Git configurado com sucesso!"
+else
+    blue "✅ Git já está configurado!"
+    blue "  Nome: $(git config user.name)"
+    blue "  E-mail: $(git config user.email)"
+fi
 
 # Criar chave SSH
 progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🔑 Criando chave SSH..."
-SSH_KEY="$USER_HOME/.ssh/id_rsa"
+SSH_KEY="$USER_HOME/.ssh/id_ed25519"
 if [ ! -f "$SSH_KEY" ]; then
-    ssh-keygen -t rsa -b 4096 -C "$GIT_EMAIL" -f "$SSH_KEY" -N ""
+    ssh-keygen -t ed25519 -C "$GIT_EMAIL"
     eval "$(ssh-agent -s)"
     ssh-add "$SSH_KEY"
     green "✅ Chave SSH criada!"

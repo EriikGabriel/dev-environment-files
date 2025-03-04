@@ -45,7 +45,7 @@ end
 -- For example, changing the color scheme:
 config.color_scheme = "Poimandres"
 config.font = wezterm.font("JetBrains Mono")
-config.font_size = 12
+config.font_size = 11
 
 config.window_decorations = "RESIZE"
 config.window_background_opacity = 0.9
@@ -122,8 +122,8 @@ config.use_fancy_tab_bar = false
 config.tab_and_split_indices_are_zero_based = true
 
 config.window_frame = {
-  border_left_width = '0.10cell',
-  border_right_width = '0.10cell',
+  border_left_width = '0.20cell',
+  border_right_width = '0.20cell',
   border_bottom_height = '0.05cell',
   border_top_height = '0.05cell',
   border_left_color = '#506477',
@@ -143,7 +143,9 @@ wezterm.on("update-right-status", function(window, _)
         SOLID_LEFT_ARROW = utf8.char(0xe0b2)
     end
 
+
     ARROW_FOREGROUND = { Foreground = { Color = "#1e2030" } }
+
 
     window:set_left_status(wezterm.format {
         { Background = { Color = "#b7bdf8" } },
@@ -153,5 +155,5 @@ wezterm.on("update-right-status", function(window, _)
     })
 end)
 
--- and finally, return the configuration to wezterm
+-- return the configuration to wezterm
 return config
