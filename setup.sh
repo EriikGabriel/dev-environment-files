@@ -198,6 +198,12 @@ if fc-list | grep -qi "JetBrains Mono"; then
     blue "✅ JetBrains Mono já está instalada!"
 else
     install_package fonts-jetbrains-mono
+
+    wget -P $USER_HOME/.local/share/fonts https://github.com/ryanoasis/nerd-fonts/releases/download/v3.0.2/JetBrainsMono.zip \
+    && cd $USER_HOME/.local/share/fonts \
+    && unzip JetBrainsMono.zip \
+    && rm JetBrainsMono.zip \
+    && fc-cache -fv
 fi
 
 progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🔤 Instalando Inter Font..."
@@ -295,12 +301,17 @@ else
 fi
 
 # Instalar zinit
-progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🚀 Instalando zinit..."
-RUNZSH=no sh -c "$(curl --fail --show-error --silent --location https://raw.githubusercontent.com/zdharma-continuum/zinit/HEAD/scripts/install.sh)"
+progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🚀 Instalando Zinit..."
+if [ ! -d "/root/.local/share/zinit/zinit.git" ]; then
+   RUNZSH=no sh -c "$(curl --fail --show-error --silent --location https://raw.githubusercontent.com/zdharma-continuum/zinit/HEAD/scripts/install.sh)"
+    green "✅ Zinit instalado com sucesso!"
+else
+    blue "✅ Zinit já está instalado!"
+fi
 
 # Instalar Powerlevel10k
 progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🚀 Instalando Powerlevel10k..."
-if [ ! -d "$USER_HOME/.p10k.zsh" ]; then
+if [ ! -f "$USER_HOME/.p10k.zsh" ]; then
     git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "${ZSH_CUSTOM:-$USER_HOME/.oh-my-zsh/custom}/themes/powerlevel10k"
     cp ./zsh/.p10k.zsh $USER_HOME/.p10k.zsh
     chown $SUDO_USER:$SUDO_USER $USER_HOME/.p10k.zsh
