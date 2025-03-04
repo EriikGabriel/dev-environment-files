@@ -18,9 +18,9 @@
 
 -- 3. Pane Navigation:
 --    - LEADER + LeftArrow: Move to the pane on the left.
---    - LEADER + RightArrow: Move to the pane below.
---    - LEADER + DownArrow: Move to the pane above.
---    - LEADER + UpArrow: Move to the pane on the right.
+--    - LEADER + DownArrow: Move to the pane below.
+--    - LEADER + UpArrow: Move to the pane above.
+--    - LEADER + RightArrow: Move to the pane on the right.
 
 -- 5. Status Line:
 --    - The status line indicates when the leader key is active, displaying an ocean wave emoji (🌊).
