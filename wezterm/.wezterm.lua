@@ -122,14 +122,14 @@ config.use_fancy_tab_bar = false
 config.tab_and_split_indices_are_zero_based = true
 
 config.window_frame = {
-  border_left_width = '2cell',
-  border_right_width = '2cell',
-  border_bottom_height = '0.25cell',
-  border_top_height = '0.25cell',
-  border_left_color = 'purple',
-  border_right_color = 'purple',
-  border_bottom_color = 'purple',
-  border_top_color = 'purple',
+  border_left_width = '0.10cell',
+  border_right_width = '0.10cell',
+  border_bottom_height = '0.05cell',
+  border_top_height = '0.05cell',
+  border_left_color = '#506477',
+  border_right_color = '#506477',
+  border_bottom_color = '#506477',
+  border_top_color = '#506477',
 }
 
 -- tmux status
