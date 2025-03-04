@@ -322,9 +322,36 @@ fi
 
 # Instalar CLI tools
 progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🛠️ Instalando CLI tools..."
-for package in eza zoxide; do
+for package in eza zoxide  fd-find bat git-delta thefuck; do
     install_package "$package"
 done
+if ! command -v fzf &> /dev/null; then
+    curl -fsSL https://github.com/junegunn/fzf/releases/download/v0.60.3/fzf-0.60.3-linux_amd64.tar.gz | tar -xz -C /usr/local/bin/
+    sudo ln -s /usr/local/bin/fzf /usr/local/bin/fzf-tmux
+    green "✅ fzf instalado com sucesso!"
+else
+    blue "✅ fzf já está instalado!"
+fi
+
+# Links simbólicos para ferramentas CLI
+progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🔗 Criando links simbólicos..."
+mkdir -p $USER_HOME/.local/bin
+ln -sf /usr/bin/batcat $USER_HOME/.local/bin/bat
+ln -sf /usr/bin/delta $USER_HOME/.local/bin/git-delta
+ln -sf /usr/bin/fdfind $USER_HOME/.local/bin/fd
+ln -sf /usr/bin/fzf $USER_HOME/.local/bin/fzf
+green "✅ Links simbólicos criados!"
+
+# Configurar bat
+progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🔧 Configurando bat..."
+if [ ! -d "$USER_HOME/.config/bat/themes" ]; then
+    mkdir -p "$USER_HOME/.config/bat/themes"
+    curl -L -o "$USER_HOME/.config/bat/themes/pmndrs.tmTheme" "http://raw.githubusercontent.com/drcmda/poimandres-theme/refs/heads/main/pmndrs.tmTheme"
+    batcat cache --build
+    green "✅ bat configurado com sucesso!"
+else
+    blue "✅ Configuração do bat já existe!"
+fi
 
 # Configurar Git
 progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🔧 Configurando Git..."
