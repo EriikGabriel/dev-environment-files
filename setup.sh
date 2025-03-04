@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# Clear terminal
-clear
-
 # Funções para exibir mensagens coloridas
 green() { echo -e "\033[32m$1\033[0m"; }
 blue() { echo -e "\033[34m$1\033[0m"; }
@@ -14,6 +11,78 @@ if [[ $EUID -ne 0 ]]; then
     red "❌ Este script deve ser executado como root ou com sudo!"
     exit 1
 fi
+
+# Variáveis de configuração globais
+clear_option="y"  # Ativar clear do histórico de progresso
+install_entertainment="y"  # Instalar utilitários de entretenimento
+vscode_version="latest"  # Versão do VS Code (1.93 ou latest)
+
+# Função para exibir o menu interativo
+show_menu() {
+    while true; do
+        clear
+        green "🚀 Menu de Configuração do Script"
+        echo ""
+        blue "1. Ativar/Desativar clear do histórico de progresso (Atual: $clear_option)"
+        blue "2. Ativar/Desativar instalação de utilitários de entretenimento (Atual: $install_entertainment)"
+        blue "3. Escolher versão do VS Code (Atual: $vscode_version)"
+        blue "4. Iniciar instalação"
+        blue "5. Sair"
+        echo ""
+        read -p "Escolha uma opção: " menu_option
+
+        case $menu_option in
+            1)
+                if [ "$clear_option" == "y" ]; then
+                    clear_option="n"
+                else
+                    clear_option="y"
+                fi
+                green "✅ Clear do histórico de progresso definido como: $clear_option"
+                sleep 1
+                ;;
+            2)
+                if [ "$install_entertainment" == "y" ]; then
+                    install_entertainment="n"
+                else
+                    install_entertainment="y"
+                fi
+                green "✅ Instalação de utilitários de entretenimento definida como: $install_entertainment"
+                sleep 1
+                ;;
+            3)
+                echo ""
+                blue "Escolha a versão do VS Code:"
+                blue "1. Versão mais recente"
+                blue "2. Versão 1.93 (específica)"
+                read -p "Opção: " vscode_choice
+                if [ "$vscode_choice" == "2" ]; then
+                    vscode_version="1.93"
+                else
+                    vscode_version="latest"
+                fi
+                green "✅ Versão do VS Code definida como: $vscode_version"
+                sleep 1
+                ;;
+            4)
+                green "✅ Iniciando instalação..."
+                sleep 1
+                break
+                ;;
+            5)
+                red "❌ Saindo do script..."
+                exit 0
+                ;;
+            *)
+                red "❌ Opção inválida!"
+                sleep 1
+                ;;
+        esac
+    done
+}
+
+# Exibir o menu interativo
+show_menu
 
 # Função para aguardar a liberação do lock do apt
 wait_for_apt_lock() {
@@ -52,7 +121,7 @@ progress_bar() {
     local completed=$((width * current_step / total_steps))
     local remaining=$((width - completed))
 
-   if [ "$clear_option" == "y" ]; then
+    if [ "$clear_option" == "y" ]; then
         clear
     fi
 
@@ -71,17 +140,6 @@ TOTAL_STEPS=28
 CURRENT_STEP=0
 
 yellow "🚀 Iniciando configuração do sistema..."
-
-# Perguntar se deseja ativar a opção de clear
-clear_option="y"
-read -p "Deseja ativar a opção de clear? (Y/n): " clear_option
-if [ "$clear_option" == "n" ]; then
-    blue "> Opção de clear desativada!"
-else
-    green "> Opção de clear ativada!"
-    clear_option="y"
-fi
-
 
 # Atualizar sistema
 progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🛠️ Atualizando sistema..."
@@ -172,12 +230,18 @@ for package in tmux htop; do
     install_package "$package"
 done
 
-# Instalar VS Code versão 1.93 se não estiver instalado
-progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🖥️ Instalando VS Code v1.93..."
+# Instalar VS Code
+progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🖥️ Instalando VS Code..."
 if ! command -v code &> /dev/null; then
-    wget -qO vscode.deb "https://update.code.visualstudio.com/1.93.0/linux-deb-x64/stable"
-    install_package ./vscode.deb
-    rm -f vscode.deb
+    if [ "$vscode_version" == "1.93" ]; then
+        wget -qO vscode.deb "https://update.code.visualstudio.com/1.93.0/linux-deb-x64/stable"
+        install_package ./vscode.deb
+        rm -f vscode.deb
+    else
+        wget -qO vscode.deb "https://code.visualstudio.com/sha/download?build=stable&os=linux-deb-x64"
+        install_package ./vscode.deb
+        rm -f vscode.deb
+    fi
 
     # Impedir o upgrade do VS Code
     sudo apt-mark hold code
@@ -223,37 +287,41 @@ else
     blue "✅ Google Chrome já está instalado!"
 fi
 
-# Instalar Discord
-progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🎮 Instalando Discord..."
-if ! command -v discord &> /dev/null; then
-    wget -O discord.deb "https://discord.com/api/download?platform=linux&format=deb"
-    install_package ./discord.deb
-    rm -f discord.deb
-else
-    blue "✅ Discord já está instalado!"
+# Instalar Discord (se habilitado)
+if [ "$install_entertainment" == "y" ]; then
+    progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🎮 Instalando Discord..."
+    if ! command -v discord &> /dev/null; then
+        wget -O discord.deb "https://discord.com/api/download?platform=linux&format=deb"
+        install_package ./discord.deb
+        rm -f discord.deb
+    else
+        blue "✅ Discord já está instalado!"
+    fi
 fi
 
-# Instalar Spotify
-progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🎵 Instalando Spotify..."
-if ! command -v spotify &> /dev/null; then
-    if [ ! -f /etc/apt/trusted.gpg.d/spotify.gpg ]; then
-        curl -sS https://download.spotify.com/debian/pubkey_C85668DF69375001.gpg | sudo gpg --dearmor --yes -o /etc/apt/trusted.gpg.d/spotify.gpg
-        green "✅ Chave GPG do Spotify adicionada!"
-    else
-        blue "✅ Chave GPG do Spotify já está configurada!"
-    fi
+# Instalar Spotify (se habilitado)
+if [ "$install_entertainment" == "y" ]; then
+    progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🎵 Instalando Spotify..."
+    if ! command -v spotify &> /dev/null; then
+        if [ ! -f /etc/apt/trusted.gpg.d/spotify.gpg ]; then
+            curl -sS https://download.spotify.com/debian/pubkey_C85668DF69375001.gpg | sudo gpg --dearmor --yes -o /etc/apt/trusted.gpg.d/spotify.gpg
+            green "✅ Chave GPG do Spotify adicionada!"
+        else
+            blue "✅ Chave GPG do Spotify já está configurada!"
+        fi
 
-    if [ ! -f /etc/apt/sources.list.d/spotify.list ]; then
-        echo "deb http://repository.spotify.com stable non-free" | sudo tee /etc/apt/sources.list.d/spotify.list
-        green "✅ Repositório do Spotify adicionado!"
-    else
-        blue "✅ Repositório do Spotify já está configurado!"
-    fi
+        if [ ! -f /etc/apt/sources.list.d/spotify.list ]; then
+            echo "deb http://repository.spotify.com stable non-free" | sudo tee /etc/apt/sources.list.d/spotify.list
+            green "✅ Repositório do Spotify adicionado!"
+        else
+            blue "✅ Repositório do Spotify já está configurado!"
+        fi
 
-    sudo apt update
-    install_package spotify-client
-else
-    blue "✅ Spotify já está instalado!"
+        sudo apt update
+        install_package spotify-client
+    else
+        blue "✅ Spotify já está instalado!"
+    fi
 fi
 
 # Instalar WezTerm
@@ -427,8 +495,10 @@ echo "  🧱 Redis: $(redis-server --version | awk '{print $3}')"
 sudo -u $SUDO_USER code --version | head -n 1 | awk '{print "  🖥️  VS Code: "$0}'
 echo "  🌎 Google Chrome: $(google-chrome --version)"
 echo "  🔲 WezTerm: $(wezterm --version)"
-echo "  🔤 JetBrains Mono Nerd Font: Instalado"
-echo "  🎵 Spotify: $(spotify --version)"
-echo "  🎮 Discord: $(strings $(which discord) | grep -m1 -oP '\d+\.\d+\.\d+')"
+echo "  🔤 JetBrains/Inter Font: Instalado"
+if [ "$install_entertainment" == "y" ]; then
+    echo "$(spotify --version)" | sed -n 's/.*version \([^,]*\).*/  🎵 Spotify: \1/p'
+    echo "  🎮 Discord: $(strings $(which discord) | grep -m1 -oP '\d+\.\d+\.\d+')"
+fi
 
 yellow "\n🔄 Reinicie o sistema para aplicar todas as alterações."
