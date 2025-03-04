@@ -84,7 +84,11 @@ gsettings set org.gnome.shell.extensions.ding icon-size "small" # Reduzir tamanh
 gsettings set org.gnome.shell.extensions.ding icon-volumes false # Ocultar ícones de volumes
 gsettings set org.gnome.shell.extensions.ding show-home false # Ocultar pasta Home no desktop
 
-gsettings set org.gnome.shell.extensions.dash-to-dock extend-height false # Panel mode false
+# Configurar Dash to Dock
+gsettings set org.gnome.shell.extensions.dash-to-dock dock-fixed false # Desabilitar Panel Mode
+gsettings set org.gnome.shell.extensions.dash-to-dock autohide true # Ocultar automaticamente
+gsettings set org.gnome.shell.extensions.dash-to-dock dock-position 'BOTTOM' # Posicionar no fundo
+gsettings set org.gnome.shell.extensions.dash-to-dock dash-max-icon-size 40 # Tamanho dos ícones
 
 
 # Instalar e configurar flatpak e flathub
