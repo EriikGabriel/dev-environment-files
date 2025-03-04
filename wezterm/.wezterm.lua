@@ -4,6 +4,32 @@
 -- The leader key is set to ALT + q, with a timeout of 2000 milliseconds (2 seconds).
 -- To execute any keybinding, press the leader key (ALT + q) first, then the corresponding key.
 
+-- Keybindings:
+-- 1. Tab Management:
+--    - LEADER + c: Create a new tab in the current pane's domain.
+--    - LEADER + x: Close the current pane (with confirmation).
+--    - LEADER + b: Switch to the previous tab.
+--    - LEADER + n: Switch to the next tab.
+--    - LEADER + <number>: Switch to a specific tab (0–9).
+
+-- 2. Pane Splitting:
+--    - LEADER + \: Split the current pane horizontally into two panes.
+--    - LEADER + -: Split the current pane vertically into two panes.
+
+-- 3. Pane Navigation:
+--    - LEADER + LeftArrow: Move to the pane on the left.
+--    - LEADER + RightArrow: Move to the pane below.
+--    - LEADER + DownArrow: Move to the pane above.
+--    - LEADER + UpArrow: Move to the pane on the right.
+
+-- 5. Status Line:
+--    - The status line indicates when the leader key is active, displaying an ocean wave emoji (🌊).
+
+-- Miscellaneous Configurations:
+-- - Tabs are shown even if there's only one tab.
+-- - The tab bar is located at the bottom of the terminal window.
+-- - Tab and split indices are zero-based.
+
 -- Pull in the wezterm API
 local wezterm = require "wezterm"
 
@@ -95,16 +121,15 @@ config.tab_bar_at_bottom = true
 config.use_fancy_tab_bar = false
 config.tab_and_split_indices_are_zero_based = true
 
--- Borda personalizada para a janela
 config.window_frame = {
-  border_left_width = '2cell',   -- Largura da borda esquerda
-  border_right_width = '2cell',  -- Largura da borda direita
-  border_bottom_height = '30cell',  -- Altura da borda inferior
-  border_top_height = '10cell',  -- Altura da borda superior
-  border_left_color = 'red',   -- Cor da borda esquerda
-  border_right_color = 'red',  -- Cor da borda direita
-  border_bottom_color = 'red',  -- Cor da borda inferior
-  border_top_color = 'red',    -- Cor da borda superior
+  border_left_width = '2cell',
+  border_right_width = '2cell',
+  border_bottom_height = '0.25cell',
+  border_top_height = '0.25cell',
+  border_left_color = 'purple',
+  border_right_color = 'purple',
+  border_bottom_color = 'purple',
+  border_top_color = 'purple',
 }
 
 -- tmux status
@@ -118,7 +143,9 @@ wezterm.on("update-right-status", function(window, _)
         SOLID_LEFT_ARROW = utf8.char(0xe0b2)
     end
 
+
     ARROW_FOREGROUND = { Foreground = { Color = "#1e2030" } }
+
 
     window:set_left_status(wezterm.format {
         { Background = { Color = "#b7bdf8" } },
