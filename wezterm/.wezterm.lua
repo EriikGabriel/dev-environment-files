@@ -143,9 +143,7 @@ wezterm.on("update-right-status", function(window, _)
         SOLID_LEFT_ARROW = utf8.char(0xe0b2)
     end
 
-
     ARROW_FOREGROUND = { Foreground = { Color = "#1e2030" } }
-
 
     window:set_left_status(wezterm.format {
         { Background = { Color = "#b7bdf8" } },
