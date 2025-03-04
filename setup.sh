@@ -98,9 +98,9 @@ done
 # Criar arquivo de config do Zsh
 progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🔧 Configurando Zsh..."
 if [ ! -f "$USER_HOME/.zshrc" ]; then
-    touch "$USER_HOME/.zshrc"
-    chown $SUDO_USER:$SUDO_USER "$USER_HOME/.zshrc"
-    green "✅ Arquivo de configuração do Zsh criado!"
+    cp ./zsh/.zshrc $USER_HOME/.zshrc
+    chown $SUDO_USER:$SUDO_USER $USER_HOME/.zshrc
+    green "✅ Configuração do Zsh criada!"
 else
     blue "✅ Arquivo de configuração do Zsh já existe!"
 fi
@@ -132,6 +132,8 @@ if ! command -v node &> /dev/null; then
     NODE_VERSION="20.x"
     curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION} | sudo -E bash -
     install_package nodejs
+
+    sudo npm install -g n
 else
     blue "✅ Node.js já está instalado!"
 fi
@@ -261,8 +263,8 @@ fi
 
 # Configuração do WezTerm
 if [ ! -f "$USER_HOME/.wezterm.lua" ]; then
-    touch "$USER_HOME/.wezterm.lua"
-    chown $SUDO_USER:$SUDO_USER "$USER_HOME/.wezterm.lua"
+    cp ./wezterm/.wezterm.lua $USER_HOME/.wezterm.lua
+    chown $SUDO_USER:$SUDO_USER $USER_HOME/.wezterm.lua
     green "✅ Configuração do WezTerm criada!"
 else
     blue "✅ Configuração do WezTerm já existe!"
@@ -278,22 +280,19 @@ if [ ! -d "$USER_HOME/.oh-my-zsh" ]; then
     # Mover Oh My Zsh para o diretório do usuário correto e configurar o arquivo .zshrc
     if [ "$HOME" != "$USER_HOME" ]; then
         sudo mv "$HOME/.oh-my-zsh" "$USER_HOME/"
-        cp ~/.oh-my-zsh/templates/zshrc.zsh-template ~/.zshrc
     fi
 
     # Garantir que o usuário tenha permissão sobre os arquivos
     sudo chown -R $SUDO_USER:$SUDO_USER "$USER_HOME/.oh-my-zsh"
-    sudo chown $SUDO_USER:$SUDO_USER "$USER_HOME/.zshrc"
 
     green "✅ Oh My Zsh instalado com sucesso!"
 
     # # Definir Zsh como shell padrão
-    # chsh -s $(which zsh) $SUDO_USER
-    # green "✅ Zsh definido como shell padrão!"
+    chsh -s $(which zsh) $SUDO_USER
+    green "✅ Zsh definido como shell padrão!"
 else
-    yellow "⚠️ Oh My Zsh já está instalado. Pulando a instalação."
+    blue "✅ Oh My Zsh já está instalado."
 fi
-
 
 # Instalar zinit
 progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🚀 Instalando zinit..."
@@ -301,11 +300,20 @@ RUNZSH=no sh -c "$(curl --fail --show-error --silent --location https://raw.gith
 
 # Instalar Powerlevel10k
 progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🚀 Instalando Powerlevel10k..."
+if [ ! -d "$USER_HOME/.p10k.zsh" ]; then
+    git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "${ZSH_CUSTOM:-$USER_HOME/.oh-my-zsh/custom}/themes/powerlevel10k"
+    cp ./zsh/.p10k.zsh $USER_HOME/.p10k.zsh
+    chown $SUDO_USER:$SUDO_USER $USER_HOME/.p10k.zsh
+    green "✅ Powerlevel10k instalado com sucesso!"
+else
+    blue "✅ Powerlevel10k já está instalado!"
+fi
 
-git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "${ZSH_CUSTOM:-$USER_HOME/.oh-my-zsh/custom}/themes/powerlevel10k"
-echo 'ZSH_THEME="powerlevel10k/powerlevel10k"' >> "$USER_HOME/.zshrc"
-green "✅ Powerlevel10k instalado com sucesso!"
-
+# Instalar CLI tools
+progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🛠️ Instalando CLI tools..."
+for package in eza zoxide; do
+    install_package "$package"
+done
 
 # Configurar Git
 progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🔧 Configurando Git..."
