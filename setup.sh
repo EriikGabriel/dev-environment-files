@@ -52,6 +52,10 @@ progress_bar() {
     local completed=$((width * current_step / total_steps))
     local remaining=$((width - completed))
 
+   if [ "$clear_option" == "y" ]; then
+        clear
+    fi
+
     printf "\r["
     printf "%0.s█" $(seq 1 $completed)   # Parte preenchida
     printf "%0.s░" $(seq 1 $remaining)   # Parte restante
@@ -67,6 +71,17 @@ TOTAL_STEPS=28
 CURRENT_STEP=0
 
 yellow "🚀 Iniciando configuração do sistema..."
+
+# Perguntar se deseja ativar a opção de clear
+clear_option="y"
+read -p "Deseja ativar a opção de clear? (Y/n): " clear_option
+if [ "$clear_option" == "n" ]; then
+    blue "> Opção de clear desativada!"
+else
+    green "> Opção de clear ativada!"
+    clear_option="y"
+fi
+
 
 # Atualizar sistema
 progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🛠️ Atualizando sistema..."
@@ -175,22 +190,19 @@ sudo chmod -R 777 '/usr/share/code/resources/app/out'
 sudo chown -R $SUDO_USER '/usr/share/code'
 sudo chmod -R 777 '/usr/share/code'
 
-# Instalar JetBrains Mono Nerd Font
+# Instalar Fonts
 progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🔤 Instalando JetBrains Mono Nerd Font..."
-FONT_DIR="$USER_HOME/.local/share/fonts"
-FONT_NAME="JetBrainsMono-Regular.ttf"
-
-if fc-list | grep -qi "$FONT_NAME"; then
-    blue "✅ JetBrains Mono Nerd Font já está instalada!"
+if fc-list | grep -qi "JetBrains Mono"; then
+    blue "✅ JetBrains Mono já está instalada!"
 else
-    mkdir -p "$FONT_DIR"
-    wget -qO "$FONT_DIR/JetBrainsMono.zip" "https://github.com/ryanoasis/nerd-fonts/releases/latest/download/JetBrainsMono.zip"
-    unzip -o "$FONT_DIR/JetBrainsMono.zip" -d "$FONT_DIR"
+    install_package fonts-jetbrains-mono
+fi
 
-    fc-cache -fv "$FONT_DIR"
-    rm "$FONT_DIR/JetBrainsMono.zip"
-
-    green "✅ JetBrains Mono Nerd Font instalada!"
+progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🔤 Instalando Inter Font..."
+if fc-list | grep -qi "Inter"; then
+    blue "✅ Inter já está instalada!"
+else
+    install_package fonts-inter
 fi
 
 # Instalar Google Chrome se não estiver instalado
@@ -247,40 +259,53 @@ else
     blue "✅ WezTerm já está instalado!"
 fi
 
+# Configuração do WezTerm
+if [ ! -f "$USER_HOME/.wezterm.lua" ]; then
+    touch "$USER_HOME/.wezterm.lua"
+    chown $SUDO_USER:$SUDO_USER "$USER_HOME/.wezterm.lua"
+    green "✅ Configuração do WezTerm criada!"
+else
+    blue "✅ Configuração do WezTerm já existe!"
+fi
+
 # Instalar e configurar Oh My Zsh
 progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "✨ Instalando Oh My Zsh..."
+
+# Instalar Oh My Zsh apenas se ainda não estiver instalado
 if [ ! -d "$USER_HOME/.oh-my-zsh" ]; then
     RUNZSH=no sh -c "$(wget -qO- https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+
+    # Mover Oh My Zsh para o diretório do usuário correto e configurar o arquivo .zshrc
+    if [ "$HOME" != "$USER_HOME" ]; then
+        sudo mv "$HOME/.oh-my-zsh" "$USER_HOME/"
+        cp ~/.oh-my-zsh/templates/zshrc.zsh-template ~/.zshrc
+    fi
+
+    # Garantir que o usuário tenha permissão sobre os arquivos
+    sudo chown -R $SUDO_USER:$SUDO_USER "$USER_HOME/.oh-my-zsh"
+    sudo chown $SUDO_USER:$SUDO_USER "$USER_HOME/.zshrc"
+
     green "✅ Oh My Zsh instalado com sucesso!"
 
-    # Definir Zsh como shell padrão
-    chsh -s $(which zsh) $SUDO_USER
-    green "✅ Zsh definido como shell padrão!"
+    # # Definir Zsh como shell padrão
+    # chsh -s $(which zsh) $SUDO_USER
+    # green "✅ Zsh definido como shell padrão!"
 else
-    blue "✅ Oh My Zsh já está instalado!"
+    yellow "⚠️ Oh My Zsh já está instalado. Pulando a instalação."
 fi
 
-# Instalar Oh My Posh
-progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🎨 Instalando Oh My Posh..."
-if ! command -v oh-my-posh &> /dev/null; then
-    sudo wget -qO /usr/local/bin/oh-my-posh "https://github.com/JanDeDobbeleer/oh-my-posh/releases/latest/download/posh-linux-amd64"
-    sudo chmod +x /usr/local/bin/oh-my-posh
-    green "✅ Oh My Posh instalado com sucesso!"
 
-    # Baixar temas do Oh My Posh
-    mkdir -p "$USER_HOME/.poshthemes"
-    wget -qO "$USER_HOME/.poshthemes/themes.zip" "https://github.com/JanDeDobbeleer/oh-my-posh/releases/latest/download/themes.zip"
-    unzip -o "$USER_HOME/.poshthemes/themes.zip" -d "$USER_HOME/.poshthemes"
-    rm "$USER_HOME/.poshthemes/themes.zip"
+# Instalar zinit
+progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🚀 Instalando zinit..."
+RUNZSH=no sh -c "$(curl --fail --show-error --silent --location https://raw.githubusercontent.com/zdharma-continuum/zinit/HEAD/scripts/install.sh)"
 
-    green "✅ Oh My Posh configurado no Zsh!"
-else
-    blue "✅ Oh My Posh já está instalado!"
-fi
+# Instalar Powerlevel10k
+progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🚀 Instalando Powerlevel10k..."
 
-# Configurar Oh My Posh no Zsh
-THEME_NAME="hul10"
-echo 'eval "$(oh-my-posh init zsh --config $USER_HOME/.poshthemes/themes/hul10.omp.json)"' >> "$USER_HOME/.zshrc"
+git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "${ZSH_CUSTOM:-$USER_HOME/.oh-my-zsh/custom}/themes/powerlevel10k"
+echo 'ZSH_THEME="powerlevel10k/powerlevel10k"' >> "$USER_HOME/.zshrc"
+green "✅ Powerlevel10k instalado com sucesso!"
+
 
 # Configurar Git
 progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🔧 Configurando Git..."
@@ -331,6 +356,10 @@ progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🧹 Limpando o sistema..."
 wait_for_apt_lock
 sudo apt autoremove -y
 sudo apt clean
+
+if [ "$clear_option" == "y" ]; then
+    clear
+fi
 
 # Exibir versões dos programas instalados
 green "\n🎉 Configuração concluída com sucesso!"

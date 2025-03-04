@@ -1,0 +1,352 @@
+{
+  // Editor
+  "editor.fontFamily": "JetBrainsMono Nerd Font, monospace",
+  "editor.wordWrap": "on",
+  "editor.fontSize": 14,
+  "editor.lineHeight": 26,
+  "editor.tabSize": 2,
+  "editor.fontLigatures": true,
+  "editor.bracketPairColorization.enabled": true,
+  "editor.semanticHighlighting.enabled": true,
+  "editor.minimap.enabled": false,
+  "editor.stickyScroll.enabled": false,
+  "editor.formatOnSave": true,
+  "editor.renderLineHighlight": "gutter",
+  "editor.hideCursorInOverviewRuler": true,
+  "editor.suggestSelection": "first",
+  "editor.acceptSuggestionOnCommitCharacter": false,
+  "editor.accessibilitySupport": "off",
+  "editor.scrollbar.horizontal": "hidden",
+  "editor.rulers": [80, 120],
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit",
+    "source.organizeImports": "always"
+  },
+  // Explorer
+  "explorer.confirmDelete": false,
+  "explorer.compactFolders": false,
+  "explorer.confirmDragAndDrop": false,
+  "explorer.sortOrder": "foldersNestsFiles",
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.patterns": {
+    "package.json": ".eslint*, prettier*, tsconfig*, vite*, pnpm-lock*, bun.lockb, nest*",
+    "tailwind.config*": "tailwind.config*, postcss.config*",
+    ".env.local": ".env*",
+    ".env": ".env*"
+  },
+  "window.zoomLevel": 0,
+  "workbench.editor.labelFormat": "short",
+  "workbench.editor.empty.hint": "hidden",
+  "workbench.startupEditor": "none",
+  "workbench.statusBar.visible": false,
+
+  // Prettier
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "prettier.enable": true,
+  "prettier.singleQuote": false,
+  "prettier.semi": false,
+  // Terminal
+  "terminal.integrated.fontSize": 14,
+  "terminal.integrated.gpuAcceleration": "off",
+  "terminal.integrated.defaultProfile.osx": "zsh",
+  "terminal.integrated.defaultProfile.linux": "zsh",
+  "terminal.integrated.showExitAlert": false,
+  "terminal.integrated.env.linux": {},
+  "terminal.integrated.enableMultiLinePasteWarning": "never",
+  "terminal.integrated.fontFamily": "JetBrainsMono Nerd Font",
+  "terminal.integrated.env.osx": {
+    "FIG_NEW_SESSION": "1"
+  },
+  // Zen Mode
+  "zenMode.hideActivityBar": true,
+  "zenMode.silentNotifications": true,
+  "zenMode.fullScreen": false,
+  "zenMode.centerLayout": false,
+  "zenMode.hideLineNumbers": false,
+  // Files
+  "files.associations": {
+    ".sequelizerc": "javascript",
+    ".stylelintrc": "json",
+    "*.tsx": "typescriptreact",
+    ".env.*": "dotenv",
+    ".prettierrc": "json",
+    "*.css": "tailwindcss",
+    "*.webpack.js": "webpack",
+    "*.proto": "3d",
+    "ormconfig.json": "database",
+    "*.json": "json"
+  },
+  "files.exclude": {
+    "**/CVS": true,
+    "**/.DS_Store": true,
+    "**/.hg": true,
+    "**/.svn": true,
+    "**/.git": true
+    // "node_modules": true
+  },
+  "symbols.folders.associations": {
+    "models": "folder-red-outline",
+    "controllers": "folder-blue-outline",
+    "views": "folder-yellow-outline",
+    "lib": "folder-orange-outline",
+    "libs": "folder-orange-outline",
+    "fonts": "folder-gray-outline"
+  },
+  "security.workspace.trust.untrustedFiles": "newWindow",
+  // Javascript / Typescript
+  "javascript.suggest.autoImports": true,
+  "javascript.updateImportsOnFileMove.enabled": "always",
+  "typescript.tsserver.log": "off",
+  "typescript.updateImportsOnFileMove.enabled": "never",
+  "typescript.suggest.autoImports": true,
+  // CSS / SASS / LESS
+  "css.lint.unknownAtRules": "ignore",
+  "less.lint.unknownAtRules": "ignore",
+  // Git / Gitlens
+  "git.confirmSync": false,
+  "git.enableSmartCommit": true,
+  "gitlens.codeLens.recentChange.enabled": false,
+  "gitlens.codeLens.authors.enabled": false,
+  "gitlens.codeLens.enabled": false,
+  // Emmet
+  "emmet.includeLanguages": {
+    "javascript": "javascriptreact"
+  },
+  "emmet.syntaxProfiles": {
+    "javascript": "jsx"
+  },
+  // Specific files config
+  "[prisma]": {
+    "editor.defaultFormatter": "Prisma.prisma"
+  },
+  "[c]": {
+    "editor.defaultFormatter": "vscode.emmet"
+  },
+  "[csharp]": {
+    "editor.defaultFormatter": "ms-dotnettools.csharp"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
+  },
+  "[rust]": {
+    "editor.defaultFormatter": "rust-lang.rust-analyzer"
+  },
+  "[python]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "ms-python.black-formatter"
+  },
+
+  //! Custom UI Style
+  "custom-ui-style.font.monospace": "JetBrains Mono",
+  "custom-ui-style.font.sansSerif": "Inter",
+  "custom-ui-style.electron": {
+    "trafficLightPosition": {
+      "x": 11,
+      "y": 10
+    }
+  },
+  "custom-ui-style.webview.stylesheet": {},
+  "custom-ui-style.stylesheet": {
+    ".title-label > h2": "display: none",
+    ".actions-container": {
+      "display": "flex",
+      "justify-content": "center",
+      "align-items": "center",
+      "width": "100%",
+      "height": "100%",
+      "gap": "3px"
+    },
+    ".composite-bar": "width: 100%",
+    ".editor-actions": "display: none",
+    ".nosidebar .inline-tabs-placeholder": "width: 75px",
+    ".pane-header": "padding: 0 8px",
+    ".pane-body": "padding: 8px",
+    ".split-view-view:first-child .pane-header": "display: none !important;",
+    ".monaco-list-row": "border-radius: 4px;",
+    ".monaco-workbench .monaco-list:not(.element-focused):focus:before": "display: none;",
+    ".decorationsOverviewRuler, .scrollbar": "width: 5px !important;"
+  },
+  //! APC
+  "apc.activityBar": {
+    "position": "bottom",
+    "hideSettings": true,
+    "size": 48,
+    "itemMargin": 8,
+    "itemSize": 32
+  },
+  "apc.electron": {
+    "titleBarStyle": "hiddenInset",
+    "trafficLightPosition": {
+      "x": 11,
+      "y": 10
+    },
+    "frame": false
+  },
+  "apc.header": {
+    "height": 36
+  },
+  "apc.listRow": {
+    "height": 24
+  },
+  "apc.font.family": "Inter",
+  "apc.stylesheet": {
+    ".title-label > h2": "display: none",
+    ".editor-actions": "display: none",
+    ".nosidebar .inline-tabs-placeholder": "width: 75px",
+    ".pane-header": "padding: 0 8px",
+    ".pane-body": "padding: 8px",
+    ".split-view-view:first-child .pane-header": "display: none !important;",
+    ".monaco-list-row": "border-radius: 4px;",
+    ".monaco-workbench .monaco-list:not(.element-focused):focus:before": "display: none;",
+    ".decorationsOverviewRuler, .scrollbar": "width: 5px !important;"
+  },
+  //! Minimize
+  "editor.emptySelectionClipboard": false,
+  "workbench.editor.enablePreview": false,
+  "files.trimTrailingWhitespace": true,
+  "diffEditor.renderSideBySide": false,
+  // Silence the Noise
+  "breadcrumbs.enabled": false,
+  "editor.hover.enabled": true,
+  "editor.selectionHighlight": false,
+  "editor.overviewRulerBorder": false,
+  "problems.decorations.enabled": false,
+  "editor.renderControlCharacters": false,
+  "workbench.editor.enablePreviewFromQuickOpen": false,
+  // Typography
+  "editor.suggestFontSize": 16,
+  "editor.suggestLineHeight": 30,
+  "search.useIgnoreFiles": false,
+  // Others Extensions
+  "extensions.ignoreRecommendations": true,
+  "polacode.transparentBackground": true,
+  "polacode.target": "snippet",
+  "liveshare.featureSet": "insiders",
+  "symbols.hidesExplorerArrows": false,
+  "material-icon-theme.activeIconPack": "nest",
+  "material-icon-theme.folders.associations": {
+    "adapters": "contract",
+    "grpc": "pipe",
+    "kube": "kubernetes",
+    "main": "lib",
+    "websockets": "pipe",
+    "implementations": "core",
+    "protos": "pipe",
+    "entities": "class",
+    "kafka": "pipe",
+    "use-cases": "functions",
+    "migrations": "tools",
+    "schemas": "class",
+    "useCases": "functions",
+    "eslint-config": "tools",
+    "typeorm": "database",
+    "_shared": "shared",
+    "mappers": "meta",
+    "fakes": "mock",
+    "modules": "components",
+    "subscribers": "messages",
+    "domain": "class",
+    "protocols": "contract",
+    "infra": "app",
+    "view-models": "views",
+    "presentation": "template",
+    "dtos": "typescript",
+    "http": "container",
+    "providers": "include",
+    "factories": "class",
+    "repositories": "mappings"
+  },
+  // cSpell
+  "cSpell.language": "en,pt",
+  "cSpell.userWords": [
+    "chakra",
+    "clsx",
+    "Dotenv",
+    "eduplay",
+    "elif",
+    "Eriik",
+    "erik",
+    "esbenp",
+    "fastify",
+    "Fastify",
+    "feedbackwidget",
+    "Game Shifters",
+    "Hono",
+    "horarios",
+    "IUGU",
+    "Jetbrains",
+    "jupiter",
+    "middlewares",
+    "mixpanel",
+    "monaco",
+    "nestjs",
+    "nosidebar",
+    "Omni",
+    "Onboarded",
+    "ormconfig",
+    "pallas",
+    "prefetch",
+    "rocketseat",
+    "rotion",
+    "Shifters",
+    "stylesheet",
+    "tailwindcss",
+    "Trackpad",
+    "trpc",
+    "TRPC",
+    "ufscar",
+    "unfollow",
+    "Unfollow",
+    "unform",
+    "Unform",
+    "unmark",
+    "upsert",
+    "webp"
+  ],
+  "cSpell.enabledFiletypes": [
+    "!asciidoc",
+    "!c",
+    "!cpp",
+    "!csharp",
+    "!go",
+    "!handlebars",
+    "!haskell",
+    "!jade",
+    "!java",
+    "!latex",
+    "!php",
+    "!pug",
+    "!python",
+    "!restructuredtext",
+    "!rust",
+    "!scala",
+    "!scss"
+  ],
+  "zenMode.showTabs": "single",
+  "liveServer.settings.donotShowInfoMsg": true,
+  "projectManager.git.baseFolders": ["./Projects/"],
+  "redhat.telemetry.enabled": true,
+  "window.titleBarStyle": "native",
+  "window.menuBarVisibility": "hidden",
+  "editor.linkedEditing": true,
+  "tailwindCSS.experimental.classRegex": ["class:\\s*?[\"'`]([^\"'`]*).*?,"],
+  "github.copilot.editor.enableAutoCompletions": true,
+  "workbench.layoutControl.enabled": false,
+  "database-client.autoSync": true,
+  "explorer.confirmPasteNative": false,
+  "github.copilot.enable": {
+    "*": true,
+    "plaintext": false,
+    "markdown": false,
+    "scminput": false
+  },
+  "workbench.productIconTheme": "fluent-icons",
+  "window.commandCenter": false,
+  "workbench.iconTheme": "symbols",
+  "godotTools.lsp.serverPort": 6005,
+  "dart.flutterHotReloadOnSave": "all",
+  "workbench.activityBar.location": "bottom",
+  "window.customTitleBarVisibility": "auto",
+  "update.mode": "manual",
+  "workbench.colorTheme": "poimandres"
+}
