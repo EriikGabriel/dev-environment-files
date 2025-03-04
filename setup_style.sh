@@ -54,6 +54,52 @@ green "\n✅ Sistema atualizado!"
 
 blue "\n📦 Instalando pacotes de estilização..."
 
+# Instalar ferramentas essenciais
+progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🧰 Instalando ferramentas essenciais..."
+for package in sassc gnome-tweaks gnome-shell-extension-manager meson gettext pkg-config make; do
+    install_package "$package"
+done
+
+# Clonar e instalar Dash to Dock
+progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🚢 Instalando Dash to Dock..."
+if [ ! -d "dash-to-dock" ]; then
+    git clone https://github.com/micheleg/dash-to-dock.git
+fi
+cd dash-to-dock
+meson setup build --prefix=/usr
+ninja -C build
+sudo ninja -C build install
+cd ..
+
+# Reiniciar o GNOME Shell para aplicar a extensão
+progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🔄 Reiniciando o GNOME Shell..."
+gnome-shell --replace &
+
+
+
+# Habilitar algumas configurações do GNOME Desktop
+progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🖥️ Configurando o GNOME desktop..."
+gsettings set org.gnome.mutter edge-tiling true # Ativar tiling nas bordas
+gsettings set org.gnome.shell.extensions.ding icon-size "small" # Reduzir tamanho dos ícones
+gsettings set org.gnome.shell.extensions.ding icon-volumes false # Ocultar ícones de volumes
+gsettings set org.gnome.shell.extensions.ding show-home false # Ocultar pasta Home no desktop
+
+gsettings set org.gnome.shell.extensions.dash-to-dock extend-height false # Panel mode false
+
+
+# Instalar e configurar flatpak e flathub
+progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "📦 Instalando Flatpak e Flathub..."
+if ! command -v flatpak &> /dev/null; then
+    install_package flatpak
+    flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+fi
+
+# Instalar tema GTK
+progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🎨 Instalando tema GTK..."
+# install_package materia-gtk-theme
+
+
+
 # Limpeza
 progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🧹 Limpando o sistema..."
 wait_for_apt_lock

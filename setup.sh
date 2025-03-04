@@ -157,25 +157,29 @@ fi
 green "🎉 Ambiente de desenvolvimento configurado com sucesso!"
 
 # Exibir mensagem para inserir a chave SSH no GitHub
-yellow "\n🔑 Não se esqueça de adicionar sua chave SSH ao GitHub!"
-blue "cat ~/.ssh/id_ed25519.pub"
+if [ "$EXEC_TOOLS_SETUP_OPT" == "y" ]; then
+    yellow "\n🔑 Não se esqueça de adicionar sua chave SSH ao GitHub!"
+    blue "cat ~/.ssh/id_ed25519.pub"
+fi
 
 blue "\n📦 Versões instaladas:"
-echo "  🐳 Docker: $(docker --version)"
-echo "  🟩 Node.js: $(node -v)"
-echo "  📦 NPM: $(npm -v)"
-echo "  ✨ Zsh: $(zsh --version)"
-echo "  🐍 Python: $(python3 --version)"
-echo "  ☕ Java: $(java -version 2>&1 | head -n 1)"
-echo "  🐘 PostgreSQL: $(psql --version)"
-echo "  🧱 Redis: $(redis-server --version | awk '{print $3}')"
-sudo -u $SUDO_USER code --version | head -n 1 | awk '{print "  🖥️  VS Code: "$0}'
-echo "  🌎 Google Chrome: $(google-chrome --version)"
-echo "  🔲 WezTerm: $(wezterm --version)"
-echo "  🔤 JetBrains/Inter Font: Instalado"
-if [ "$INSTALL_ENTERTAINMENT_OPT" == "y" ]; then
-    echo "$(spotify --version)" | sed -n 's/.*version \([^,]*\).*/  🎵 Spotify: \1/p'
-    echo "  🎮 Discord: $(strings $(which discord) | grep -m1 -oP '\d+\.\d+\.\d+')"
+if [ "$EXEC_TOOLS_SETUP_OPT" == "y" ]; then
+    echo "  🐳 Docker: $(docker --version)"
+    echo "  🟩 Node.js: $(node -v)"
+    echo "  📦 NPM: $(npm -v)"
+    echo "  ✨ Zsh: $(zsh --version)"
+    echo "  🐍 Python: $(python3 --version)"
+    echo "  ☕ Java: $(java -version 2>&1 | head -n 1)"
+    echo "  🐘 PostgreSQL: $(psql --version)"
+    echo "  🧱 Redis: $(redis-server --version | awk '{print $3}')"
+    sudo -u $SUDO_USER code --version | head -n 1 | awk '{print "  🖥️  VS Code: "$0}'
+    echo "  🌎 Google Chrome: $(google-chrome --version)"
+    echo "  🔲 WezTerm: $(wezterm --version)"
+    echo "  🔤 JetBrains/Inter Font: Instalado"
+    if [ "$INSTALL_ENTERTAINMENT_OPT" == "y" ]; then
+        echo "$(spotify --version)" | sed -n 's/.*version \([^,]*\).*/  🎵 Spotify: \1/p'
+        echo "  🎮 Discord: $(strings $(which discord) | grep -m1 -oP '\d+\.\d+\.\d+')"
+    fi
 fi
 if [ "$EXEC_STYLE_SETUP_OPT" == "y" ]; then
     echo "  🎨 Tema GTK: $(gsettings get org.gnome.desktop.interface gtk-theme)"
