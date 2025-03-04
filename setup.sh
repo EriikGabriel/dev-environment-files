@@ -6,83 +6,13 @@ blue() { echo -e "\033[34m$1\033[0m"; }
 yellow() { echo -e "\033[33m$1\033[0m"; }
 red() { echo -e "\033[31m$1\033[0m"; }
 
+export -f green blue yellow red
+
 # Verifica se está rodando como root
 if [[ $EUID -ne 0 ]]; then
     red "❌ Este script deve ser executado como root ou com sudo!"
     exit 1
 fi
-
-# Variáveis de configuração globais
-clear_option="y"  # Ativar clear do histórico de progresso
-install_entertainment="y"  # Instalar utilitários de entretenimento
-vscode_version="latest"  # Versão do VS Code (1.93 ou latest)
-
-# Função para exibir o menu interativo
-show_menu() {
-    while true; do
-        clear
-        green "🚀 Menu de Configuração do Script - Made by EriikGabriel"
-        echo ""
-        blue "1. Ativar/Desativar clear do histórico de progresso (Atual: $clear_option)"
-        blue "2. Ativar/Desativar instalação de utilitários de entretenimento (Atual: $install_entertainment)"
-        blue "3. Escolher versão do VS Code (Atual: $vscode_version)"
-        blue "4. Iniciar instalação"
-        blue "5. Sair"
-        echo ""
-        read -p "Escolha uma opção: " menu_option
-
-        case $menu_option in
-            1)
-                if [ "$clear_option" == "y" ]; then
-                    clear_option="n"
-                else
-                    clear_option="y"
-                fi
-                green "✅ Clear do histórico de progresso definido como: $clear_option"
-                sleep 1
-                ;;
-            2)
-                if [ "$install_entertainment" == "y" ]; then
-                    install_entertainment="n"
-                else
-                    install_entertainment="y"
-                fi
-                green "✅ Instalação de utilitários de entretenimento definida como: $install_entertainment"
-                sleep 1
-                ;;
-            3)
-                echo ""
-                blue "Escolha a versão do VS Code:"
-                blue "1. Versão mais recente"
-                blue "2. Versão 1.93 (específica)"
-                read -p "Opção: " vscode_choice
-                if [ "$vscode_choice" == "2" ]; then
-                    vscode_version="1.93"
-                else
-                    vscode_version="latest"
-                fi
-                green "✅ Versão do VS Code definida como: $vscode_version"
-                sleep 1
-                ;;
-            4)
-                green "✅ Iniciando instalação..."
-                sleep 1
-                break
-                ;;
-            5)
-                red "❌ Saindo do script..."
-                exit 0
-                ;;
-            *)
-                red "❌ Opção inválida!"
-                sleep 1
-                ;;
-        esac
-    done
-}
-
-# Exibir o menu interativo
-show_menu
 
 # Função para aguardar a liberação do lock do apt
 wait_for_apt_lock() {
@@ -121,7 +51,7 @@ progress_bar() {
     local completed=$((width * current_step / total_steps))
     local remaining=$((width - completed))
 
-    if [ "$clear_option" == "y" ]; then
+    if [ "$CLEAR_OPT" == "y" ]; then
         clear
     fi
 
@@ -132,382 +62,103 @@ progress_bar() {
     echo ""
 }
 
+export -f wait_for_apt_lock install_package progress_bar
+
 # Endereço do diretório home do usuário original
-USER_HOME=$(eval echo ~$SUDO_USER)
+export USER_HOME=$(eval echo ~$SUDO_USER)
 # Nome do usuário original
-USER_NAME=$(basename $USER_HOME)
+export USER_NAME=$(basename $USER_HOME)
 
 # Total de passos (ajustado para o número total de etapas)
-TOTAL_STEPS=29
-CURRENT_STEP=0
+export TOTAL_STEPS=29
+# Etapa atual (inicializada com 0)
+export CURRENT_STEP=0
 
-yellow "🚀 Iniciando configuração do sistema..."
+# Variáveis de configuração globais
+export CLEAR_OPT="y"  # Ativar clear do histórico de progresso
+export EXEC_TOOLS_SETUP_OPT="y" # Ativar setup de ferramentas
+export EXEC_STYLE_SETUP_OPT="y" # Ativar setup de estilização
 
-# Atualizar sistema
-progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🛠️ Atualizando sistema..."
-wait_for_apt_lock
-sudo apt update && sudo apt upgrade -y && sudo apt dist-upgrade -y
-green "\n✅ Sistema atualizado!"
+# Função para exibir o menu interativo
+show_menu() {
+    while true; do
+        clear
+        green "🚀 Menu de Setup (main) - Made by EriikGabriel"
+        echo ""
+        blue "1. Ativar/Desativar clear do histórico de progresso (Atual: $CLEAR_OPT)"
+        blue "2. Ativar/Desativar setup de ferramentas (Atual: $EXEC_TOOLS_SETUP_OPT)"
+        blue "3. Ativar/Desativar setup de estilização (Atual: $EXEC_STYLE_SETUP_OPT)"
+        blue "4. Iniciar setup"
+        blue "5. Sair"
+        echo ""
+        read -p "Escolha uma opção: " MENU_OPT
 
-# Instalar ferramentas essenciais
-progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🧰 Instalando ferramentas essenciais..."
-for package in build-essential curl wget git vim zsh; do
-    install_package "$package"
-done
-
-# Criar arquivo de config do Zsh
-progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🔧 Configurando Zsh..."
-if [ ! -f "$USER_HOME/.zshrc" ]; then
-    cp ./zsh/.zshrc $USER_HOME/.zshrc
-    chown $SUDO_USER:$SUDO_USER $USER_HOME/.zshrc
-    green "✅ Configuração do Zsh criada!"
-else
-    blue "✅ Arquivo de configuração do Zsh já existe!"
-fi
-
-# Instalar Snap
-progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🔌 Instalando Snap..."
-install_package snapd
-
-# Instalar Docker se não estiver instalado
-progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🐳 Instalando Docker..."
-if ! dpkg -l | grep -q "docker-ce"; then
-    for package in apt-transport-https ca-certificates curl software-properties-common; do
-        install_package "$package"
+        case $MENU_OPT in
+            1)
+                if [ "$CLEAR_OPT" == "y" ]; then
+                    CLEAR_OPT="n"
+                else
+                    CLEAR_OPT="y"
+                fi
+                green "✅ Clear do histórico de progresso definido como: $CLEAR_OPT"
+                sleep 1
+                ;;
+            2)
+                if [ "$EXEC_TOOLS_SETUP_OPT" == "y" ]; then
+                    EXEC_TOOLS_SETUP_OPT="n"
+                else
+                    EXEC_TOOLS_SETUP_OPT="y"
+                fi
+                green "✅ Ativação de setup de ferramentas definido como: $EXEC_TOOLS_SETUP_OPT"
+                sleep 1
+                ;;
+            3)
+                if [ "$EXEC_STYLE_SETUP_OPT" == "y" ]; then
+                    EXEC_STYLE_SETUP_OPT="n"
+                else
+                    EXEC_STYLE_SETUP_OPT="y"
+                fi
+                green "✅ Ativação de setup de estilização definido como: $EXEC_STYLE_SETUP_OPT"
+                sleep 1
+                ;;
+            4)
+                green "✅ Iniciando setup..."
+                sleep 1
+                break
+                ;;
+            5)
+                red "❌ Saindo do script..."
+                exit 0
+                ;;
+            *)
+                red "❌ Opção inválida!"
+                sleep 1
+                ;;
+        esac
     done
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-    sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-    wait_for_apt_lock
-    install_package docker-ce
-    sudo systemctl enable docker
-    sudo systemctl start docker
-    sudo usermod -aG docker $SUDO_USER
-else
-    blue "✅ Docker já está instalado!"
+}
+
+# Exibir o menu interativo
+show_menu
+
+if [ $EXEC_TOOLS_SETUP_OPT == "y" ]; then
+    # Executar script de setup de ferramentas
+    yellow "🔧 Executando setup de ferramentas..."
+    source setup_tools.sh
 fi
 
-# Instalar Node.js se não estiver instalado
-progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🟩 Instalando Node.js..."
-if ! command -v node &> /dev/null; then
-    NODE_VERSION="20.x"
-    curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION} | sudo -E bash -
-    install_package nodejs
-
-    sudo npm install -g n
-else
-    blue "✅ Node.js já está instalado!"
-fi
-
-# Instalar Python se não estiver instalado
-progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🐍 Instalando Python..."
-for package in python3 python3-pip python3-venv; do
-    install_package "$package"
-done
-
-# Instalar Java se não estiver instalado
-progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "☕ Instalando Java..."
-if ! dpkg -l | grep -q "openjdk-17-jdk"; then
-    install_package openjdk-17-jdk
-else
-    blue "✅ Java já está instalado!"
-fi
-
-# Instalar PostgreSQL se não estiver instalado
-progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🐘 Instalando PostgreSQL..."
-for package in postgresql postgresql-contrib; do
-    install_package "$package"
-done
-
-# Instalar Redis se não estiver instalado
-progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🧱 Instalando Redis..."
-if ! dpkg -l | grep -q "redis-server"; then
-    install_package redis-server
-else
-    blue "✅ Redis já está instalado!"
-fi
-
-# Instalar ferramentas adicionais
-progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🛠️ Instalando ferramentas adicionais..."
-for package in tmux htop; do
-    install_package "$package"
-done
-
-# Instalar VS Code
-progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🖥️ Instalando VS Code..."
-if ! command -v code &> /dev/null; then
-    if [ "$vscode_version" == "1.93" ]; then
-        wget -qO vscode.deb "https://update.code.visualstudio.com/1.93.0/linux-deb-x64/stable"
-        install_package ./vscode.deb
-        rm -f vscode.deb
-    else
-        wget -qO vscode.deb "https://code.visualstudio.com/sha/download?build=stable&os=linux-deb-x64"
-        install_package ./vscode.deb
-        rm -f vscode.deb
-    fi
-
-    # Impedir o upgrade do VS Code
-    sudo apt-mark hold code
-else
-    blue "✅ VS Code já está instalado!"
-fi
-
-# Garantindo acesso total para extensões de estilização do VS Code
-sudo chown -R $SUDO_USER '/usr/share/code/resources/'
-sudo chown -R $SUDO_USER '/usr/share/code/resources/app/out'
-sudo chmod -R 777 '/usr/share/code/resources/app/out'
-sudo chown -R $SUDO_USER '/usr/share/code'
-sudo chmod -R 777 '/usr/share/code'
-
-# Instalar Fonts
-progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🔤 Instalando JetBrains Mono Nerd Font..."
-if fc-list | grep -qi "JetBrains Mono"; then
-    blue "✅ JetBrains Mono já está instalada!"
-else
-    install_package fonts-jetbrains-mono
-
-    wget -P $USER_HOME/.local/share/fonts https://github.com/ryanoasis/nerd-fonts/releases/download/v3.0.2/JetBrainsMono.zip \
-    && cd $USER_HOME/.local/share/fonts \
-    && unzip JetBrainsMono.zip \
-    && rm JetBrainsMono.zip \
-    && fc-cache -fv
-fi
-
-progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🔤 Instalando Inter Font..."
-if fc-list | grep -qi "Inter"; then
-    blue "✅ Inter já está instalada!"
-else
-    install_package fonts-inter
-fi
-
-# Instalar Google Chrome se não estiver instalado
-progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🌎 Instalando Google Chrome..."
-if ! dpkg -l | grep -q "google-chrome-stable"; then
-    wget -qO chrome.deb "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb"
-    install_package ./chrome.deb
-    rm -f chrome.deb
-else
-    blue "✅ Google Chrome já está instalado!"
-fi
-
-# Instalar Discord (se habilitado)
-if [ "$install_entertainment" == "y" ]; then
-    progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🎮 Instalando Discord..."
-    if ! command -v discord &> /dev/null; then
-        wget -O discord.deb "https://discord.com/api/download?platform=linux&format=deb"
-        install_package ./discord.deb
-        rm -f discord.deb
-    else
-        blue "✅ Discord já está instalado!"
-    fi
-fi
-
-# Instalar Spotify (se habilitado)
-if [ "$install_entertainment" == "y" ]; then
-    progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🎵 Instalando Spotify..."
-    if ! command -v spotify &> /dev/null; then
-        if [ ! -f /etc/apt/trusted.gpg.d/spotify.gpg ]; then
-            curl -sS https://download.spotify.com/debian/pubkey_C85668DF69375001.gpg | sudo gpg --dearmor --yes -o /etc/apt/trusted.gpg.d/spotify.gpg
-            green "✅ Chave GPG do Spotify adicionada!"
-        else
-            blue "✅ Chave GPG do Spotify já está configurada!"
-        fi
-
-        if [ ! -f /etc/apt/sources.list.d/spotify.list ]; then
-            echo "deb http://repository.spotify.com stable non-free" | sudo tee /etc/apt/sources.list.d/spotify.list
-            green "✅ Repositório do Spotify adicionado!"
-        else
-            blue "✅ Repositório do Spotify já está configurado!"
-        fi
-
-        sudo apt update
-        install_package spotify-client
-    else
-        blue "✅ Spotify já está instalado!"
-    fi
-fi
-
-# Instalar WezTerm
-progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🔲 Instalando WezTerm..."
-if ! dpkg -l | grep -q "wezterm"; then
-    curl -fsSL https://apt.fury.io/wez/gpg.key | sudo gpg --yes --dearmor -o /etc/apt/keyrings/wezterm-fury.gpg
-    echo 'deb [signed-by=/etc/apt/keyrings/wezterm-fury.gpg] https://apt.fury.io/wez/ * *' | sudo tee /etc/apt/sources.list.d/wezterm.list
-    sudo apt update
-    install_package wezterm
-else
-    blue "✅ WezTerm já está instalado!"
-fi
-
-# Configuração do WezTerm
-if [ ! -f "$USER_HOME/.wezterm.lua" ]; then
-    cp ./wezterm/.wezterm.lua $USER_HOME/.wezterm.lua
-    chown $SUDO_USER:$SUDO_USER $USER_HOME/.wezterm.lua
-    green "✅ Configuração do WezTerm criada!"
-else
-    blue "✅ Configuração do WezTerm já existe!"
-fi
-
-# Instalar e configurar Oh My Zsh
-progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "✨ Instalando Oh My Zsh..."
-
-# Instalar Oh My Zsh apenas se ainda não estiver instalado
-if [ ! -d "$USER_HOME/.oh-my-zsh" ]; then
-    RUNZSH=no sh -c "$(wget -qO- https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
-
-    # Mover Oh My Zsh para o diretório do usuário correto e configurar o arquivo .zshrc
-    if [ "$HOME" != "$USER_HOME" ]; then
-        sudo mv "$HOME/.oh-my-zsh" "$USER_HOME/"
-    fi
-
-    # Garantir que o usuário tenha permissão sobre os arquivos
-    sudo chown -R $SUDO_USER:$SUDO_USER "$USER_HOME/.oh-my-zsh"
-
-    green "✅ Oh My Zsh instalado com sucesso!"
-
-    # # Definir Zsh como shell padrão
-    chsh -s $(which zsh) $SUDO_USER
-    green "✅ Zsh definido como shell padrão!"
-else
-    blue "✅ Oh My Zsh já está instalado."
-fi
-
-# Instalar zinit
-progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🚀 Instalando Zinit..."
-if [ ! -d "/root/.local/share/zinit/zinit.git" ]; then
-   RUNZSH=no sh -c "$(curl --fail --show-error --silent --location https://raw.githubusercontent.com/zdharma-continuum/zinit/HEAD/scripts/install.sh)"
-    green "✅ Zinit instalado com sucesso!"
-else
-    blue "✅ Zinit já está instalado!"
-fi
-
-# Instalar Powerlevel10k
-progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🚀 Instalando Powerlevel10k..."
-if [ ! -f "$USER_HOME/.p10k.zsh" ]; then
-    git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "${ZSH_CUSTOM:-$USER_HOME/.oh-my-zsh/custom}/themes/powerlevel10k"
-    cp ./zsh/.p10k.zsh $USER_HOME/.p10k.zsh
-    chown $SUDO_USER:$SUDO_USER $USER_HOME/.p10k.zsh
-    green "✅ Powerlevel10k instalado com sucesso!"
-else
-    blue "✅ Powerlevel10k já está instalado!"
-fi
-
-# Instalar CLI tools
-progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🛠️ Instalando CLI tools..."
-for package in fastfetch eza zoxide fd-find bat git-delta thefuck; do
-    install_package "$package"
-done
-if ! command -v fzf &> /dev/null; then
-    curl -fsSL https://github.com/junegunn/fzf/releases/download/v0.60.3/fzf-0.60.3-linux_amd64.tar.gz | tar -xz -C /usr/local/bin/
-    sudo ln -s /usr/local/bin/fzf /usr/local/bin/fzf-tmux
-    green "✅ fzf instalado com sucesso!"
-else
-    blue "✅ fzf já está instalado!"
-fi
-
-# Links simbólicos para ferramentas CLI
-progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🔗 Criando links simbólicos..."
-mkdir -p $USER_HOME/.local/bin
-ln -sf /usr/bin/batcat $USER_HOME/.local/bin/bat
-ln -sf /usr/bin/delta $USER_HOME/.local/bin/git-delta
-ln -sf /usr/bin/fdfind $USER_HOME/.local/bin/fd
-ln -sf /usr/bin/fzf $USER_HOME/.local/bin/fzf
-green "✅ Links simbólicos criados!"
-
-# Configurar fastfetch
-progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🔧 Configurando fastfetch..."
-if [ ! -f "$USER_HOME/.config/fastfetch/config.jsonc" ]; then
-    # Gerar arquivo de configuração
-    sudo -u $USER_NAME fastfetch --gen-config
-    CONFIG_FILE="/home/$USER_NAME/.config/fastfetch/config.jsonc"
-
-    # Criar diretório de logos e copiar arquivo
-    sudo mkdir -p $USER_HOME/.config/fastfetch/logos
-
-    # Copiar todos os logos
-    sudo cp -r ./fastfetch/logos/* $USER_HOME/.config/fastfetch/logos
-
-    # Substituir arquivo de configuração
-    CONFIG_FILE_NAME="arch"
-    sudo cp ./fastfetch/$CONFIG_FILE_NAME.jsonc $CONFIG_FILE
-    green "✅ fastfetch configurado com sucesso!"
-else
-    blue "✅ Configuração do fastfetch já existe!"
-fi
-
-# Configurar bat
-progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🔧 Configurando bat..."
-if [ ! -d "$USER_HOME/.config/bat/themes" ]; then
-    mkdir -p "$USER_HOME/.config/bat/themes"
-    curl -L -o "$USER_HOME/.config/bat/themes/pmndrs.tmTheme" "http://raw.githubusercontent.com/drcmda/poimandres-theme/refs/heads/main/pmndrs.tmTheme"
-    batcat cache --build
-    green "✅ bat configurado com sucesso!"
-else
-    blue "✅ Configuração do bat já existe!"
-fi
-
-# Configurar Git
-progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🔧 Configurando Git..."
-if ! git config user.name &> /dev/null || ! git config user.email &> /dev/null; then
-    sudo -u "$SUDO_USER" git config --global user.name "$GIT_USER"
-    sudo -u "$SUDO_USER" git config --global user.email "$GIT_EMAIL"
-    green "✅ Git configurado com sucesso!"
-else
-    blue "✅ Git já está configurado!"
-    blue "  Nome: $(git config user.name)"
-    blue "  E-mail: $(git config user.email)"
-fi
-
-# Criar chave SSH
-progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🔑 Criando chave SSH..."
-SSH_KEY="$USER_HOME/.ssh/id_ed25519"
-if [ ! -f "$SSH_KEY" ]; then
-    ssh-keygen -t ed25519 -C "$GIT_EMAIL"
-    eval "$(ssh-agent -s)"
-    ssh-add "$SSH_KEY"
-    green "✅ Chave SSH criada!"
-    yellow "🔑 Copie sua chave pública e adicione-a ao GitHub/GitLab:"
-    cat "$SSH_KEY.pub"
-else
-    blue "✅ Chave SSH já existe!"
-fi
-
-# Criar diretório de projetos
-progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "📂 Criando diretórios..."
-PROJECTS_DIR="$USER_HOME/www/projects"
-UFSCAR_DIR="$USER_HOME/www/ufscar"
-
-if [ ! -d "$PROJECTS_DIR" ]; then
-    mkdir -p "$PROJECTS_DIR"
-    chown -R $SUDO_USER:$SUDO_USER "$PROJECTS_DIR"
-    green "✅ Diretório de projetos criado!"
-else
-    blue "✅ Diretório de projetos já existe!"
-fi
-
-if [ ! -d "$UFSCAR_DIR" ]; then
-    mkdir -p "$UFSCAR_DIR"
-    chown -R $SUDO_USER:$SUDO_USER "$UFSCAR_DIR"
-    green "✅ Diretório da UFSCar criado!"
-else
-    blue "✅ Diretório da UFSCar já existe!"
-fi
-
-# Limpeza
-progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🧹 Limpando o sistema..."
-wait_for_apt_lock
-sudo apt autoremove -y
-sudo apt clean
-
-if [ "$clear_option" == "y" ]; then
-    clear
+if [ $EXEC_STYLE_SETUP_OPT == "y" ]; then
+    # Executar script de setup de estilização
+    yellow "🎨 Executando setup de estilização..."
+    source setup_style.sh
 fi
 
 # Exibir versões dos programas instalados
-green "\n🎉 Configuração concluída com sucesso!"
+green "🎉 Ambiente de desenvolvimento configurado com sucesso!"
 
 # Exibir mensagem para inserir a chave SSH no GitHub
 yellow "\n🔑 Não se esqueça de adicionar sua chave SSH ao GitHub!"
-yellow "Copie sua chave pública com o comando:"
-blue "cat ~/.ssh/id_rsa.pub"
+blue "cat ~/.ssh/id_ed25519.pub"
 
 blue "\n📦 Versões instaladas:"
 echo "  🐳 Docker: $(docker --version)"
@@ -522,9 +173,12 @@ sudo -u $SUDO_USER code --version | head -n 1 | awk '{print "  🖥️  VS Code:
 echo "  🌎 Google Chrome: $(google-chrome --version)"
 echo "  🔲 WezTerm: $(wezterm --version)"
 echo "  🔤 JetBrains/Inter Font: Instalado"
-if [ "$install_entertainment" == "y" ]; then
+if [ "$INSTALL_ENTERTAINMENT_OPT" == "y" ]; then
     echo "$(spotify --version)" | sed -n 's/.*version \([^,]*\).*/  🎵 Spotify: \1/p'
     echo "  🎮 Discord: $(strings $(which discord) | grep -m1 -oP '\d+\.\d+\.\d+')"
+fi
+if [ "$EXEC_STYLE_SETUP_OPT" == "y" ]; then
+    echo "  🎨 Tema GTK: $(gsettings get org.gnome.desktop.interface gtk-theme)"
 fi
 
 yellow "\n🔄 Reinicie o sistema para aplicar todas as alterações."
