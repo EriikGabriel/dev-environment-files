@@ -6,4 +6,4 @@ My personal dotfiles and configs for setup an dev environment
 
 - [x] More configurable setup script
 - [x] Neofetch CLI art
-- [ ] Style env script shell
+- [x] Style env script shell
