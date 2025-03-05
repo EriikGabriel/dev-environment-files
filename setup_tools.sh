@@ -333,9 +333,9 @@ green "✅ Links simbólicos criados!"
 
 # Configurar fastfetch
 progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🔧 Configurando fastfetch..."
-if [ ! -f "$USER_HOME/.config/fastfetch/config.jsonc" ]; then
+if [ -f "$USER_HOME/.config/fastfetch/config.jsonc" ]; then
     # Gerar arquivo de configuração
-    sudo -u $USER_NAME fastfetch --gen-config
+    sudo -u $USER_NAME fastfetch --gen-config-force
     CONFIG_FILE="/home/$USER_NAME/.config/fastfetch/config.jsonc"
 
     # Criar diretório de logos e copiar arquivo

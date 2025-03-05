@@ -145,6 +145,13 @@ if [ CURRENT_GTK_THEME != "'WhiteSur-Dark'" ]; then
     sudo -u $USER_NAME gsettings set org.gnome.desktop.interface gtk-theme "WhiteSur-Dark"
     sudo -u $USER_NAME dconf write /org/gnome/shell/extensions/user-theme/name "'WhiteSur-Dark'"
     sudo -u $USER_NAME gsettings set org.gnome.desktop.interface icon-theme "WhiteSur-dark"
+
+    TERMINAL_DESKTOP_FILE="/usr/share/applications/org.wezfurlong.wezterm.desktop"
+    TERMINAL_NEW_ICON="$USER_HOME/.local/share/icons/WhiteSur/apps/scalable/org.gnome.Terminal.svg"
+    chmod +w "$TERMINAL_DESKTOP_FILE"
+    sudo sed -i "s|^Icon=.*|Icon=$TERMINAL_NEW_ICON|" "$TERMINAL_DESKTOP_FILE"
+    sudo update-icon-caches /home/erikg/.local/share/icons/WhiteSur
+
     green "✅ Tema e ícones WhiteSur habilitados com sucesso!"
 else
     green "✅ Tema e ícones WhiteSur já estão habilitados."

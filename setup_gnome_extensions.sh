@@ -70,6 +70,8 @@ declare -A extensions=(
     ["search-light@icedman.github.com"]="Search Light"
     ["clipboard-indicator@tudmotu.com"]="Clipboard Indicator"
     ["window-title-is-back@fthx"]="Window Title is Back"
+    ["compiz-windows-effect@hermes83.github.com"]="Compiz Windows Effect"
+    ["compiz-alike-magic-lamp-effect@hermes83.github.com"]="Compiz Alike Magic Lamp Effect"
 )
 
 # Instalar cada extensão da lista
