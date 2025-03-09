@@ -8,9 +8,15 @@ red() { echo -e "\033[31m$1\033[0m"; }
 
 export -f green blue yellow red
 
-# Verifica se está rodando como root
-if [[ $EUID -ne 0 ]]; then
-    red "❌ Este script deve ser executado como root ou com sudo!"
+# Verifica se o sudo está disponível
+if ! command -v sudo &> /dev/null; then
+    red "❌ O comando 'sudo' não está instalado. Instale o sudo e configure-o corretamente."
+    exit 1
+fi
+
+# Verifica se o usuário tem permissão para usar o sudo
+if ! sudo -v; then
+    red "❌ Você não tem permissão para usar o sudo. Execute este script como um usuário com permissões sudo."
     exit 1
 fi
 
@@ -141,13 +147,13 @@ show_menu() {
 # Exibir o menu interativo
 show_menu
 
-if [ $EXEC_TOOLS_SETUP_OPT == "y" ]; then
+if [ "$EXEC_TOOLS_SETUP_OPT" == "y" ]; then
     # Executar script de setup de ferramentas
     yellow "🔧 Executando setup de ferramentas..."
     source setup_tools.sh
 fi
 
-if [ $EXEC_STYLE_SETUP_OPT == "y" ]; then
+if [ "$EXEC_STYLE_SETUP_OPT" == "y" ]; then
     # Executar script de setup de estilização
     yellow "🎨 Executando setup de estilização..."
     source setup_style.sh

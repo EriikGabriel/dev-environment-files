@@ -99,8 +99,4 @@ gsettings set org.gnome.desktop.interface gtk-theme "WhiteSur-Dark"
 dconf write /org/gnome/shell/extensions/user-theme/name "'WhiteSur-Dark'"
 gsettings set org.gnome.desktop.interface icon-theme "WhiteSur-dark"
 
-
-# Criar o arquivo de controle quando o script terminar
-touch /tmp/setup_gnome_extensions_done
-
 echo "✅ Configuração de extensões do GNOME concluída com sucesso!"

@@ -71,27 +71,15 @@ for package in sassc dbus-x11 gnome-tweaks gnome-shell-extension-manager meson g
     install_package "$package"
 done
 
-export $(dbus-launch)
-
 # Variáveis de configuração do GNOME
 GNOME_DOCK_AUTOHIDE=$(sudo -u $USER_NAME gsettings get org.gnome.shell.extensions.dash-to-dock autohide)
 
 if [[ "$GNOME_DOCK_AUTOHIDE" == true ]]; then
-    green "✅ Extensões do GNOME já foram instaladas."
+    blue "✅ Extensões do GNOME já foram instaladas."
 else
     # Instalar e configurar extensões do GNOME
     progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🧩 Instalando extensões do GNOME..."
-
-    yellow "⚠️ Está etapa requer intervenção manual, rode o script setup_gnome_extensions.sh (mas mantenha este em execução) -> ./setup_gnome_extensions.sh..."
-
-    # Aguardar até que o arquivo de controle seja criado
-    while [ ! -f /tmp/setup_gnome_extensions_done ]; do
-        sleep 1 # Aguardar 1 segundo antes de verificar novamente
-    done
-
-    # Remover arquivo de controle
-    rm -rf /tmp/setup_gnome_extensions_done
-    green "✅ Script de extensões do GNOME concluído. Continuando a configuração..."
+    source ./setup_gnome_extensions.sh
 fi
 
 # Instalar e configurar flatpak e flathub
@@ -108,7 +96,7 @@ if [ ! -d "/usr/share/themes/WhiteSur-Dark" ]; then
     cd WhiteSur-gtk-theme
 
     # Instalando tema WhiteSur
-    ./install.sh -n WhiteSur -t all -m -N glassy -l --shell -i ubuntu -h smaller --round --silent-mode
+    sudo ./install.sh -n WhiteSur -t all -m -N glassy -l --shell -i ubuntu -h smaller --round --silent-mode
 
     # Instalando tweaks do WhiteSur
     sudo ./tweaks.sh -g -i ubuntu -F -d --silent-mode
@@ -119,7 +107,7 @@ if [ ! -d "/usr/share/themes/WhiteSur-Dark" ]; then
     rm -rf WhiteSur-gtk-theme
     green "✅ Tema WhiteSur instalado com sucesso!"
 else
-    green "✅ Tema WhiteSur já está instalado."
+    blue "✅ Tema WhiteSur já está instalado."
 fi
 
 # Instalar ícones WhiteSur
@@ -135,7 +123,7 @@ if [ ! -d "$USER_HOME/.local/share/icons/WhiteSur" ]; then
     rm -rf WhiteSur-icon-theme
     green "✅ Ícones WhiteSur instalados com sucesso!"
 else
-    green "✅ Ícones WhiteSur já estão instalados."
+    blue "✅ Ícones WhiteSur já estão instalados."
 fi
 
 # Habilitar GTK e ícones
@@ -148,13 +136,13 @@ if [ CURRENT_GTK_THEME != "'WhiteSur-Dark'" ]; then
 
     TERMINAL_DESKTOP_FILE="/usr/share/applications/org.wezfurlong.wezterm.desktop"
     TERMINAL_NEW_ICON="$USER_HOME/.local/share/icons/WhiteSur/apps/scalable/org.gnome.Terminal.svg"
-    chmod +w "$TERMINAL_DESKTOP_FILE"
+    sudo chmod +w "$TERMINAL_DESKTOP_FILE"
     sudo sed -i "s|^Icon=.*|Icon=$TERMINAL_NEW_ICON|" "$TERMINAL_DESKTOP_FILE"
-    sudo update-icon-caches /home/erikg/.local/share/icons/WhiteSur
+    sudo update-icon-caches $USER_HOME/.local/share/icons/WhiteSur
 
     green "✅ Tema e ícones WhiteSur habilitados com sucesso!"
 else
-    green "✅ Tema e ícones WhiteSur já estão habilitados."
+    blue "✅ Tema e ícones WhiteSur já estão habilitados."
 fi
 
 # Limpeza
