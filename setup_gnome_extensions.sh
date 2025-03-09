@@ -107,5 +107,6 @@ green "⚙️ Configurando extensão User Themes..."
 gsettings set org.gnome.desktop.interface gtk-theme "WhiteSur-Dark-blue"
 dconf write /org/gnome/shell/extensions/user-theme/name "'WhiteSur-Dark-blue'"
 gsettings set org.gnome.desktop.interface icon-theme "WhiteSur-dark-blue"
+gsettings set org.gnome.desktop.interface accent-color "'blue'"
 
 echo "✅ Configuração de extensões do GNOME concluída com sucesso!"

@@ -55,7 +55,9 @@ show_menu() {
 }
 
 # Exibir o menu interativo
-show_menu
+if [ ! -f "$SETUP_REBOOT_FLAG" ]; then
+    show_menu
+fi
 
 yellow "🚀 Iniciando configuração..."
 
@@ -134,6 +136,7 @@ if [ "$CURRENT_GTK_THEME" != "'WhiteSur-Dark-blue'" ] || [ -f "$SETUP_REBOOT_FLA
     gsettings set org.gnome.desktop.interface gtk-theme "'WhiteSur-Dark-blue'"
     dconf write /org/gnome/shell/extensions/user-theme/name "'WhiteSur-Dark-blue'"
     gsettings set org.gnome.desktop.interface icon-theme "'WhiteSur-dark'"
+    gsettings set org.gnome.desktop.interface accent-color "'blue'"
 
     TERMINAL_DESKTOP_FILE="/usr/share/applications/org.wezfurlong.wezterm.desktop"
     TERMINAL_NEW_ICON="$USER_HOME/.local/share/icons/WhiteSur/apps/scalable/org.gnome.Terminal.svg"

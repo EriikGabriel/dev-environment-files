@@ -88,41 +88,24 @@ export EXEC_STYLE_SETUP_OPT="y" # Ativar setup de estilização
 # Flags controle de fluxo de execução
 export SETUP_REBOOT_FLAG="/tmp/setup_reboot.flag"
 
-# Função para configurar o serviço temporário
-setup_temp_service() {
-    local SERVICE_TEMPLATE="./services/setup.service"
-    local SERVICE_PATH="/etc/systemd/system/setup-temp.service"
+# Função para configurar o crontab
+setup_crontab() {
     local SCRIPT_PATH=$(realpath "$0")
-    local USER_NAME=$(logname)
 
-    # Verificar se o template do serviço existe
-    if [ ! -f "$SERVICE_TEMPLATE" ]; then
-        red "❌ Template do serviço não encontrado: $SERVICE_TEMPLATE"
-        exit 1
-    fi
+    # Adicionar a linha ao crontab
+    (crontab -l 2>/dev/null; echo "@reboot export DISPLAY=:0 && wezterm start -- $SCRIPT_PATH") | crontab -
 
-    # Substituir placeholders no template
-    sed -e "s|SCRIPT_PATH|$SCRIPT_PATH|" \
-        -e "s|USER_NAME|$USER_NAME|" \
-        "$SERVICE_TEMPLATE" > "$SERVICE_PATH"
-
-    # Recarregar o systemd e ativar o serviço
-    systemctl daemon-reload
-    systemctl enable setup-temp.service
-
-    green "✅ Serviço temporário configurado para execução após reinicialização."
+    green "✅ Crontab configurado para executar o script após o reboot."
 }
 
-# Função para remover o serviço temporário
-remove_temp_service() {
-    local SERVICE_PATH="/etc/systemd/system/setup-temp.service"
+# Função para remover o crontab
+remove_crontab() {
+    local SCRIPT_PATH=$(realpath "$0")
 
-    if [ -f "$SERVICE_PATH" ]; then
-        systemctl disable setup-temp.service
-        rm -f "$SERVICE_PATH"
-        systemctl daemon-reload
-        green "✅ Serviço temporário removido."
-    fi
+    # Remover a linha do crontab
+    crontab -l | grep -v "@reboot export DISPLAY=:0 && wezterm start -- $SCRIPT_PATH" | crontab -
+
+    green "✅ Crontab removido."
 }
 
 # Função para exibir o menu interativo
@@ -185,7 +168,9 @@ show_menu() {
 }
 
 # Exibir o menu interativo
-show_menu
+if [ ! -f "$SETUP_REBOOT_FLAG" ]; then
+    show_menu
+fi
 
 if [ "$EXEC_TOOLS_SETUP_OPT" == "y" ]; then
     # Executar script de setup de ferramentas
@@ -231,24 +216,26 @@ if [ "$EXEC_STYLE_SETUP_OPT" == "y" ]; then
     echo "  🎨 Tema GTK: $(gsettings get org.gnome.desktop.interface gtk-theme)"
 fi
 
+echo ""
+
 # Verificar se o script já foi executado após a reinicialização
 if [ -f "$SETUP_REBOOT_FLAG" ]; then
-    # Remover o serviço temporário
-    remove_temp_service
+    # Remover o crontab após a execução
+    remove_crontab
     rm -f "$SETUP_REBOOT_FLAG"
 
-    green "✅ Setup concluído com sucesso!"
+    green "\n✅ Setup finalizado e concluído com sucesso!"
     exit 0
 else
-    # Configurar o serviço temporário
-    setup_temp_service
+    # Configurar o crontab
+    setup_crontab
 
     # Criar flag para verificar reinicialização
     touch "$SETUP_REBOOT_FLAG"
 
     # Reiniciar o sistema com contagem regressiva
     yellow "🔧 Reiniciando o sistema para aplicar as alterações..."
-    yellow "🔧 O script será inciado automaticamente após a reinicialização e executará pela segunda vez algumas etapas essenciais!"
+    yellow "🔧 O script será iniciado automaticamente após a reinicialização em um terminal gráfico!"
     yellow "🕒 O sistema será reiniciado em:"
 
     for i in {10..1}; do
@@ -260,7 +247,3 @@ else
     sleep 1
     reboot
 fi
-
-
-
-

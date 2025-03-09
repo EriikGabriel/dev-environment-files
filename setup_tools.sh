@@ -58,7 +58,9 @@ show_menu() {
 }
 
 # Exibir o menu interativo
-show_menu
+if [ ! -f "$SETUP_REBOOT_FLAG" ]; then
+    show_menu
+fi
 
 yellow "🚀 Iniciando configuração..."
 
