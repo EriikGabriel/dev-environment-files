@@ -95,8 +95,8 @@ dconf write /org/gnome/shell/extensions/search-light/border-radius 7.0
 dconf write /org/gnome/shell/extensions/search-light/background-color "(0.0, 0.0, 0.0, 0.6)"
 
 green "⚙️ Configurando extensão User Themes..."
-gsettings set org.gnome.desktop.interface gtk-theme "WhiteSur-Dark"
-dconf write /org/gnome/shell/extensions/user-theme/name "'WhiteSur-Dark'"
-gsettings set org.gnome.desktop.interface icon-theme "WhiteSur-dark"
+gsettings set org.gnome.desktop.interface gtk-theme "WhiteSur-Dark-blue"
+dconf write /org/gnome/shell/extensions/user-theme/name "'WhiteSur-Dark-blue'"
+gsettings set org.gnome.desktop.interface icon-theme "WhiteSur-dark-blue"
 
 echo "✅ Configuração de extensões do GNOME concluída com sucesso!"

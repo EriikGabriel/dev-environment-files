@@ -127,12 +127,12 @@ else
 fi
 
 # Habilitar GTK e ícones
-progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🎨 Habilitando tema e ícones..."
 CURRENT_GTK_THEME=$(gsettings get org.gnome.desktop.interface gtk-theme)
-if [ CURRENT_GTK_THEME != "'WhiteSur-Dark'" ]; then
-    sudo -u $USER_NAME gsettings set org.gnome.desktop.interface gtk-theme "WhiteSur-Dark"
-    sudo -u $USER_NAME dconf write /org/gnome/shell/extensions/user-theme/name "'WhiteSur-Dark'"
-    sudo -u $USER_NAME gsettings set org.gnome.desktop.interface icon-theme "WhiteSur-dark"
+if [ $CURRENT_GTK_THEME != "'WhiteSur-Dark-blue'" ]; then
+    progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🎨 Habilitando tema e ícones..."
+    gsettings set org.gnome.desktop.interface gtk-theme "WhiteSur-Dark-blue"
+    dconf write /org/gnome/shell/extensions/user-theme/name "'WhiteSur-Dark-blue'"
+    gsettings set org.gnome.desktop.interface icon-theme "WhiteSur-dark-blue"
 
     TERMINAL_DESKTOP_FILE="/usr/share/applications/org.wezfurlong.wezterm.desktop"
     TERMINAL_NEW_ICON="$USER_HOME/.local/share/icons/WhiteSur/apps/scalable/org.gnome.Terminal.svg"
@@ -143,6 +143,32 @@ if [ CURRENT_GTK_THEME != "'WhiteSur-Dark'" ]; then
     green "✅ Tema e ícones WhiteSur habilitados com sucesso!"
 else
     blue "✅ Tema e ícones WhiteSur já estão habilitados."
+fi
+
+WALLPAPER_URL="https://www.iclarified.com/images/news/91914/440181/440181.jpg"
+WALLPAPER_PATH="/usr/share/backgrounds/mac-wallpaper.jpg"
+CURRENT_WALLPAPER=$(gsettings get org.gnome.desktop.background picture-uri-dark)
+if [ "$CUSTOM_WALLPAPER_OPT" == "y" ]; then
+    if [ "$CURRENT_WALLPAPER" != "'file://$WALLPAPER_PATH'" ]; then
+        # Instalar wallpaper customizado
+        progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🖼️ Instalando wallpaper customizado..."
+        # Baixar o wallpaper
+        echo "⬇️ Baixando wallpaper..."
+        sudo wget -O "$WALLPAPER_PATH" "$WALLPAPER_URL"
+        sudo chmod 644 "$WALLPAPER_PATH"
+
+        # Verificar se o arquivo foi baixado corretamente
+        if [ ! -f "$WALLPAPER_PATH" ]; then
+            red "❌ Erro: O wallpaper não foi baixado corretamente."
+            exit 1
+        fi
+
+        echo "🎨 Alterando wallpaper..."
+        gsettings set org.gnome.desktop.background picture-uri-dark "'file://$WALLPAPER_PATH'"
+        green "✅ Wallpaper customizado instalado com sucesso!"
+    else
+        blue "✅ Wallpaper customizado já está instalado."
+    fi
 fi
 
 # Limpeza
