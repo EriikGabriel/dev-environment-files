@@ -164,6 +164,7 @@ if [ "$CUSTOM_WALLPAPER_OPT" == "y" ]; then
         fi
 
         echo "🎨 Alterando wallpaper..."
+        gsettings set org.gnome.desktop.background picture-uri "'file://$WALLPAPER_PATH'"
         gsettings set org.gnome.desktop.background picture-uri-dark "'file://$WALLPAPER_PATH'"
         green "✅ Wallpaper customizado instalado com sucesso!"
     else
