@@ -60,7 +60,13 @@ install_extension() {
         green "✅ $extension_name instalada com sucesso!"
     else
         red "❌ Falha ao instalar $extension_name. Erro: $result"
+        return 1
     fi
+
+    # Esperar até que a extensão esteja instalada e habilitada
+    while ! gnome-extensions list | grep -q "$extension_id"; do
+        sleep 1
+    done
 }
 
 # Lista de extensões para instalar
@@ -76,7 +82,10 @@ declare -A extensions=(
 
 # Instalar cada extensão da lista
 for extension_id in "${!extensions[@]}"; do
-    install_extension "$extension_id" "${extensions[$extension_id]}"
+    install_extension "$extension_id" "${extensions[$extension_id]}" || {
+        red "❌ Erro crítico: O script será interrompido."
+        exit 1
+    }
 done
 
 echo ""

@@ -85,6 +85,46 @@ export CLEAR_OPT="y"  # Ativar clear do histórico de progresso
 export EXEC_TOOLS_SETUP_OPT="y" # Ativar setup de ferramentas
 export EXEC_STYLE_SETUP_OPT="y" # Ativar setup de estilização
 
+# Flags controle de fluxo de execução
+export SETUP_REBOOT_FLAG="/tmp/setup_reboot.flag"
+
+# Função para configurar o serviço temporário
+setup_temp_service() {
+    local SERVICE_TEMPLATE="./services/setup.service"
+    local SERVICE_PATH="/etc/systemd/system/setup-temp.service"
+    local SCRIPT_PATH=$(realpath "$0")
+    local USER_NAME=$(logname)
+
+    # Verificar se o template do serviço existe
+    if [ ! -f "$SERVICE_TEMPLATE" ]; then
+        red "❌ Template do serviço não encontrado: $SERVICE_TEMPLATE"
+        exit 1
+    fi
+
+    # Substituir placeholders no template
+    sed -e "s|SCRIPT_PATH|$SCRIPT_PATH|" \
+        -e "s|USER_NAME|$USER_NAME|" \
+        "$SERVICE_TEMPLATE" > "$SERVICE_PATH"
+
+    # Recarregar o systemd e ativar o serviço
+    systemctl daemon-reload
+    systemctl enable setup-temp.service
+
+    green "✅ Serviço temporário configurado para execução após reinicialização."
+}
+
+# Função para remover o serviço temporário
+remove_temp_service() {
+    local SERVICE_PATH="/etc/systemd/system/setup-temp.service"
+
+    if [ -f "$SERVICE_PATH" ]; then
+        systemctl disable setup-temp.service
+        rm -f "$SERVICE_PATH"
+        systemctl daemon-reload
+        green "✅ Serviço temporário removido."
+    fi
+}
+
 # Função para exibir o menu interativo
 show_menu() {
     while true; do
@@ -191,4 +231,36 @@ if [ "$EXEC_STYLE_SETUP_OPT" == "y" ]; then
     echo "  🎨 Tema GTK: $(gsettings get org.gnome.desktop.interface gtk-theme)"
 fi
 
-yellow "\n🔄 Reinicie o sistema para aplicar todas as alterações."
+# Verificar se o script já foi executado após a reinicialização
+if [ -f "$SETUP_REBOOT_FLAG" ]; then
+    # Remover o serviço temporário
+    remove_temp_service
+    rm -f "$SETUP_REBOOT_FLAG"
+
+    green "✅ Setup concluído com sucesso!"
+    exit 0
+else
+    # Configurar o serviço temporário
+    setup_temp_service
+
+    # Criar flag para verificar reinicialização
+    touch "$SETUP_REBOOT_FLAG"
+
+    # Reiniciar o sistema com contagem regressiva
+    yellow "🔧 Reiniciando o sistema para aplicar as alterações..."
+    yellow "🔧 O script será inciado automaticamente após a reinicialização e executará pela segunda vez algumas etapas essenciais!"
+    yellow "🕒 O sistema será reiniciado em:"
+
+    for i in {10..1}; do
+        echo -ne "⏳ $i segundos...\r"
+        sleep 1
+    done
+
+    echo -ne "🚀 Reiniciando o sistema agora!            \r"
+    sleep 1
+    reboot
+fi
+
+
+
+

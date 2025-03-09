@@ -74,12 +74,13 @@ done
 # Variáveis de configuração do GNOME
 GNOME_DOCK_AUTOHIDE=$(sudo -u $USER_NAME gsettings get org.gnome.shell.extensions.dash-to-dock autohide)
 
-if [[ "$GNOME_DOCK_AUTOHIDE" == true ]]; then
-    blue "✅ Extensões do GNOME já foram instaladas."
-else
+if [[ "$GNOME_DOCK_AUTOHIDE" == false ]] || [ -f "$SETUP_REBOOT_FLAG" ]; then
     # Instalar e configurar extensões do GNOME
     progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🧩 Instalando extensões do GNOME..."
     source ./setup_gnome_extensions.sh
+
+else
+    blue "✅ Extensões do GNOME já foram instaladas."
 fi
 
 # Instalar e configurar flatpak e flathub
@@ -128,9 +129,9 @@ fi
 
 # Habilitar GTK e ícones
 CURRENT_GTK_THEME=$(gsettings get org.gnome.desktop.interface gtk-theme)
-if [ $CURRENT_GTK_THEME != "'WhiteSur-Dark-blue'" ]; then
+if [ "$CURRENT_GTK_THEME" != "'WhiteSur-Dark-blue'" ] || [ -f "$SETUP_REBOOT_FLAG" ]; then
     progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🎨 Habilitando tema e ícones..."
-    gsettings set org.gnome.desktop.interface gtk-theme "WhiteSur-Dark-blue"
+    gsettings set org.gnome.desktop.interface gtk-theme "'WhiteSur-Dark-blue'"
     dconf write /org/gnome/shell/extensions/user-theme/name "'WhiteSur-Dark-blue'"
     gsettings set org.gnome.desktop.interface icon-theme "'WhiteSur-dark'"
 

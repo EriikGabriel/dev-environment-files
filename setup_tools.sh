@@ -76,7 +76,7 @@ done
 
 # Criar arquivo de config do Zsh
 progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🔧 Configurando Zsh..."
-if [ ! -f "$USER_HOME/.zshrc" ]; then
+if [ ! -f "$USER_HOME/.zshrc" ] || [ -f "$SETUP_REBOOT_FLAG" ]; then
     cp ./zsh/.zshrc $USER_HOME/.zshrc
     chown $SUDO_USER:$SUDO_USER $USER_HOME/.zshrc
     green "✅ Configuração do Zsh criada!"
@@ -291,7 +291,7 @@ fi
 
 # Instalar zinit
 progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🚀 Instalando Zinit..."
-if [ ! -d "/root/.local/share/zinit/zinit.git" ]; then
+if [ ! -d "$USER_HOME/.local/share/zinit/zinit.git" ]; then
    RUNZSH=no sh -c "$(curl --fail --show-error --silent --location https://raw.githubusercontent.com/zdharma-continuum/zinit/HEAD/scripts/install.sh)"
     green "✅ Zinit instalado com sucesso!"
 else
@@ -365,7 +365,7 @@ fi
 
 # Configurar Git
 progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🔧 Configurando Git..."
-if ! git config user.name &> /dev/null || ! git config user.email &> /dev/null; then
+if [ ! git config user.name &> /dev/null || ! git config user.email &> /dev/null ]; then
     read -p "Digite seu nome: " GIT_USER
     read -p "Digite seu e-mail: " GIT_EMAIL
 
