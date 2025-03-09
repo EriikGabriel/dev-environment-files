@@ -178,7 +178,7 @@ if [ "$EXEC_TOOLS_SETUP_OPT" == "y" ]; then
     echo "  ☕ Java: $(java -version 2>&1 | head -n 1)"
     echo "  🐘 PostgreSQL: $(psql --version)"
     echo "  🧱 Redis: $(redis-server --version | awk '{print $3}')"
-    sudo -u $SUDO_USER code --version | head -n 1 | awk '{print "  🖥️  VS Code: "$0}'
+    code --version | head -n 1 | awk '{print "  🖥️  VS Code: "$0}'
     echo "  🌎 Google Chrome: $(google-chrome --version)"
     echo "  🔲 WezTerm: $(wezterm --version)"
     echo "  🔤 JetBrains/Inter Font: Instalado"
