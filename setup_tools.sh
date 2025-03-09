@@ -58,7 +58,7 @@ show_menu() {
 }
 
 # Exibir o menu interativo
-if [ ! -f "$SETUP_REBOOT_FLAG" ]; then
+if [ ! -f "$AUTOSTART_FILE" ]; then
     show_menu
 fi
 
@@ -78,7 +78,7 @@ done
 
 # Criar arquivo de config do Zsh
 progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🔧 Configurando Zsh..."
-if [ ! -f "$USER_HOME/.zshrc" ] || [ -f "$SETUP_REBOOT_FLAG" ]; then
+if [ ! -f "$USER_HOME/.zshrc" ] || [ -f "$AUTOSTART_FILE" ]; then
     cp ./zsh/.zshrc $USER_HOME/.zshrc
     chown $SUDO_USER:$SUDO_USER $USER_HOME/.zshrc
     green "✅ Configuração do Zsh criada!"

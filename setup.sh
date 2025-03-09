@@ -70,10 +70,12 @@ progress_bar() {
 
 export -f wait_for_apt_lock install_package progress_bar
 
-# Endereço do diretório home do usuário original
+# Caminho do diretório home do usuário original
 export USER_HOME=$(eval echo ~$SUDO_USER)
 # Nome do usuário original
 export USER_NAME=$(basename $USER_HOME)
+# Caminho do script de setup
+export SCRIPT_DIR=$(dirname "$(realpath "$0")")
 
 # Total de passos (ajustado para o número total de etapas)
 export TOTAL_STEPS=29
@@ -86,26 +88,41 @@ export EXEC_TOOLS_SETUP_OPT="y" # Ativar setup de ferramentas
 export EXEC_STYLE_SETUP_OPT="y" # Ativar setup de estilização
 
 # Flags controle de fluxo de execução
-export SETUP_REBOOT_FLAG="/tmp/setup_reboot.flag"
+export DESKTOP_SCRIPT_NAME="setup_script.desktop"
+export AUTOSTART_FILE="$USER_HOME/.config/autostart/$DESKTOP_SCRIPT_NAME"
 
-# Função para configurar o crontab
-setup_crontab() {
+# Função para configurar o autostart
+setup_autostart() {
     local SCRIPT_PATH=$(realpath "$0")
+    local AUTOSTART_DIR="$USER_HOME/.config/autostart"
+    local LOCAL_AUTOSTART_FILE="./autostart/$DESKTOP_SCRIPT_NAME"
 
-    # Adicionar a linha ao crontab
-    (crontab -l 2>/dev/null; echo "@reboot export DISPLAY=:0 && wezterm start -- $SCRIPT_PATH") | crontab -
+    # Verificar se o arquivo local existe
+    if [[ ! -f "$LOCAL_AUTOSTART_FILE" ]]; then
+        red "❌ Arquivo $LOCAL_AUTOSTART_FILE não encontrado!"
+        return 1
+    fi
 
-    green "✅ Crontab configurado para executar o script após o reboot."
+    # Criar diretório autostart se não existir
+    mkdir -p "$AUTOSTART_DIR"
+
+    # Copiar o arquivo .desktop para o diretório de autostart
+    cp "$LOCAL_AUTOSTART_FILE" "$AUTOSTART_DIR/"
+
+    # Atualizar o caminho do script no arquivo .desktop
+    sed -i "s|{SCRIPT_PATH}|$SCRIPT_PATH|g" "$AUTOSTART_DIR/$DESKTOP_SCRIPT_NAME"
+
+    green "✅ Arquivo .desktop configurado para executar o script após o reboot."
 }
 
-# Função para remover o crontab
-remove_crontab() {
-    local SCRIPT_PATH=$(realpath "$0")
-
-    # Remover a linha do crontab
-    crontab -l | grep -v "@reboot export DISPLAY=:0 && wezterm start -- $SCRIPT_PATH" | crontab -
-
-    green "✅ Crontab removido."
+# Função para remover o autostart
+remove_autostart() {
+    if [ -f "$AUTOSTART_FILE" ]; then
+        rm -f "$AUTOSTART_FILE"
+        green "✅ Autostart removido."
+    else
+        green "✅ Nenhum arquivo de autostart encontrado."
+    fi
 }
 
 # Função para exibir o menu interativo
@@ -167,21 +184,23 @@ show_menu() {
     done
 }
 
+
+
 # Exibir o menu interativo
-if [ ! -f "$SETUP_REBOOT_FLAG" ]; then
+if [ ! -f "$AUTOSTART_FILE" ]; then
     show_menu
 fi
 
 if [ "$EXEC_TOOLS_SETUP_OPT" == "y" ]; then
     # Executar script de setup de ferramentas
     yellow "🔧 Executando setup de ferramentas..."
-    source setup_tools.sh
+    source $SCRIPT_DIR/setup_tools.sh
 fi
 
 if [ "$EXEC_STYLE_SETUP_OPT" == "y" ]; then
     # Executar script de setup de estilização
     yellow "🎨 Executando setup de estilização..."
-    source setup_style.sh
+    source $SCRIPT_DIR/setup_style.sh
 fi
 
 # Exibir versões dos programas instalados
@@ -219,19 +238,15 @@ fi
 echo ""
 
 # Verificar se o script já foi executado após a reinicialização
-if [ -f "$SETUP_REBOOT_FLAG" ]; then
-    # Remover o crontab após a execução
-    remove_crontab
-    rm -f "$SETUP_REBOOT_FLAG"
+if [ -f "$AUTOSTART_FILE" ]; then
+    # Remover o autostart após a execução
+    remove_autostart
+    rm -f "$AUTOSTART_FILE"
 
     green "\n✅ Setup finalizado e concluído com sucesso!"
-    exit 0
 else
-    # Configurar o crontab
-    setup_crontab
-
-    # Criar flag para verificar reinicialização
-    touch "$SETUP_REBOOT_FLAG"
+    # Configurar o autostart
+    setup_autostart
 
     # Reiniciar o sistema com contagem regressiva
     yellow "🔧 Reiniciando o sistema para aplicar as alterações..."

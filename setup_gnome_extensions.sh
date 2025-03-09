@@ -54,6 +54,7 @@ install_extension() {
                         --object-path /org/gnome/Shell/Extensions \
                         --method org.gnome.Shell.Extensions.InstallRemoteExtension \
                         "$extension_id" 2>&1)
+    sleep 5 
 
     # Verificar se a instalação foi bem-sucedida
     if [[ $result == *"successful"* ]]; then

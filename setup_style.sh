@@ -55,7 +55,7 @@ show_menu() {
 }
 
 # Exibir o menu interativo
-if [ ! -f "$SETUP_REBOOT_FLAG" ]; then
+if [ ! -f "$AUTOSTART_FILE" ]; then
     show_menu
 fi
 
@@ -76,10 +76,10 @@ done
 # Variáveis de configuração do GNOME
 GNOME_DOCK_AUTOHIDE=$(sudo -u $USER_NAME gsettings get org.gnome.shell.extensions.dash-to-dock autohide)
 
-if [[ "$GNOME_DOCK_AUTOHIDE" == false ]] || [ -f "$SETUP_REBOOT_FLAG" ]; then
+if [[ "$GNOME_DOCK_AUTOHIDE" == false ]] || [ -f "$AUTOSTART_FILE" ]; then
     # Instalar e configurar extensões do GNOME
     progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🧩 Instalando extensões do GNOME..."
-    source ./setup_gnome_extensions.sh
+    source $SCRIPT_DIR/setup_gnome_extensions.sh
 
 else
     blue "✅ Extensões do GNOME já foram instaladas."
@@ -131,7 +131,7 @@ fi
 
 # Habilitar GTK e ícones
 CURRENT_GTK_THEME=$(gsettings get org.gnome.desktop.interface gtk-theme)
-if [ "$CURRENT_GTK_THEME" != "'WhiteSur-Dark-blue'" ] || [ -f "$SETUP_REBOOT_FLAG" ]; then
+if [ "$CURRENT_GTK_THEME" != "'WhiteSur-Dark-blue'" ] || [ -f "$AUTOSTART_FILE" ]; then
     progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🎨 Habilitando tema e ícones..."
     gsettings set org.gnome.desktop.interface gtk-theme "'WhiteSur-Dark-blue'"
     dconf write /org/gnome/shell/extensions/user-theme/name "'WhiteSur-Dark-blue'"

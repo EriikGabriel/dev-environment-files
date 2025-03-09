@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Exec=wezterm start -- {SCRIPT_PATH}
+Hidden=false
+NoDisplay=false
+X-GNOME-Autostart-enabled=true
+Name=Setup Script
+Comment=Executar script de setup após o login
