@@ -371,8 +371,8 @@ if [ ! git config user.name &> /dev/null || ! git config user.email &> /dev/null
     read -p "Digite seu nome: " GIT_USER
     read -p "Digite seu e-mail: " GIT_EMAIL
 
-    sudo -u "$SUDO_USER" git config --global user.name "$GIT_USER"
-    sudo -u "$SUDO_USER" git config --global user.email "$GIT_EMAIL"
+    sudo -u "$USER_NAME" git config --global user.name "$GIT_USER"
+    sudo -u "$USER_NAME" git config --global user.email "$GIT_EMAIL"
 
     green "✅ Git configurado com sucesso!"
 else
