@@ -37,6 +37,39 @@ gsettings set org.gnome.mutter center-new-windows true
 
 echo ""
 
+# Função para fixar aplicativos na dock
+set_dock_apps() {
+    # Recebe a lista de programas como argumentos
+    local APPS_LIST=("$@")
+    local QUOTED_APPS=()
+
+    # Envolve cada elemento do array em aspas simples
+    for APP in "${APPS_LIST[@]}"; do
+        local APP_PATH="/usr/share/applications/$APP"
+
+        # Verifica se o arquivo .desktop existe
+        if [ -f "$APP_PATH" ]; then
+            QUOTED_APPS+=("'$APP'")  # Usa apenas o nome do arquivo .desktop
+        else
+            red "❌ Arquivo .desktop não encontrado: $APP_PATH"
+            return 1
+        fi
+    done
+
+    # Converte o array de volta para uma lista, separando os elementos por vírgulas
+    NEW_APPS=$(IFS=','; echo "[${QUOTED_APPS[*]}]")
+
+    # Define a nova lista de aplicativos fixados
+    gsettings set org.gnome.shell favorite-apps "$NEW_APPS"
+    green "✅ A dock foi atualizada com os programas na ordem especificada."
+}
+
+# Exemplo de uso
+green "⚙️ Ajustando programas fixos na dock..."
+set_dock_apps "org.gnome.Nautilus.desktop" "org.wezfurlong.wezterm.desktop" "google-chrome.desktop" "code.desktop" "discord.desktop"
+
+# gsettings set org.gnome.shell favorite-apps  "['org.gnome.Nautilus.desktop', 'snap-store_snap-store.desktop', 'yelp.desktop', 'org.wezfurlong.wezterm.desktop', 'google-chrome.desktop', 'code.desktop']"
+
 # Função para instalar uma extensão
 install_extension() {
     local extension_id="$1"
@@ -105,9 +138,9 @@ dconf write /org/gnome/shell/extensions/search-light/border-radius 7.0
 dconf write /org/gnome/shell/extensions/search-light/background-color "(0.0, 0.0, 0.0, 0.6)"
 
 green "⚙️ Configurando extensão User Themes..."
-gsettings set org.gnome.desktop.interface gtk-theme "WhiteSur-Dark-blue"
+ gsettings set org.gnome.desktop.interface gtk-theme "'WhiteSur-Dark-blue'"
 dconf write /org/gnome/shell/extensions/user-theme/name "'WhiteSur-Dark-blue'"
-gsettings set org.gnome.desktop.interface icon-theme "WhiteSur-dark-blue"
+gsettings set org.gnome.desktop.interface icon-theme "'WhiteSur-dark'"
 gsettings set org.gnome.desktop.interface accent-color "'blue'"
 
 echo "✅ Configuração de extensões do GNOME concluída com sucesso!"
