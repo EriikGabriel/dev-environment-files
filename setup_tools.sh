@@ -103,6 +103,11 @@ if ! dpkg -l | grep -q "docker-ce"; then
     sudo systemctl enable docker
     sudo systemctl start docker
     sudo usermod -aG docker $SUDO_USER
+
+    # Corrige armazenamento de chave GPG do docker em chaveiro legado
+    sudo apt-key list | grep -B 1 "docker" | grep "pub" | awk '{print $2}' | sudo apt-key del
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo tee /etc/apt/trusted.gpg.d/docker.asc > /dev/null
+    sudo apt update
 else
     blue "✅ Docker já está instalado!"
 fi
@@ -317,8 +322,8 @@ for package in fastfetch eza zoxide fd-find bat git-delta thefuck; do
     install_package "$package"
 done
 if ! command -v fzf &> /dev/null; then
-    curl -fsSL https://github.com/junegunn/fzf/releases/download/v0.60.3/fzf-0.60.3-linux_amd64.tar.gz | tar -xz -C /usr/local/bin/
-    sudo ln -s /usr/local/bin/fzf /usr/local/bin/fzf-tmux
+    sudo curl -fsSL https://github.com/junegunn/fzf/releases/download/v0.60.3/fzf-0.60.3-linux_amd64.tar.gz | sudo tar -xz -C /usr/local/bin/
+    sudo ln -sf /usr/local/bin/fzf /usr/local/bin/fzf-tmux
     green "✅ fzf instalado com sucesso!"
 else
     blue "✅ fzf já está instalado!"
@@ -327,10 +332,10 @@ fi
 # Links simbólicos para ferramentas CLI
 progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🔗 Criando links simbólicos..."
 mkdir -p $USER_HOME/.local/bin
-ln -sf /usr/bin/batcat $USER_HOME/.local/bin/bat
-ln -sf /usr/bin/delta $USER_HOME/.local/bin/git-delta
-ln -sf /usr/bin/fdfind $USER_HOME/.local/bin/fd
-ln -sf /usr/bin/fzf $USER_HOME/.local/bin/fzf
+for cmd in /usr/bin/batcat /usr/bin/delta /usr/bin/fdfind /usr/bin/fzf; do
+    target="$USER_HOME/.local/bin/$(basename $cmd)"
+    [ ! -e $target ] && ln -sf $cmd $target
+done
 green "✅ Links simbólicos criados!"
 
 # Configurar fastfetch
@@ -367,7 +372,7 @@ fi
 
 # Configurar Git
 progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🔧 Configurando Git..."
-if [ ! git config user.name &> /dev/null || ! git config user.email &> /dev/null ]; then
+if ! git config user.name &> /dev/null || ! git config user.email &> /dev/null; then
     read -p "Digite seu nome: " GIT_USER
     read -p "Digite seu e-mail: " GIT_EMAIL
 

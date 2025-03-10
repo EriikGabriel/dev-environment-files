@@ -114,6 +114,9 @@ declare -A extensions=(
     ["window-title-is-back@fthx"]="Window Title is Back"
     ["compiz-windows-effect@hermes83.github.com"]="Compiz Windows Effect"
     ["compiz-alike-magic-lamp-effect@hermes83.github.com"]="Compiz Alike Magic Lamp Effect"
+    ["custom-hot-corners-extended@G-dH.github.com"]="Custom Hot Corners - Extended"
+    ["emoji-copy@felipeftn"]="Emoji Copy"
+    ["color-picker@tuberry"]="Color Picker"
 )
 
 # Instalar cada extensão da lista
@@ -139,8 +142,19 @@ dconf write /org/gnome/shell/extensions/search-light/border-thickness 1
 dconf write /org/gnome/shell/extensions/search-light/border-radius 7.0
 dconf write /org/gnome/shell/extensions/search-light/background-color "(0.0, 0.0, 0.0, 0.6)"
 
+green "⚙️ Configurando extensão Custom Hot Corners - Extended..."
+dconf write /org/gnome/shell/extensions/custom-hot-corners-extended/monitor-0-top-right-0/action "'show-desktop-mon'"
+dconf write /org/gnome/shell/extensions/custom-hot-corners-extended/misc/panel-menu-enable false
+
+green "⚙️ Configurando extensão Emoji Copy..."
+dconf write /org/gnome/shell/extensions/emoji-copy/always-show false
+dconf write /org/gnome/shell/extensions/emoji-copy/paste-on-select false
+
+green "⚙️ Configurando extensão Color Picker..."
+dconf write /org/gnome/shell/extensions/color-picker/systray-dropper-icon "'tool_color_picker'"
+
 green "⚙️ Configurando extensão User Themes..."
- gsettings set org.gnome.desktop.interface gtk-theme "'WhiteSur-Dark-blue'"
+gsettings set org.gnome.desktop.interface gtk-theme "'WhiteSur-Dark-blue'"
 dconf write /org/gnome/shell/extensions/user-theme/name "'WhiteSur-Dark-blue'"
 gsettings set org.gnome.desktop.interface icon-theme "'WhiteSur-dark'"
 gsettings set org.gnome.desktop.interface accent-color "'blue'"
