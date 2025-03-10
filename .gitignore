@@ -1,4 +1,5 @@
 .vscode
+.env
 dash-to-dock
 /tmp
 .setup_reboot.flag

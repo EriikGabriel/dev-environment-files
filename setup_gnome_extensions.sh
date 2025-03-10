@@ -142,6 +142,10 @@ dconf write /org/gnome/shell/extensions/search-light/border-thickness 1
 dconf write /org/gnome/shell/extensions/search-light/border-radius 7.0
 dconf write /org/gnome/shell/extensions/search-light/background-color "(0.0, 0.0, 0.0, 0.6)"
 
+green "⚙️ Configurando extensão Windows Title is Back..."
+dconf write /org/gnome/shell/extensions/window-title-is-back/show-title false
+dconf write /org/gnome/shell/extensions/window-title-is-back/fixed-width false
+
 green "⚙️ Configurando extensão Custom Hot Corners - Extended..."
 dconf write /org/gnome/shell/extensions/custom-hot-corners-extended/monitor-0-top-right-0/action "'show-desktop-mon'"
 dconf write /org/gnome/shell/extensions/custom-hot-corners-extended/misc/panel-menu-enable false

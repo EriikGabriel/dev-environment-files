@@ -177,6 +177,47 @@ else
     blue "✅ VS Code já está instalado!"
 fi
 
+# Instalar a CLI do GitHub (gh)
+progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🔐 Instalando a CLI do GitHub..."
+if ! command -v gh &> /dev/null; then
+    curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+    install_package gh
+    blue "✅ CLI do GitHub instalada com sucesso!"
+else
+    blue "✅ CLI do GitHub já está instalada!"
+fi
+
+# Autenticar com o GitHub
+progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🔑 Autenticando com o GitHub..."
+if ! gh auth status &> /dev/null; then
+    blue "🔑 Por favor, siga as instruções no navegador para autenticar com o GitHub..."
+    gh auth login
+else
+    blue "✅ Autenticação com o GitHub já está configurada!"
+fi
+
+# Recuperar o token de acesso do GitHub
+progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🔑 Recuperando token de acesso do GitHub..."
+SYNC_TOKEN=$(gh auth token)
+if [ -z "$SYNC_TOKEN" ]; then
+    red "❌ Erro: Não foi possível recuperar o token do GitHub."
+    exit 1
+else
+    blue "✅ Token do GitHub recuperado com sucesso!"
+fi
+
+# Configurar o Settings Sync no VS Code
+progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "⚙️ Configurando Settings Sync no VS Code..."
+if command -v code &> /dev/null; then
+    code --sync on --github-token $SYNC_TOKEN
+    blue "✅ Settings Sync configurado com sucesso!"
+else
+    red "❌ Erro: VS Code não está instalado. Não foi possível configurar o Settings Sync."
+fi
+
+
+
 # Garantindo acesso total para extensões de estilização do VS Code
 sudo chown -R $SUDO_USER '/usr/share/code/resources/'
 sudo chown -R $SUDO_USER '/usr/share/code/resources/app/out'

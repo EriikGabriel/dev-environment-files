@@ -9,7 +9,7 @@ yellow() { echo -e "\033[33m$1\033[0m"; }
 red() { echo -e "\033[31m$1\033[0m"; }
 
 if [[ $EXEC_TOOLS_SETUP_OPT == "y" && $EXEC_STYLE_SETUP_OPT == "y" ]]; then
-    TOTAL_STEPS=$((TOTAL_STEPS + 5))
+    TOTAL_STEPS=$((TOTAL_STEPS + 10))
 else
     TOTAL_STEPS=5
     CURRENT_STEP=0
