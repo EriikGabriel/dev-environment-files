@@ -152,8 +152,8 @@ fi
 WALLPAPER_URL="https://www.iclarified.com/images/news/91914/440181/440181.jpg"
 WALLPAPER_PATH="/usr/share/backgrounds/mac-wallpaper.jpg"
 CURRENT_WALLPAPER=$(gsettings get org.gnome.desktop.background picture-uri-dark)
-if [ "$CUSTOM_WALLPAPER_OPT" == "y" ]; then
-    if [ "$CURRENT_WALLPAPER" != "'file://$WALLPAPER_PATH'" ]; then
+if [ "$CUSTOM_WALLPAPER_OPT" == "y" ] ; then
+    if [ "$CURRENT_WALLPAPER" != "'file://$WALLPAPER_PATH'" ] || [ -f "$AUTOSTART_FILE" ]; then
         # Instalar wallpaper customizado
         progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🖼️ Instalando wallpaper customizado..."
         # Baixar o wallpaper
