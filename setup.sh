@@ -88,6 +88,9 @@ export EXEC_TOOLS_SETUP_OPT="y" # Ativar setup de ferramentas
 export EXEC_STYLE_SETUP_OPT="y" # Ativar setup de estilização
 
 # Flags controle de fluxo de execução
+export SETUP_REBOOT_FLAG="$SCRIPT_DIR/.setup_reboot.flag"
+
+# Desktop files paths
 export DESKTOP_SCRIPT_NAME="setup_script.desktop"
 export AUTOSTART_FILE="$USER_HOME/.config/autostart/$DESKTOP_SCRIPT_NAME"
 
@@ -187,8 +190,10 @@ show_menu() {
 
 
 # Exibir o menu interativo
-if [ ! -f "$AUTOSTART_FILE" ]; then
+if [ ! -f "$SETUP_REBOOT_FLAG" ]; then
     show_menu
+else 
+    source "$SETUP_REBOOT_FLAG"
 fi
 
 if [ "$EXEC_TOOLS_SETUP_OPT" == "y" ]; then
@@ -238,15 +243,19 @@ fi
 echo ""
 
 # Verificar se o script já foi executado após a reinicialização
-if [ -f "$AUTOSTART_FILE" ]; then
+if [ -f "$SETUP_REBOOT_FLAG" ]; then
     # Remover o autostart após a execução
     remove_autostart
-    rm -f "$AUTOSTART_FILE"
+
+    rm -f "$SETUP_REBOOT_FLAG"
 
     green "\n✅ Setup finalizado e concluído com sucesso!"
 else
     # Configurar o autostart
     setup_autostart
+
+    touch $SETUP_REBOOT_FLAG
+    echo "CLEAR_OPT=$CLEAR_OPT" > "$SETUP_REBOOT_FLAG"
 
     # Reiniciar o sistema com contagem regressiva
     yellow "🔧 Reiniciando o sistema para aplicar as alterações..."

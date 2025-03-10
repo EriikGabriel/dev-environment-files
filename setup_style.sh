@@ -55,7 +55,7 @@ show_menu() {
 }
 
 # Exibir o menu interativo
-if [ ! -f "$AUTOSTART_FILE" ]; then
+if [ ! -f "$SETUP_REBOOT_FLAG" ]; then
     show_menu
 fi
 
@@ -76,7 +76,7 @@ done
 # Variáveis de configuração do GNOME
 GNOME_DOCK_AUTOHIDE=$(sudo -u $USER_NAME gsettings get org.gnome.shell.extensions.dash-to-dock autohide)
 
-if [[ "$GNOME_DOCK_AUTOHIDE" == false ]] || [ -f "$AUTOSTART_FILE" ]; then
+if [[ "$GNOME_DOCK_AUTOHIDE" == false ]] || [ -f "$SETUP_REBOOT_FLAG" ]; then
     # Instalar e configurar extensões do GNOME
     progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🧩 Instalando extensões do GNOME..."
     source $SCRIPT_DIR/setup_gnome_extensions.sh
@@ -104,6 +104,7 @@ if [ ! -d "/usr/share/themes/WhiteSur-Dark" ]; then
     # Instalando tweaks do WhiteSur
     sudo ./tweaks.sh -g -i ubuntu -F -d --silent-mode
 
+    # Sobreescrevendo gtk do flatpak
     sudo flatpak override --filesystem=xdg-config/gtk-3.0 && sudo flatpak override --filesystem=xdg-config/gtk-4.0
 
     cd ..
@@ -131,7 +132,7 @@ fi
 
 # Habilitar GTK e ícones
 CURRENT_GTK_THEME=$(gsettings get org.gnome.desktop.interface gtk-theme)
-if [ "$CURRENT_GTK_THEME" != "'WhiteSur-Dark-blue'" ] || [ -f "$AUTOSTART_FILE" ]; then
+if [ "$CURRENT_GTK_THEME" != "'WhiteSur-Dark-blue'" ] || [ -f "$SETUP_REBOOT_FLAG" ]; then
     progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🎨 Habilitando tema e ícones..."
     gsettings set org.gnome.desktop.interface gtk-theme "'WhiteSur-Dark-blue'"
     dconf write /org/gnome/shell/extensions/user-theme/name "'WhiteSur-Dark-blue'"
@@ -153,7 +154,7 @@ WALLPAPER_URL="https://www.iclarified.com/images/news/91914/440181/440181.jpg"
 WALLPAPER_PATH="/usr/share/backgrounds/mac-wallpaper.jpg"
 CURRENT_WALLPAPER=$(gsettings get org.gnome.desktop.background picture-uri-dark)
 if [ "$CUSTOM_WALLPAPER_OPT" == "y" ] ; then
-    if [ "$CURRENT_WALLPAPER" != "'file://$WALLPAPER_PATH'" ] || [ -f "$AUTOSTART_FILE" ]; then
+    if [ "$CURRENT_WALLPAPER" != "'file://$WALLPAPER_PATH'" ]; then
         # Instalar wallpaper customizado
         progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🖼️ Instalando wallpaper customizado..."
         # Baixar o wallpaper

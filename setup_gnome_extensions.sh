@@ -13,6 +13,8 @@ fi
 
 green "🚀 Iniciando setup de extensões do GNOME..."
 
+green "📦 Ativando dark mode..."
+gsettings set org.gnome.desktop.interface color-scheme "'prefer-dark'"
 green "📦 Ativando tiling nas bordas..."
 gsettings set org.gnome.mutter edge-tiling true
 green "📦 Reduzindo tamanho dos ícones..."
@@ -87,7 +89,7 @@ install_extension() {
                         --object-path /org/gnome/Shell/Extensions \
                         --method org.gnome.Shell.Extensions.InstallRemoteExtension \
                         "$extension_id" 2>&1)
-    sleep 5 
+    sleep 3 
 
     # Verificar se a instalação foi bem-sucedida
     if [[ $result == *"successful"* ]]; then
