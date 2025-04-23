@@ -208,21 +208,26 @@ else
 fi
 
 # Configurar o Settings Sync no VS Code
-progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "⚙️ Configurando Settings Sync no VS Code..."
-if command -v code &> /dev/null; then
-    code --sync on --github-token $SYNC_TOKEN
-    blue "✅ Settings Sync configurado com sucesso!"
+SYNC_STATUS=$(code --list-extensions | grep "github.copilot" || true)
+
+if [ -z "$SYNC_STATUS" ]; then
+    progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "⚙️ Configurando Settings Sync no VS Code..."
+
+    if command -v code &> /dev/null; then
+        code --sync on --github-token $SYNC_TOKEN
+        blue "✅ Settings Sync configurado com sucesso!"
+    else
+        red "❌ Erro: VS Code não está instalado. Não foi possível configurar o Settings Sync."
+    fi
 else
-    red "❌ Erro: VS Code não está instalado. Não foi possível configurar o Settings Sync."
+    blue "✅ Settings Sync já está configurado!"
 fi
 
-
-
 # Garantindo acesso total para extensões de estilização do VS Code
-sudo chown -R $SUDO_USER '/usr/share/code/resources/'
-sudo chown -R $SUDO_USER '/usr/share/code/resources/app/out'
+sudo chown -R $USER_NAME '/usr/share/code/resources/'
+sudo chown -R $USER_NAME '/usr/share/code/resources/app/out'
 sudo chmod -R 777 '/usr/share/code/resources/app/out'
-sudo chown -R $SUDO_USER '/usr/share/code'
+sudo chown -R $USER_NAME '/usr/share/code'
 sudo chmod -R 777 '/usr/share/code'
 
 # Instalar Fonts
