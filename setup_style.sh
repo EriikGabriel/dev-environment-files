@@ -93,7 +93,7 @@ if ! command -v flatpak &> /dev/null; then
 fi
 
 # Instalar tema GTK WhiteSur
-if [ ! -d "/usr/share/themes/WhiteSur-Dark" ]; then
+if [ ! -d "/usr/share/themes/WhiteSur-Dark-blue" ]; then
     progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🎨 Instalando tema WhiteSur..."
     git clone https://github.com/vinceliuice/WhiteSur-gtk-theme.git --depth=1
     cd WhiteSur-gtk-theme
@@ -109,6 +109,12 @@ if [ ! -d "/usr/share/themes/WhiteSur-Dark" ]; then
 
     cd ..
     rm -rf WhiteSur-gtk-theme
+
+    # Adicionando tema ao GNOME Tweaks
+    cd gtk
+    sudo cp -r WhiteSur-Dark-blue /usr/share/themes/
+    cd ..
+
     green "✅ Tema WhiteSur instalado com sucesso!"
 else
     blue "✅ Tema WhiteSur já está instalado."
