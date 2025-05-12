@@ -386,10 +386,10 @@ green "✅ Links simbólicos criados!"
 
 # Configurar fastfetch
 progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🔧 Configurando fastfetch..."
-if [ ! -f "$USER_HOME/.config/fastfetch/config.jsonc" ]; then
+FASTFETCH_CONFIG_FILE="$USER_HOME/.config/fastfetch/config.jsonc"
+if ! grep -q "cli-ascii-1.txt" "$FASTFETCH_CONFIG_FILE"; then
     # Gerar arquivo de configuração
     sudo -u $USER_NAME fastfetch --gen-config-force
-    CONFIG_FILE="/home/$USER_NAME/.config/fastfetch/config.jsonc"
 
     # Criar diretório de logos e copiar arquivo
     sudo mkdir -p $USER_HOME/.config/fastfetch/logos
@@ -399,7 +399,7 @@ if [ ! -f "$USER_HOME/.config/fastfetch/config.jsonc" ]; then
 
     # Substituir arquivo de configuração
     CONFIG_FILE_NAME="arch"
-    sudo cp ./fastfetch/$CONFIG_FILE_NAME.jsonc $CONFIG_FILE
+    sudo cp ./fastfetch/$CONFIG_FILE_NAME.jsonc $FASTFETCH_CONFIG_FILE
     green "✅ fastfetch configurado com sucesso!"
 else
     blue "✅ Configuração do fastfetch já existe!"
