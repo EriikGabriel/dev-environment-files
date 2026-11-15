@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import * as api from "./api";
 import { errorMessage } from "./api";
 import { ApplyView, type StepState } from "./components/ApplyView";
+import { DesktopTab } from "./components/DesktopTab";
 import { DotfilesTab } from "./components/DotfilesTab";
 import { Drawer } from "./components/Drawer";
 import { FileDrawer, type FileTarget } from "./components/FileDrawer";
@@ -20,7 +21,7 @@ import type {
 } from "./types";
 import "./styles.css";
 
-type Tab = "home" | "setup" | "dotfiles";
+type Tab = "home" | "setup" | "preview" | "dotfiles";
 type Summary = Extract<ApplyEvent, { type: "done" }>;
 
 interface ApplyState {
@@ -37,6 +38,7 @@ interface ApplyState {
 const TABS: { id: Tab; label: string; icon: string }[] = [
 	{ id: "home", label: "Início", icon: "⌂" },
 	{ id: "setup", label: "Configurar", icon: "☰" },
+	{ id: "preview", label: "Preview", icon: "▣" },
 	{ id: "dotfiles", label: "Dotfiles", icon: "❖" },
 ];
 
@@ -242,7 +244,8 @@ export default function App() {
 	if (!root) {
 		return (
 			<main className="center">
-				<h1 className="brand">envsetup</h1>
+				<img src="/icon.svg" alt="" className="brand-icon big-icon" />
+        <h1 className="brand">envsetup</h1>
 				<p className="muted">
 					Selecione a pasta que contém <code>config/</code> e{" "}
 					<code>dotfiles/</code>.
@@ -261,7 +264,10 @@ export default function App() {
 	return (
 		<div className="shell" data-env={env || "none"}>
 			<aside>
-				<h1 className="brand">envsetup</h1>
+				<h1 className="brand">
+          <img src="/icon.svg" alt="" className="brand-icon" />
+          envsetup
+        </h1>
 				<div className="env-badge">
 					<span className="dot" />
 					<span>
@@ -376,7 +382,9 @@ export default function App() {
 						onOpenFile={setOpenFile}
 						onSaveDirs={saveDirs}
 					/>
-				) : plan ? (
+				) : tab === "preview" ? (
+					<DesktopTab root={root} profile={wizard.profile} info={info} plan={plan} onSaved={() => void loadPlan()} />
+					) : plan ? (
 					<DotfilesTab
 						root={root}
 						profile={wizard.profile}

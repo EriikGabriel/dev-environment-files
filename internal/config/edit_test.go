@@ -109,3 +109,27 @@ steps:
 		t.Error("unknown step should fail")
 	}
 }
+
+func TestSetDockPinned(t *testing.T) {
+	in := "name: x\ndesktop:\n  kind: gnome\n  dock:\n    position: bottom\n    pinned: [a, b]  \nsteps: []\n"
+	p := filepath.Join(t.TempDir(), "p.yaml")
+	if err := os.WriteFile(p, []byte(in), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := SetDockPinned(p, []string{"dev.zed.Zed", "GodotHub", "my app"}); err != nil {
+		t.Fatal(err)
+	}
+	b, _ := os.ReadFile(p)
+	if want := "    pinned: [dev.zed.Zed, GodotHub, my app]"; !strings.Contains(string(b), want+"\n") {
+		t.Errorf("got:\n%s", b)
+	}
+	var prof Profile
+	if err := readYAML(p, &prof); err != nil || len(prof.Desktop.Dock.Pinned) != 3 {
+		t.Errorf("round trip: %v %+v", err, prof.Desktop.Dock)
+	}
+	for _, bad := range [][]string{{"a", "a"}, {"x.desktop"}, {""}} {
+		if err := SetDockPinned(p, bad); err == nil {
+			t.Errorf("%v should be rejected", bad)
+		}
+	}
+}

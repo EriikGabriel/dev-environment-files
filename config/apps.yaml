@@ -330,20 +330,6 @@ apps:
           rm -rf "$tmp"
         fi
         gsettings set org.gnome.desktop.interface icon-theme "'WhiteSur-dark'"
-  gnome-dock-apps:
-    description: Pin Files, terminal, browser, editor and Discord to the dock (only the installed ones)
-    method: { debian: script }
-    check:
-      debian: gsettings get org.gnome.shell favorite-apps | grep -q wezterm
-    source:
-      debian: |
-        list=""
-        for app in org.gnome.Nautilus.desktop org.wezfurlong.wezterm.desktop google-chrome.desktop code.desktop dev.zed.Zed.desktop discord.desktop; do
-          for dir in /usr/share/applications /var/lib/flatpak/exports/share/applications "$HOME/.local/share/applications"; do
-            if [ -f "$dir/$app" ]; then list="$list${list:+, }'$app'"; break; fi
-          done
-        done
-        gsettings set org.gnome.shell favorite-apps "[$list]"
   mac-wallpaper:
     description: macOS-style wallpaper
     method: { debian: script }
@@ -409,3 +395,19 @@ apps:
         Terminal=false
         Categories=Development;
         EOD
+
+  # ---- launcher ----
+  vicinae:
+    description: Vicinae launcher (Alt+Space in the niri config). On Debian-family it is the AppImage.
+    method: { arch: aur, debian: script }
+    names: { arch: vicinae-bin }
+    check:
+      debian: test -x "$HOME/.local/bin/vicinae"
+    source:
+      debian: |
+        set -e
+        url="$(curl -fsSL https://api.github.com/repos/vicinaehq/vicinae/releases/latest | grep -o 'https://[^"]*Vicinae-x86_64\.AppImage' | head -n1)"
+        [ -n "$url" ] || { echo "could not find the Vicinae AppImage in the latest release"; exit 1; }
+        mkdir -p "$HOME/.local/bin"
+        curl -fL -o "$HOME/.local/bin/vicinae" "$url"
+        chmod +x "$HOME/.local/bin/vicinae"

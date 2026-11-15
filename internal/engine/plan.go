@@ -207,6 +207,11 @@ func BuildPlan(cfg *config.Config, profileID string, env *Env, opt Options) (*Pl
 		p.Steps = append(p.Steps, &vscodeStep{env: env, path: filepath.Join(env.Root, e[0])})
 		p.groups = append(p.groups, e[1])
 	}
+	// The dock comes last: it pins apps and config installed above.
+	if d := prof.Desktop; d.Kind != "" && len(d.Dock.Pinned) > 0 && (d.App == "" || included[d.App]) {
+		p.Steps = append(p.Steps, &dockStep{env: env, kind: d.Kind, pinned: d.Dock.Pinned})
+		p.groups = append(p.groups, "desktop")
+	}
 	return p, nil
 }
 
@@ -236,7 +241,7 @@ func expandHome(p, home string) string {
 
 // Line is one row of a dry-run report.
 type Line struct {
-	Kind        string `json:"kind"` // app, file, dir or vscode
+	Kind        string `json:"kind"` // app, file, dir, dock or vscode
 	Step        string `json:"step"` // profile step id; "" for extras
 	ID          string `json:"id"`   // app id, or destination for files
 	Title       string `json:"title"`
@@ -265,6 +270,8 @@ func (p *Plan) Describe(ctx context.Context) []Line {
 			l.Kind = "vscode"
 		case *dirStep:
 			l.Kind = "dir"
+		case *dockStep:
+			l.Kind = "dock"
 		}
 		lines[i] = l
 	}

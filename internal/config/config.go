@@ -105,6 +105,44 @@ func (s Step) Option(id string) (Option, bool) {
 	return Option{}, false
 }
 
+// Dock describes the application dock.
+type Dock struct {
+	// Position is bottom (default), left, right or top.
+	Position string `yaml:"position"`
+	AutoHide bool   `yaml:"autohide"`
+	// Pinned is the ordered list of desktop-entry ids (without .desktop).
+	// The apply step writes it to the real desktop configuration.
+	Pinned []string `yaml:"pinned"`
+}
+
+// Bar describes the top (or bottom) panel: widget names by area.
+type Bar struct {
+	Position string   `yaml:"position"`
+	Start    []string `yaml:"start"`
+	Center   []string `yaml:"center"`
+	End      []string `yaml:"end"`
+}
+
+// Desktop is what the desktop looks like: used by the preview, and by the
+// apply step that writes the dock order to the system.
+type Desktop struct {
+	// Kind is niri-noctalia or gnome.
+	Kind string `yaml:"kind"`
+	// App is the app that provides the desktop; the dock is only applied
+	// when it is part of the plan.
+	App string `yaml:"app"`
+	// Wallpaper is a repo path, a ~ path or an https URL.
+	Wallpaper string `yaml:"wallpaper"`
+	IconTheme string `yaml:"icon_theme"`
+	Colors    struct {
+		Accent string `yaml:"accent"`
+		Panel  string `yaml:"panel"`
+		Text   string `yaml:"text"`
+	} `yaml:"colors"`
+	Dock Dock `yaml:"dock"`
+	Bar  Bar  `yaml:"bar"`
+}
+
 // Profile is a complete environment for one kind of machine.
 type Profile struct {
 	Name        string `yaml:"name"`
@@ -113,8 +151,9 @@ type Profile struct {
 	Environment string `yaml:"environment"`
 	// Match lists the distro keys (ID or ID_LIKE, or "windows") this
 	// profile is meant for; it is how the profile is picked automatically.
-	Match []string `yaml:"match"`
-	Steps []Step   `yaml:"steps"`
+	Match   []string `yaml:"match"`
+	Desktop Desktop  `yaml:"desktop"`
+	Steps   []Step   `yaml:"steps"`
 	// Files are extra managed files, always deployed. `envsetup add`
 	// appends here.
 	Files []File `yaml:"files"`
@@ -199,6 +238,21 @@ func (c *Config) Validate() error {
 		}
 	}
 	for pid, p := range c.Profiles {
+		switch p.Desktop.Kind {
+		case "", "niri-noctalia", "gnome":
+		default:
+			return fmt.Errorf("profile %q: unknown desktop kind %q", pid, p.Desktop.Kind)
+		}
+		switch p.Desktop.Dock.Position {
+		case "", "bottom", "top", "left", "right":
+		default:
+			return fmt.Errorf("profile %q: bad dock position %q", pid, p.Desktop.Dock.Position)
+		}
+		if p.Desktop.App != "" {
+			if _, ok := c.Apps[p.Desktop.App]; !ok {
+				return fmt.Errorf("profile %q: desktop app %q is unknown", pid, p.Desktop.App)
+			}
+		}
 		for _, id := range p.Apps {
 			if _, ok := c.Apps[id]; !ok {
 				return fmt.Errorf("profile %q: unknown app %q", pid, id)

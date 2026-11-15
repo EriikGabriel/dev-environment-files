@@ -27,6 +27,16 @@ feita em passos, com escolhas, e não num bloco só.
 - **Edição do YAML por texto.** `add` e `set-dirs` alteram só a linha necessária, em vez de
   reserializar o arquivo, para preservar comentários e manter os diffs do git pequenos.
 
+## Desktop e preview
+
+Cada perfil tem uma seção `desktop:` (tipo, wallpaper, tema de ícones, cores, dock e painel). Ela
+alimenta o preview do app e é a fonte única da **ordem da dock**: o passo `dock` do `apply`
+escreve essa ordem no desktop de verdade (Noctalia: `pinned` no `config.toml`, pelo symlink,
+então o arquivo do repo muda; GNOME: `favorite-apps`, só com apps instalados). O preview usa os
+`.desktop` e o tema de ícones instalados na máquina, então o que ainda não está instalado
+aparece como um quadrado colorido. O wallpaper pode ser um arquivo do repo, um caminho em `~`
+ou uma URL https (baixada uma vez para o cache).
+
 ## Consequências
 
 - Adicionar uma distro com ambiente próprio é criar um arquivo de perfil; adicionar um app é

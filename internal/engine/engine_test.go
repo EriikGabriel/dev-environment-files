@@ -296,7 +296,7 @@ func TestBuildPlanDefaultsAndChoices(t *testing.T) {
 func TestUbuntuProfileFollowsLegacy(t *testing.T) {
 	p, got := planTitles(t, "dev-ubuntu", ubuntu, Options{})
 	for _, want := range []string{",zsh,", ",powerlevel10k,", ",wezterm,", ",vscode,", ",google-chrome,",
-		",whitesur-gtk-theme,", ",gnome-extensions,", ",gnome-dock-apps,", ".zshrc", ".wezterm.lua"} {
+		",whitesur-gtk-theme,", ",gnome-extensions,", ",dock (ordem dos apps),", ".zshrc", ".wezterm.lua"} {
 		if !strings.Contains(got, want) {
 			t.Errorf("ubuntu plan misses %q", want)
 		}
@@ -305,7 +305,7 @@ func TestUbuntuProfileFollowsLegacy(t *testing.T) {
 		t.Errorf("every default ubuntu app should resolve, skipped: %+v", p.Skipped)
 	}
 	// The dock is configured after the apps it pins.
-	if strings.Index(got, ",gnome-dock-apps,") < strings.Index(got, ",google-chrome,") {
+	if strings.Index(got, ",dock (ordem dos apps),") < strings.Index(got, ",google-chrome,") {
 		t.Error("dock apps must come after the apps they pin")
 	}
 }
@@ -326,5 +326,74 @@ func TestWizardDescribesSteps(t *testing.T) {
 	}
 	if !byID["git"].Installed || !byID["git"].Default || byID["htop"].Default || byID["curl"].Installed {
 		t.Errorf("app states wrong: git=%+v htop=%+v curl=%+v", byID["git"], byID["htop"], byID["curl"])
+	}
+}
+
+func TestFindPinned(t *testing.T) {
+	text := "[bar]\npinned = [\"x\"]\n\n[dock]\nenabled = true\npinned = [\"a\", \"b.c\",\n  \"d\"]\nauto_hide = true\n"
+	start, end, found, vals := findPinned(text)
+	if !found || start != 5 || end != 7 || strings.Join(vals, ",") != "a,b.c,d" {
+		t.Errorf("got start=%d end=%d found=%v vals=%v", start, end, found, vals)
+	}
+	if _, _, found, _ := findPinned("[dock]\nenabled = true\n"); found {
+		t.Error("no pinned line should report not found")
+	}
+}
+
+func TestDockStepRewritesThroughSymlink(t *testing.T) {
+	home, repo := t.TempDir(), t.TempDir()
+	real := filepath.Join(repo, "config.toml")
+	must(t, os.WriteFile(real, []byte("[theme]\nmode = \"dark\"\n\n[dock]\nenabled = true\npinned = [\"old\"]\nauto_hide = true\n"), 0o644))
+	link := filepath.Join(home, ".config", "noctalia", "config.toml")
+	must(t, os.MkdirAll(filepath.Dir(link), 0o755))
+	must(t, os.Symlink(real, link))
+
+	s := &dockStep{env: &Env{Home: home, Runner: &fakeRunner{}}, kind: "niri-noctalia", pinned: []string{"kitty", "dev.zed.Zed"}}
+	if pending, _ := s.Pending(context.Background()); !pending {
+		t.Fatal("different order must be pending")
+	}
+	must(t, s.Run(context.Background(), io.Discard))
+	b, _ := os.ReadFile(real)
+	want := "[theme]\nmode = \"dark\"\n\n[dock]\nenabled = true\npinned = [\"kitty\", \"dev.zed.Zed\"]\nauto_hide = true\n"
+	if string(b) != want {
+		t.Errorf("repo file after apply:\n%s", b)
+	}
+	if fi, _ := os.Lstat(link); fi.Mode()&os.ModeSymlink == 0 {
+		t.Error("the symlink must survive the rewrite")
+	}
+	if pending, _ := s.Pending(context.Background()); pending {
+		t.Error("after applying, the dock step must be up to date")
+	}
+}
+
+func TestPreviewUsesRealEntriesAndIcons(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("XDG_DATA_DIRS", filepath.Join(home, "share"))
+	apps := filepath.Join(home, ".local", "share", "applications")
+	must(t, os.MkdirAll(apps, 0o755))
+	must(t, os.WriteFile(filepath.Join(apps, "godothub.desktop"), []byte("[Desktop Entry]\nName=GodotHub\nIcon=myicon\nStartupWMClass=godothub\n"), 0o644))
+	icons := filepath.Join(home, ".local", "share", "icons", "Tema", "apps", "scalable")
+	must(t, os.MkdirAll(icons, 0o755))
+	must(t, os.WriteFile(filepath.Join(icons, "myicon.svg"), []byte("<svg/>"), 0o644))
+	wp := filepath.Join(home, "wall.png")
+	must(t, os.WriteFile(wp, []byte{0x89, 'P', 'N', 'G'}, 0o644))
+
+	cfg := &config.Config{Profiles: map[string]config.Profile{"p": {Desktop: config.Desktop{
+		Kind: "gnome", Wallpaper: "~/wall.png", IconTheme: "Tema",
+		Dock: config.Dock{Pinned: []string{"GodotHub", "nope"}},
+	}}}}
+	p, err := Preview(context.Background(), cfg, "p", &Env{Home: home, Root: home})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(p.Dock.Items) != 2 || !p.Dock.Items[0].Found || p.Dock.Items[0].Name != "GodotHub" ||
+		!strings.HasPrefix(p.Dock.Items[0].Icon, "data:image/svg+xml;base64,") {
+		t.Errorf("first item = %+v", p.Dock.Items[0])
+	}
+	if p.Dock.Items[1].Found || p.Dock.Items[1].Icon != "" {
+		t.Errorf("missing app should be a placeholder: %+v", p.Dock.Items[1])
+	}
+	if !strings.HasPrefix(p.Wallpaper, "data:image/png;base64,") || p.WallpaperError != "" {
+		t.Errorf("wallpaper = %q err %q", p.Wallpaper[:min(24, len(p.Wallpaper))], p.WallpaperError)
 	}
 }

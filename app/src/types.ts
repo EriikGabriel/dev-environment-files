@@ -113,7 +113,30 @@ export interface Selection {
   choices: Record<string, string>;
 }
 
-export type StepKind = "app" | "file" | "dir" | "vscode";
+export interface DockItem {
+  id: string;
+  name: string;
+  /** Data URL; empty when no icon was found on this machine. */
+  icon: string;
+  /** A desktop entry for it exists on this machine. */
+  found: boolean;
+}
+
+/** Output of `desktop --json`. */
+export interface DesktopPreview {
+  kind: "niri-noctalia" | "gnome" | "";
+  icon_theme: string;
+  colors: { accent: string; panel: string; text: string };
+  wallpaper: string;
+  wallpaper_source: string;
+  wallpaper_error: string;
+  dock: { position: "bottom" | "top" | "left" | "right"; autohide: boolean; items: DockItem[] };
+  bar: { position: "top" | "bottom"; start: string[]; center: string[]; end: string[] };
+  /** Installed apps that can be added to the dock. */
+  apps: { id: string; name: string }[];
+}
+
+export type StepKind = "app" | "file" | "dir" | "dock" | "vscode";
 
 export interface PlanLine {
   kind: StepKind;

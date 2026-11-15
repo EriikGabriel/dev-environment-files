@@ -218,6 +218,63 @@ func newRoot() *cobra.Command {
 	}
 	show.Flags().BoolVar(&f.json, "json", false, "machine-readable output")
 
+	desktop := &cobra.Command{
+		Use:   "desktop",
+		Short: "Describe how the desktop looks (dock order, panel, wallpaper) for the preview",
+		Args:  cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			cfg, env, err := load(f)
+			if err != nil {
+				return err
+			}
+			prof, err := pickProfile(cfg, env, f.profile)
+			if err != nil {
+				return err
+			}
+			p, err := engine.Preview(cmd.Context(), cfg, prof, env)
+			if err != nil {
+				return err
+			}
+			if f.json {
+				return printJSON(os.Stdout, p)
+			}
+			fmt.Printf("%s: %d dock items, wallpaper %q\n", p.Kind, len(p.Dock.Items), p.WallpaperSource)
+			for _, it := range p.Dock.Items {
+				fmt.Printf("  %s (%s)\n", it.Name, it.ID)
+			}
+			return nil
+		},
+	}
+	desktop.Flags().BoolVar(&f.json, "json", false, "machine-readable output")
+
+	setDock := &cobra.Command{
+		Use:   "set-dock [id...]",
+		Short: "Save the dock order in the profile (applied on the next apply)",
+		RunE: func(_ *cobra.Command, args []string) error {
+			cfg, env, err := load(f)
+			if err != nil {
+				return err
+			}
+			prof, err := pickProfile(cfg, env, f.profile)
+			if err != nil {
+				return err
+			}
+			path := filepath.Join(env.Root, "config", "profiles", prof+".yaml")
+			if err := config.SetDockPinned(path, args); err != nil {
+				return err
+			}
+			if _, err := config.Load(env.Root); err != nil {
+				return fmt.Errorf("profile no longer loads after the edit: %w", err)
+			}
+			if f.json {
+				return printJSON(os.Stdout, map[string]any{"pinned": append([]string{}, args...)})
+			}
+			fmt.Printf("%d dock entries saved in %s\n", len(args), path)
+			return nil
+		},
+	}
+	setDock.Flags().BoolVar(&f.json, "json", false, "machine-readable output")
+
 	var dirStep, dirOption string
 	setDirs := &cobra.Command{
 		Use:   "set-dirs --step <id> [--option <id>] [dir...]",
@@ -336,7 +393,7 @@ func newRoot() *cobra.Command {
 	add.Flags().BoolVar(&f.copy, "copy", false, "keep the original and deploy by copy instead of symlink")
 	add.Flags().BoolVar(&f.json, "json", false, "machine-readable output")
 
-	root.AddCommand(plan, apply, detect, info, profiles, steps, add, show, setDirs)
+	root.AddCommand(plan, apply, detect, info, profiles, steps, add, show, setDirs, desktop, setDock)
 	root.SetContext(signalContext())
 	return root
 }

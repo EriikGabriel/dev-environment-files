@@ -26,6 +26,8 @@ arrastado mas não o **caminho**, e capturar `~/.config/algo` para virar symlink
 | `apply --json [--sudo-password-stdin]`             | NDJSON: `step` (com etapa e duração), `log` (com o índice do item), `done` (com o caminho do log) |
 | `add <caminho> --json [--group g] [--copy]`        | `{src, dest, mode}`                                                                               |
 | `show <caminho> --json`                            | conteúdo de um arquivo do repo, listagem de pasta ou imagem; recusa caminhos fora do repo         |
+| `desktop --json` | o desktop do perfil para o preview: wallpaper e ícones reais (data URLs), dock, painel, cores e apps instalados |
+| `set-dock [id...] --json` | grava a ordem da dock no YAML do perfil (aplicada no próximo `apply`) |
 | `set-dirs --step e [--option o] [pasta...] --json` | grava a lista de pastas no YAML do perfil                                                         |
 
 O Rust só aceita esses subcomandos (lista `ALLOWED` em `app/src-tauri/src/lib.rs`).

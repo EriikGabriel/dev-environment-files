@@ -222,3 +222,60 @@ func SetDirs(profilePath, stepID, optionID string, dirs []string) error {
 	lines[key.Line-1] = line[:key.Column-1] + "dirs: [" + strings.Join(items, ", ") + "]"
 	return writeAtomic(profilePath, []byte(strings.Join(lines, "\n")))
 }
+
+// SetDockPinned replaces desktop.dock.pinned. Like SetDirs it only rewrites
+// that one line, which must be a one-line flow list.
+func SetDockPinned(profilePath string, pinned []string) error {
+	seen := map[string]bool{}
+	for _, id := range pinned {
+		if strings.TrimSpace(id) == "" || strings.ContainsAny(id, "\n\r") || strings.HasSuffix(id, ".desktop") {
+			return fmt.Errorf("invalid dock entry %q (use the id without .desktop)", id)
+		}
+		if seen[id] {
+			return fmt.Errorf("duplicate dock entry %q", id)
+		}
+		seen[id] = true
+	}
+	raw, err := os.ReadFile(profilePath)
+	if err != nil {
+		return err
+	}
+	var doc yaml.Node
+	if err := yaml.Unmarshal(raw, &doc); err != nil {
+		return fmt.Errorf("%s: %w", profilePath, err)
+	}
+	if len(doc.Content) == 0 {
+		return fmt.Errorf("%s: empty document", profilePath)
+	}
+	node := doc.Content[0]
+	for _, k := range []string{"desktop", "dock"} {
+		var next *yaml.Node
+		for i := 0; node.Kind == yaml.MappingNode && i+1 < len(node.Content); i += 2 {
+			if node.Content[i].Value == k {
+				next = node.Content[i+1]
+			}
+		}
+		if next == nil {
+			return fmt.Errorf("%s: no desktop.dock section to edit", profilePath)
+		}
+		node = next
+	}
+	var key, val *yaml.Node
+	for i := 0; node.Kind == yaml.MappingNode && i+1 < len(node.Content); i += 2 {
+		if node.Content[i].Value == "pinned" {
+			key, val = node.Content[i], node.Content[i+1]
+		}
+	}
+	lines := strings.Split(string(raw), "\n")
+	if key == nil || val.Kind != yaml.SequenceNode || val.Style&yaml.FlowStyle == 0 || key.Line != val.Line ||
+		key.Line < 1 || key.Line > len(lines) || !strings.HasSuffix(strings.TrimSpace(lines[key.Line-1]), "]") {
+		return fmt.Errorf("%s: desktop.dock.pinned must be a one-line list (pinned: [a, b])", profilePath)
+	}
+	items := make([]string, len(pinned))
+	for i, id := range pinned {
+		items[i] = scalar(id)
+	}
+	line := lines[key.Line-1]
+	lines[key.Line-1] = line[:key.Column-1] + "pinned: [" + strings.Join(items, ", ") + "]"
+	return writeAtomic(profilePath, []byte(strings.Join(lines, "\n")))
+}

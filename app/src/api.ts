@@ -1,6 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
-import type { AddResult, ApplyEvent, FileView, Plan, Profile, Selection, SystemInfo, Wizard } from "./types";
+import type { AddResult, ApplyEvent, DesktopPreview, FileView, Plan, Profile, Selection, SystemInfo, Wizard } from "./types";
 
 const run = <T>(root: string, args: string[]) => invoke<T>("envsetup", { root, args });
 
@@ -19,6 +19,13 @@ const selectionArgs = (sel: Selection) => [
 
 export const plan = (root: string, profile: string, sel: Selection) =>
   run<Plan>(root, ["plan", "-p", profile, ...selectionArgs(sel)]);
+
+/** The desktop as the profile describes it, with real icons and wallpaper. */
+export const desktop = (root: string, profile: string) => run<DesktopPreview>(root, ["desktop", "-p", profile]);
+
+/** Saves the dock order into the profile (written to the system on apply). */
+export const setDock = (root: string, profile: string, ids: string[]) =>
+  run<{ pinned: string[] }>(root, ["set-dock", "-p", profile, ...ids]);
 
 /** Reads a file or lists a directory inside the repo. */
 export const show = (root: string, path: string) => run<FileView>(root, ["show", path]);

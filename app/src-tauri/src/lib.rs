@@ -13,7 +13,7 @@ use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Emitter, Manager, State};
 
 /// Subcommands the front-end may run through [`envsetup`].
-const ALLOWED: &[&str] = &["detect", "info", "profiles", "steps", "plan", "add", "show", "set-dirs"];
+const ALLOWED: &[&str] = &["detect", "info", "profiles", "steps", "plan", "add", "show", "set-dirs", "desktop", "set-dock"];
 
 #[derive(Default)]
 struct ApplyState(Mutex<Option<Arc<Mutex<Child>>>>);
