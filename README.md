@@ -14,7 +14,8 @@ app desktop (Tauri + React) e uma linha de comando sobre o mesmo motor em Go.
 
 Mostra o sistema em uso, guia a configuração em etapas, deixa ler cada arquivo de config,
 editar a estrutura de pastas, arrastar configs novas para o repo e acompanhar a aplicação
-com log em tempo real.
+com log em tempo real. A aba **Preview** simula o desktop do perfil (wallpaper, painel, dock
+com os ícones instalados) e permite reordenar a dock.
 
 Requer Go, Node 20+, Rust e, no Linux, `webkit2gtk-4.1`.
 
@@ -43,6 +44,8 @@ go build -o envsetup ./cmd/envsetup
 ./envsetup add ~/.config/algo                                 # guarda uma config no repo
 ./envsetup show dotfiles/kitty/kitty.conf                     # lê um arquivo do repo
 ./envsetup set-dirs --step workspace --option www ~/www/projects ~/www/games
+./envsetup desktop                                            # o que o preview mostra
+./envsetup set-dock kitty dev.zed.Zed GodotHub                # ordem da dock no perfil
 ```
 
 `-p/--profile` escolhe o perfil; sem ele vale o que corresponde à máquina. `--root` aponta
@@ -78,6 +81,10 @@ Desktop). Numa etapa:
 o que existia antes vira `*.envsetup-<timestamp>.bak`. Editar a config no lugar de sempre já
 altera o repo.
 
+**Desktop e dock.** A seção `desktop:` do perfil descreve wallpaper, painel, cores e a ordem
+da dock. Ao aplicar, a ordem é escrita no desktop de verdade (Noctalia: `pinned` do
+`config.toml`; GNOME: favoritos). Edite pela aba Preview ou direto no YAML.
+
 **Aplicar.** A ordem é apps, pastas, arquivos e extensões do VS Code. É idempotente: o que já
 está em dia é pulado (comandos `post` rodam sempre). Cada execução grava um log em
 `~/.local/state/envsetup/apply-<data>.log`.
@@ -101,6 +108,8 @@ real nele, o valor passa a estar dentro do repositório.
 - **GNOME (Ubuntu):** os itens da etapa Desktop falam com a sessão GNOME em execução, então só
   funcionam de dentro dela. O GNOME pede confirmação para cada extensão.
 - **Ícones:** MacTahoe no CachyOS e WhiteSur no Ubuntu.
+- **Wallpaper:** `dotfiles/wallpapers/macos-ventura.jpg` (3,6 MB) é implantado em
+  `~/Imagens/Wallpapers`; no Ubuntu o preview baixa o wallpaper do perfil.
 - **Bruno:** `dotfiles/bruno/workspace.yml` tem o caminho absoluto da home.
 - **niri:** `dotfiles/niri/monitors.kdl` é específico dos monitores desta máquina.
 - **Vicinae:** vem do AUR (`vicinae-bin`) no Arch; no Ubuntu é o AppImage, opcional. Só o
