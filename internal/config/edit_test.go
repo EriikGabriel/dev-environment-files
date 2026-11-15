@@ -109,3 +109,101 @@ steps:
 		t.Error("unknown step should fail")
 	}
 }
+
+func TestSetDockPinned(t *testing.T) {
+	in := "name: x\ndesktop:\n  kind: gnome\n  dock:\n    position: bottom\n    pinned: [a, b]  \nsteps: []\n"
+	p := filepath.Join(t.TempDir(), "p.yaml")
+	if err := os.WriteFile(p, []byte(in), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := SetDockPinned(p, []string{"dev.zed.Zed", "GodotHub", "my app"}); err != nil {
+		t.Fatal(err)
+	}
+	b, _ := os.ReadFile(p)
+	if want := "    pinned: [dev.zed.Zed, GodotHub, my app]"; !strings.Contains(string(b), want+"\n") {
+		t.Errorf("got:\n%s", b)
+	}
+	var prof Profile
+	if err := readYAML(p, &prof); err != nil || len(prof.Desktop.Dock.Pinned) != 3 {
+		t.Errorf("round trip: %v %+v", err, prof.Desktop.Dock)
+	}
+	for _, bad := range [][]string{{"a", "a"}, {"x.desktop"}, {""}} {
+		if err := SetDockPinned(p, bad); err == nil {
+			t.Errorf("%v should be rejected", bad)
+		}
+	}
+}
+
+func TestStepAppsAreEditedInPlace(t *testing.T) {
+	in := "name: x\nsteps:\n  # first\n  - id: base\n    title: Base\n    apps: [a, b]\n\n  - id: other\n    title: Other # keep\n    description: d\n    optional: [z]\nfiles: []\n"
+	p := filepath.Join(t.TempDir(), "p.yaml")
+	if err := os.WriteFile(p, []byte(in), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	read := func() string { b, _ := os.ReadFile(p); return string(b) }
+	step := func(err error) {
+		t.Helper()
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	step(AddStepApp(p, "base", "c", false))
+	step(AddStepApp(p, "base", "o", true)) // no optional list yet: a new line
+	step(AddStepApp(p, "other", "n", false))
+	want := "name: x\nsteps:\n  # first\n  - id: base\n    title: Base\n    apps: [a, b, c]\n    optional: [o]\n\n  - id: other\n    title: Other # keep\n    description: d\n    apps: [n]\n    optional: [z]\nfiles: []\n"
+	if got := read(); got != want {
+		t.Fatalf("after adding, got:\n%s\nwant:\n%s", got, want)
+	}
+	if err := AddStepApp(p, "base", "o", false); err == nil {
+		t.Error("adding an app twice must fail")
+	}
+	if err := AddStepApp(p, "nope", "q", false); err == nil {
+		t.Error("unknown step must fail")
+	}
+
+	step(RemoveStepApp(p, "base", "a"))
+	step(RemoveStepApp(p, "base", "o"))
+	if err := RemoveStepApp(p, "base", "zzz"); err == nil {
+		t.Error("removing an app that is not there must fail")
+	}
+	if got := read(); !strings.Contains(got, "    apps: [b, c]\n    optional: []\n") {
+		t.Errorf("after removing, got:\n%s", got)
+	}
+	var prof Profile
+	if err := readYAML(p, &prof); err != nil || len(prof.Steps) != 2 || len(prof.Steps[1].Apps) != 1 {
+		t.Errorf("the result must still load: %+v, %v", prof.Steps, err)
+	}
+}
+
+func TestAppendApp(t *testing.T) {
+	p := filepath.Join(t.TempDir(), "apps.yaml")
+	in := "# header\napps:\n  git: { names: { \"*\": git } }\n"
+	if err := os.WriteFile(p, []byte(in), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := AppendApp(p, "heroic", "windows", "", "HeroicGamesLauncher.HeroicGamesLauncher", "Epic, GOG: one launcher"); err != nil {
+		t.Fatal(err)
+	}
+	if err := AppendApp(p, "hades", "windows", MethodSteam, "1145360", ""); err != nil {
+		t.Fatal(err)
+	}
+	b, _ := os.ReadFile(p)
+	want := in + "  heroic: { description: \"Epic, GOG: one launcher\", names: { windows: HeroicGamesLauncher.HeroicGamesLauncher } }\n" +
+		"  hades: { method: { windows: steam }, names: { windows: \"1145360\" } }\n"
+	if string(b) != want {
+		t.Fatalf("got:\n%s\nwant:\n%s", b, want)
+	}
+	var cat struct {
+		Apps map[string]App `yaml:"apps"`
+	}
+	if err := readYAML(p, &cat); err != nil || cat.Apps["hades"].Names["windows"] != "1145360" ||
+		cat.Apps["heroic"].Description != "Epic, GOG: one launcher" {
+		t.Errorf("the catalogue must still load: %+v, %v", cat.Apps, err)
+	}
+	for _, bad := range [][2]string{{"git", "x"}, {"Bad Id", "x"}, {"ok", ""}} {
+		if err := AppendApp(p, bad[0], "windows", "", bad[1], ""); err == nil {
+			t.Errorf("AppendApp(%q, %q) must fail", bad[0], bad[1])
+		}
+	}
+}

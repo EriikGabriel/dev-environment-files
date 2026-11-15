@@ -22,11 +22,15 @@ arrastado mas não o **caminho**, e capturar `~/.config/algo` para virar symlink
 | `info --json`                                      | distro, kernel, desktop, shell, CPU, memória, gerenciador de pacotes                              |
 | `profiles --json`                                  | perfis, com o ambiente (`dev`/`gaming`) e qual corresponde à máquina                              |
 | `steps --json [-p perfil]`                         | etapas do perfil: apps com estado, opções de escolha, arquivos e pastas                           |
-| `plan --json [--apps a,b] [--choose etapa=opção]`  | itens (`app`, `dir`, `file`, `vscode`) com estado e etapa de origem, mais os indisponíveis        |
+| `plan --json [--apps a,b] [--choose etapa=opção] [--set chave=valor]` | itens (`app`, `dir`, `file`, `vscode`) com estado e etapa de origem, mais os indisponíveis |
 | `apply --json [--sudo-password-stdin]`             | NDJSON: `step` (com etapa e duração), `log` (com o índice do item), `done` (com o caminho do log) |
 | `add <caminho> --json [--group g] [--copy]`        | `{src, dest, mode}`                                                                               |
 | `show <caminho> --json`                            | conteúdo de um arquivo do repo, listagem de pasta ou imagem; recusa caminhos fora do repo         |
+| `desktop --json` | o desktop do perfil para o preview: wallpaper e ícones reais (data URLs), dock, painel, cores e apps instalados |
+| `set-dock [id...] --json` | grava a ordem da dock no YAML do perfil (aplicada no próximo `apply`) |
 | `set-dirs --step e [--option o] [pasta...] --json` | grava a lista de pastas no YAML do perfil                                                         |
+| `add-app --step e --id app [--name pacote] [--method m] [--description d] [--optional] --json` | põe um app na etapa do perfil e cria a entrada no catálogo se ele for novo |
+| `remove-app --step e app --json` | tira um app da etapa (a entrada do catálogo fica) |
 
 O Rust só aceita esses subcomandos (lista `ALLOWED` em `app/src-tauri/src/lib.rs`).
 
@@ -43,12 +47,12 @@ ambiente do processo, que apenas o mesmo usuário lê, e some ao fim da execuç�
 
 ## Consequências e riscos
 
-- **Linux:** o app exige `webkit2gtk-4.1` em runtime. Numa instalação mínima ele pode faltar;
-  o caminho previsto é a CLI instalar essa dependência antes de abrir o app, mas o `webkit2gtk`
-  ainda não está no catálogo (`config/apps.yaml`), então hoje isso é manual.
+- **Linux:** o app exige `webkit2gtk-4.1` em runtime. Ele está no catálogo (`webkit2gtk`, na
+  etapa Essenciais), então numa instalação mínima a CLI o instala antes de o app ser aberto.
 - **Windows:** o WebView2 já vem no Windows 11. O sidecar é compilado por alvo
-  (`app/scripts/build-sidecar.mjs`); o cross-compile do app Tauri é frágil, então o `.exe`
-  deve sair de uma máquina ou CI Windows. Ainda não testado.
+  (`app/scripts/build-sidecar.mjs`) e criado sem janela de console; o cross-compile do app Tauri
+  é frágil, então o `.exe` deve sair de uma máquina ou CI Windows. Lá não há diálogo de senha:
+  cada instalador pede a própria elevação. Ainda não testado numa máquina real.
 - **Arquivos grandes** (imagens, binários) inflam o git; considerar Git LFS se virarem muitos.
 - O app precisa saber onde está o repo (`config/` e `dotfiles/`). Ele detecta a partir do
   diretório atual ou do executável, e guarda a escolha do usuário.

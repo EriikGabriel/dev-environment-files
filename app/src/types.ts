@@ -37,6 +37,8 @@ export interface Profile {
   match: string[] | null;
   /** True for the profile picked automatically for this machine. */
   matches: boolean;
+  /** False when the profile is for another operating system; those are not listed. */
+  compatible: boolean;
 }
 
 export interface WizardApp {
@@ -85,6 +87,15 @@ export interface WizardOption {
   dirs: string[];
 }
 
+/** A value the step asks for (git name, e-mail). */
+export interface WizardInput {
+  /** Key passed to the engine with --set. */
+  id: string;
+  label: string;
+  /** What this machine has today; "" when unknown. */
+  value: string;
+}
+
 export interface WizardStep {
   id: string;
   title: string;
@@ -95,6 +106,7 @@ export interface WizardStep {
   choice_title: string;
   options: WizardOption[];
   default: string;
+  inputs: WizardInput[];
 }
 
 /** Output of `steps --json`. */
@@ -107,13 +119,50 @@ export interface Wizard {
   steps: WizardStep[];
 }
 
-/** What the user picked: toggled apps plus one option per choice step. */
+/** What the user picked: toggled apps, one option per choice step and the typed values. */
 export interface Selection {
   apps: string[];
   choices: Record<string, string>;
+  /** Step inputs by id. Kept on this computer only, never written to the repo. */
+  vars: Record<string, string>;
 }
 
-export type StepKind = "app" | "file" | "dir" | "vscode";
+export type InstallMethod = "native" | "aur" | "flatpak" | "winget" | "scoop" | "steam";
+
+/** A new item for a step (`add-app`). */
+export interface NewApp {
+  id: string;
+  /** Package name, winget ID or Steam AppID; "" when the id is already in the catalogue. */
+  name: string;
+  method: InstallMethod | "";
+  description: string;
+  optional: boolean;
+}
+
+export interface DockItem {
+  id: string;
+  name: string;
+  /** Data URL; empty when no icon was found on this machine. */
+  icon: string;
+  /** A desktop entry for it exists on this machine. */
+  found: boolean;
+}
+
+/** Output of `desktop --json`. */
+export interface DesktopPreview {
+  kind: "niri-noctalia" | "gnome" | "";
+  icon_theme: string;
+  colors: { accent: string; panel: string; text: string };
+  wallpaper: string;
+  wallpaper_source: string;
+  wallpaper_error: string;
+  dock: { position: "bottom" | "top" | "left" | "right"; autohide: boolean; items: DockItem[] };
+  bar: { position: "top" | "bottom"; start: string[]; center: string[]; end: string[] };
+  /** Installed apps that can be added to the dock. */
+  apps: { id: string; name: string }[];
+}
+
+export type StepKind = "app" | "file" | "dir" | "dock" | "vscode";
 
 export interface PlanLine {
   kind: StepKind;

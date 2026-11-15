@@ -13,7 +13,7 @@ use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Emitter, Manager, State};
 
 /// Subcommands the front-end may run through [`envsetup`].
-const ALLOWED: &[&str] = &["detect", "info", "profiles", "steps", "plan", "add", "show", "set-dirs"];
+const ALLOWED: &[&str] = &["detect", "info", "profiles", "steps", "plan", "add", "show", "set-dirs", "desktop", "set-dock", "add-app", "remove-app"];
 
 #[derive(Default)]
 struct ApplyState(Mutex<Option<Arc<Mutex<Child>>>>);
@@ -86,6 +86,19 @@ fn sidecar() -> Result<PathBuf, String> {
         .ok_or_else(|| format!("envsetup binary not found next to {}", exe.display()))
 }
 
+/// A command for the sidecar. On Windows it is created without a console
+/// window, which would otherwise flash on every call.
+fn sidecar_command(bin: PathBuf) -> Command {
+    #[allow(unused_mut)]
+    let mut cmd = Command::new(bin);
+    #[cfg(windows)]
+    {
+        use std::os::windows::process::CommandExt;
+        cmd.creation_flags(0x0800_0000); // CREATE_NO_WINDOW
+    }
+    cmd
+}
+
 /// Runs a read-style subcommand with --json and returns the parsed output.
 #[tauri::command]
 async fn envsetup(root: String, args: Vec<String>) -> Result<serde_json::Value, String> {
@@ -95,7 +108,7 @@ async fn envsetup(root: String, args: Vec<String>) -> Result<serde_json::Value, 
     }
     let bin = sidecar()?;
     tauri::async_runtime::spawn_blocking(move || {
-        let out = Command::new(bin)
+        let out = sidecar_command(bin)
             .arg("--root")
             .arg(&root)
             .args(&args)
@@ -123,11 +136,12 @@ async fn apply(
     profile: String,
     choices: Option<std::collections::BTreeMap<String, String>>,
     apps: Option<Vec<String>>,
+    vars: Option<std::collections::BTreeMap<String, String>>,
     no_files: bool,
     sudo_password: Option<String>,
 ) -> Result<(), String> {
     let bin = sidecar()?;
-    let mut cmd = Command::new(bin);
+    let mut cmd = sidecar_command(bin);
     cmd.arg("--root").arg(&root).arg("-p").arg(&profile).arg("apply").arg("--json");
     if let Some(list) = apps {
         // An empty selection must select nothing, not everything.
@@ -142,6 +156,9 @@ async fn apply(
     }
     for (step, option) in choices.unwrap_or_default() {
         cmd.arg("--choose").arg(format!("{step}={option}"));
+    }
+    for (key, value) in vars.unwrap_or_default() {
+        cmd.arg("--set").arg(format!("{key}={value}"));
     }
     if no_files {
         cmd.arg("--no-files");

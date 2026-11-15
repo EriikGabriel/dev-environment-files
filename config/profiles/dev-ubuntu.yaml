@@ -3,12 +3,29 @@ description: O ambiente dos scripts antigos - GNOME com visual WhiteSur, zsh + p
 environment: dev
 match: [ubuntu, debian]
 
+# How the desktop looks (preview), and the dock order written to GNOME on apply.
+desktop:
+  kind: gnome
+  app: gnome-settings
+  wallpaper: https://www.iclarified.com/images/news/91914/440181/440181.jpg
+  icon_theme: WhiteSur-dark
+  colors: { accent: "#3584e4", panel: "#0b0b0b", text: "#f2f2f2" }
+  dock:
+    position: bottom
+    autohide: true
+    pinned: [org.gnome.Nautilus, org.wezfurlong.wezterm, google-chrome, code, discord]
+  bar:
+    position: top
+    start: [activities]
+    center: [clock]
+    end: [tray, network, volume, power]
+
 # Same model as dev-cachyos.yaml. The end result follows legacy/setup*.sh.
 steps:
   - id: base
     title: Essenciais
     description: Ferramentas básicas de linha de comando e de compilação.
-    apps: [curl, wget, git, vim, unzip, build-tools, tmux, htop, flatpak]
+    apps: [curl, wget, git, vim, unzip, build-tools, tmux, htop, flatpak, webkit2gtk]
     optional: [ripgrep, btop, tree, micro]
 
   - id: shell
@@ -32,8 +49,16 @@ steps:
   - id: runtimes
     title: Linguagens e serviços
     description: Runtimes, containers e bancos de dados.
-    apps: [nodejs, npm, python, python-pip, python-venv, openjdk-21, docker, postgresql, redis, gh]
-    optional: [docker-compose]
+    # nodejs (NodeSource) already has npm, and docker (docker-ce) the compose plugin.
+    apps: [nodejs, python, python-pip, python-venv, openjdk-21, docker, postgresql, redis, gh]
+
+  - id: identity
+    title: Identidade
+    description: Nome e e-mail do git, a chave SSH e o login no GitHub. O que você digita fica só neste computador.
+    inputs:
+      - { id: git.name, label: Nome no git, from: git config --global user.name }
+      - { id: git.email, label: E-mail no git, from: git config --global user.email }
+    apps: [openssh, git-identity, ssh-key, gh-auth]
 
   - id: editor
     title: Editor de código
@@ -62,7 +87,7 @@ steps:
     title: Aplicativos
     description: Navegador e, se quiser, os apps de entretenimento.
     apps: [google-chrome]
-    optional: [discord, spotify, vlc, godothub]
+    optional: [discord, spotify, vlc, godothub, fuse2]
 
   - id: workspace
     title: Pastas de trabalho
@@ -80,7 +105,7 @@ steps:
   - id: desktop
     title: Desktop
     description: GNOME com o visual WhiteSur, extensões e dock, como nos scripts antigos.
-    apps: [sassc, gnome-tweaks, gnome-extension-manager, gnome-settings, gnome-extensions, whitesur-gtk-theme, whitesur-icons, gnome-dock-apps]
-    optional: [mac-wallpaper]
+    apps: [sassc, gnome-tweaks, gnome-extension-manager, gnome-settings, gnome-extensions, whitesur-gtk-theme, whitesur-icons]
+    optional: [mac-wallpaper, vicinae]
 
 files: []

@@ -4,8 +4,9 @@ const key = (profile: string) => `envsetup.selection.${profile}`;
 
 /** The profile's own defaults: `apps` on, `optional` off, default options. */
 export function defaultSelection(w: Wizard): Selection {
-  const sel: Selection = { apps: [], choices: {} };
+  const sel: Selection = { apps: [], choices: {}, vars: {} };
   for (const s of w.steps) {
+    for (const i of s.inputs) sel.vars[i.id] = i.value;
     for (const a of s.apps) if (a.default && a.available) sel.apps.push(a.id);
     if (s.options.length) sel.choices[s.id] = s.default || "none";
   }
@@ -25,7 +26,9 @@ export function loadSelection(w: Wizard): Selection {
       const c = saved.choices?.[s.id];
       if (c && (c === "none" || s.options.some((o) => o.id === c))) choices[s.id] = c;
     }
-    return { apps: (saved.apps ?? []).filter((id) => known.has(id)), choices };
+    const vars = { ...def.vars };
+    for (const id of Object.keys(vars)) if (saved.vars?.[id]) vars[id] = saved.vars[id];
+    return { apps: (saved.apps ?? []).filter((id) => known.has(id)), choices, vars };
   } catch {
     return def;
   }

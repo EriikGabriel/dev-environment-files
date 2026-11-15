@@ -3,6 +3,7 @@ package engine
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/EriikGabriel/dev-environment-files/internal/config"
 )
@@ -36,6 +37,14 @@ type WizardOption struct {
 	Dirs        []string     `json:"dirs"`
 }
 
+// WizardInput is a value the step asks the user for.
+type WizardInput struct {
+	ID    string `json:"id"`
+	Label string `json:"label"`
+	// Value is what the machine has today (from the input's `from` command).
+	Value string `json:"value"`
+}
+
 // WizardStep is one stage of the setup, resolved for this host.
 type WizardStep struct {
 	ID          string         `json:"id"`
@@ -47,6 +56,7 @@ type WizardStep struct {
 	ChoiceTitle string         `json:"choice_title"`
 	Options     []WizardOption `json:"options"`
 	Default     string         `json:"default"`
+	Inputs      []WizardInput  `json:"inputs"`
 }
 
 // Wizard describes every step of a profile with the current state of each
@@ -74,11 +84,7 @@ func Wizard(ctx context.Context, cfg *config.Config, profileID string, env *Env)
 		out := []WizardFile{}
 		for _, f := range files {
 			if appliesTo(f.Only, env.Info) {
-				mode := f.Mode
-				if mode == "" {
-					mode = "link"
-				}
-				out = append(out, WizardFile{Src: f.Src, Dest: f.Dest, Mode: mode, App: f.App})
+				out = append(out, WizardFile{Src: f.Src, Dest: f.Dest, Mode: fileMode(f, env.Info), App: f.App})
 			}
 		}
 		return out
@@ -90,6 +96,19 @@ func Wizard(ctx context.Context, cfg *config.Config, profileID string, env *Env)
 			ID: st.ID, Title: st.Title, Description: st.Description,
 			Apps: []WizardApp{}, Files: dests(st.Files), Dirs: append([]string{}, st.Dirs...),
 			ChoiceTitle: st.ChoiceTitle, Options: []WizardOption{}, Default: st.Default,
+			Inputs: []WizardInput{},
+		}
+		for _, in := range st.Inputs {
+			wi := WizardInput{ID: in.ID, Label: in.Label}
+			if wi.Label == "" {
+				wi.Label = in.ID
+			}
+			if in.From != "" {
+				if v, err := env.Runner.Output(ctx, env.script(in.From)...); err == nil {
+					wi.Value = strings.TrimSpace(v)
+				}
+			}
+			w.Inputs = append(w.Inputs, wi)
 		}
 		for _, id := range st.Apps {
 			w.Apps = append(w.Apps, app(id, true))

@@ -43,7 +43,7 @@ func Describe(i Info) Details {
 	}
 	d := Details{
 		OS: i.OS, Arch: i.Arch, ID: i.ID, Like: like, Family: i.Family, Name: i.Name,
-		Supported: i.Family == "debian" || i.Family == "arch",
+		Supported: i.Family == "debian" || i.Family == "arch" || i.Family == "windows",
 		Desktop:   os.Getenv("XDG_CURRENT_DESKTOP"),
 		Session:   os.Getenv("XDG_SESSION_TYPE"),
 		Shell:     filepath.Base(os.Getenv("SHELL")),
@@ -60,6 +60,15 @@ func Describe(i Info) Details {
 	}
 	d.CPU, d.Cores = cpuInfo()
 	d.MemoryGB = memoryGB()
+	if i.OS == "windows" {
+		// No /proc: the environment has what the summary needs.
+		d.CPU = os.Getenv("PROCESSOR_IDENTIFIER")
+		d.Cores, _ = strconv.Atoi(os.Getenv("NUMBER_OF_PROCESSORS"))
+		d.Shell = "powershell"
+		if name := os.Getenv("USERNAME"); name != "" {
+			d.User = name // user.Current() gives DOMAIN\name
+		}
+	}
 
 	switch i.Family {
 	case "debian":

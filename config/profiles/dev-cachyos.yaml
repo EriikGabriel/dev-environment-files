@@ -3,6 +3,24 @@ description: O ambiente atual - niri com Noctalia, fish + starship, kitty e Zed.
 environment: dev
 match: [cachyos, arch]
 
+# How the desktop looks. It feeds the preview in the app, and `dock.pinned` is
+# written to the real Noctalia config on apply (edit it in the preview, or here).
+desktop:
+  kind: niri-noctalia
+  app: niri-noctalia
+  wallpaper: dotfiles/wallpapers/macos-ventura.jpg
+  icon_theme: MacTahoe-dark
+  colors: { accent: "#ffc799", panel: "#101010", text: "#e6e6e6" }
+  dock:
+    position: bottom
+    autohide: true
+    pinned: [org.gnome.Nautilus, spotify, discord, kitty, obsidian, zen, jetbrains-idea, dev.zed.Zed, beekeeper-studio, GodotHub, bruno]
+  bar:
+    position: top
+    start: [launcher, clock, sysmon, active_window, media]
+    center: [workspaces]
+    end: [tray, notifications, screen_tools, screen_recorder, arch_updater, battery, volume, brightness, clipboard, keybinds, control-center]
+
 # Each step is one screen of the setup. `apps` start selected, `optional`
 # start unselected, and `options` is a pick-one list (`default`; "none" skips).
 # Files are symlinked into the repo; a file with `app:` is only deployed when
@@ -11,7 +29,7 @@ steps:
   - id: base
     title: Essenciais
     description: Ferramentas básicas de linha de comando e de compilação.
-    apps: [curl, wget, git, vim, unzip, build-tools, ripgrep, btop, tree]
+    apps: [curl, wget, git, vim, unzip, build-tools, ripgrep, btop, tree, webkit2gtk]
     optional: [htop, tmux, micro, helix]
 
   - id: shell
@@ -69,6 +87,14 @@ steps:
     description: Runtimes, gerenciadores de pacote, containers e bancos de dados.
     apps: [nodejs, npm, pnpm, python, python-pip, openjdk-21, docker, docker-compose, postgresql, gh]
 
+  - id: identity
+    title: Identidade
+    description: Nome e e-mail do git, a chave SSH e o login no GitHub. O que você digita fica só neste computador.
+    inputs:
+      - { id: git.name, label: Nome no git, from: git config --global user.name }
+      - { id: git.email, label: E-mail no git, from: git config --global user.email }
+    apps: [openssh, git-identity, ssh-key, gh-auth]
+
   - id: editor
     title: Editor de código
     description: O editor principal, com configurações e extensões.
@@ -98,7 +124,7 @@ steps:
   - id: apps
     title: Aplicativos
     description: Navegador e os apps do dia a dia.
-    apps: [zen-browser, obsidian, bruno, beekeeper-studio, discord, spotify, godothub]
+    apps: [zen-browser, obsidian, bruno, beekeeper-studio, discord, spotify, fuse2, godothub]
     optional: [google-chrome, localsend, vlc]
 
   - id: workspace
@@ -121,11 +147,14 @@ steps:
   - id: desktop
     title: Desktop
     description: niri + Noctalia, com os atalhos, regras e o tema Vesper atuais, e os ícones estilo macOS.
-    apps: [niri-noctalia, mactahoe-icons]
+    apps: [niri-noctalia, vicinae, mactahoe-icons]
     files:
       # monitors.kdl inside dotfiles/niri is specific to this machine's outputs.
       - { src: dotfiles/niri, dest: ~/.config/niri, app: niri-noctalia }
+      # niri starts the launcher itself (spawn-at-startup "vicinae" "server").
+      - { src: dotfiles/vicinae/settings.json, dest: ~/.config/vicinae/settings.json, app: vicinae }
       - { src: dotfiles/noctalia/config.toml, dest: ~/.config/noctalia/config.toml, app: niri-noctalia }
+      - { src: dotfiles/wallpapers, dest: ~/Imagens/Wallpapers, app: niri-noctalia }
       - { src: dotfiles/noctalia/palettes, dest: ~/.config/noctalia/palettes, app: niri-noctalia }
       - { src: dotfiles/noctalia/colorschemes, dest: ~/.config/noctalia/colorschemes, app: niri-noctalia }
 

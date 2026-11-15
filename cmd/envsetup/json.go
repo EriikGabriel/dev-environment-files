@@ -38,6 +38,9 @@ type profileJSON struct {
 	Environment string   `json:"environment"`
 	Match       []string `json:"match"`
 	Matches     bool     `json:"matches"` // the profile picked for this machine
+	// Compatible tells whether the profile can run on this operating system:
+	// Windows profiles on Windows, the others on Linux.
+	Compatible bool `json:"compatible"`
 }
 
 type wizardJSON struct {

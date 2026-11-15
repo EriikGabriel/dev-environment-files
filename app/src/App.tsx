@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import * as api from "./api";
 import { errorMessage } from "./api";
 import { ApplyView, type StepState } from "./components/ApplyView";
+import { DesktopTab } from "./components/DesktopTab";
 import { DotfilesTab } from "./components/DotfilesTab";
 import { Drawer } from "./components/Drawer";
 import { FileDrawer, type FileTarget } from "./components/FileDrawer";
@@ -12,6 +13,7 @@ import { SetupWizard } from "./components/SetupWizard";
 import { defaultSelection, loadSelection, saveSelection } from "./selection";
 import type {
 	ApplyEvent,
+	NewApp,
 	Plan,
 	Profile,
 	Selection,
@@ -20,7 +22,7 @@ import type {
 } from "./types";
 import "./styles.css";
 
-type Tab = "home" | "setup" | "dotfiles";
+type Tab = "home" | "setup" | "preview" | "dotfiles";
 type Summary = Extract<ApplyEvent, { type: "done" }>;
 
 interface ApplyState {
@@ -37,6 +39,7 @@ interface ApplyState {
 const TABS: { id: Tab; label: string; icon: string }[] = [
 	{ id: "home", label: "Início", icon: "⌂" },
 	{ id: "setup", label: "Configurar", icon: "☰" },
+	{ id: "preview", label: "Preview", icon: "▣" },
 	{ id: "dotfiles", label: "Dotfiles", icon: "❖" },
 ];
 
@@ -77,7 +80,9 @@ export default function App() {
 			.catch(() => setInfo(null));
 		api
 			.profiles(root)
-			.then((list) => {
+			.then((all) => {
+				// profiles for another operating system are not offered at all
+				const list = all.filter((p) => p.compatible);
 				setProfiles(list);
 				setProfileId((cur) => cur ?? list.find((p) => p.matches)?.id ?? null);
 				setError(null);
@@ -231,6 +236,37 @@ export default function App() {
 		await loadWizard(true);
 	};
 
+	const addApp = async (step: string, app: NewApp) => {
+		if (!root || !wizard || !selection) return;
+		await api.addApp(root, wizard.profile, step, app);
+		// a new item is there to be installed: it enters the plan right away
+		changeSelection({
+			...selection,
+			apps: [...new Set([...selection.apps, app.id])],
+		});
+		await loadWizard(true);
+	};
+
+	const removeApp = async (step: string, id: string) => {
+		if (!root || !wizard || !selection) return;
+		await api.removeApp(root, wizard.profile, step, id);
+		const still = wizard.steps.some(
+			(s) => s.id !== step && s.apps.some((a) => a.id === id),
+		);
+		if (!still)
+			changeSelection({
+				...selection,
+				apps: selection.apps.filter((a) => a !== id),
+			});
+		await loadWizard(true);
+	};
+
+	// Windows has no sudo: installers raise their own elevation prompt.
+	const requestApply = () => {
+		if (info?.os === "windows") void startApply("");
+		else setAskPassword(true);
+	};
+
 	const goStep = (i: number) => {
 		setRun(null);
 		setStepIndex(i);
@@ -242,7 +278,8 @@ export default function App() {
 	if (!root) {
 		return (
 			<main className="center">
-				<h1 className="brand">envsetup</h1>
+				<img src="/icon.svg" alt="" className="brand-icon big-icon" />
+        <h1 className="brand">envsetup</h1>
 				<p className="muted">
 					Selecione a pasta que contém <code>config/</code> e{" "}
 					<code>dotfiles/</code>.
@@ -261,7 +298,10 @@ export default function App() {
 	return (
 		<div className="shell" data-env={env || "none"}>
 			<aside>
-				<h1 className="brand">envsetup</h1>
+				<h1 className="brand">
+          <img src="/icon.svg" alt="" className="brand-icon" />
+          envsetup
+        </h1>
 				<div className="env-badge">
 					<span className="dot" />
 					<span>
@@ -355,12 +395,12 @@ export default function App() {
 						plan={plan}
 						root={root}
 						onStep={goStep}
-						onApplyPending={() => setAskPassword(true)}
+						onApplyPending={requestApply}
 					/>
 				) : !ready ? (
 					<p className="banner">
-						{profile?.environment === "gaming"
-							? "O perfil de jogos ainda não tem etapas. Escolha um perfil de desenvolvimento na barra lateral."
+						{wizard && wizard.steps.length === 0
+							? "Este perfil ainda não tem etapas."
 							: "Carregando as etapas deste perfil…"}
 					</p>
 				) : tab === "setup" ? (
@@ -372,11 +412,15 @@ export default function App() {
 						onIndex={setStepIndex}
 						onChange={changeSelection}
 						onReset={() => changeSelection(defaultSelection(wizard))}
-						onApply={() => setAskPassword(true)}
+						onApply={requestApply}
 						onOpenFile={setOpenFile}
 						onSaveDirs={saveDirs}
+						onAddApp={addApp}
+						onRemoveApp={removeApp}
 					/>
-				) : plan ? (
+				) : tab === "preview" ? (
+					<DesktopTab root={root} profile={wizard.profile} info={info} plan={plan} onSaved={() => void loadPlan()} />
+					) : plan ? (
 					<DotfilesTab
 						root={root}
 						profile={wizard.profile}
@@ -415,8 +459,9 @@ export default function App() {
 								Cada perfil leva a um ambiente final. O de CachyOS reproduz o
 								ambiente atual (niri + Noctalia, fish, kitty, Zed). O de Ubuntu
 								reproduz o dos scripts antigos (GNOME + WhiteSur, zsh, WezTerm,
-								VS Code). O perfil é escolhido pela distro, e o de jogos no
-								Windows ainda não foi implementado.
+								VS Code). O de jogos, no Windows, instala drivers, lojas e os
+								apps do dia a dia pelo winget. O perfil é escolhido pelo
+								sistema da máquina.
 							</p>
 							<h3>Etapas e escolhas</h3>
 							<p>
@@ -424,7 +469,9 @@ export default function App() {
 								liga ou desliga e, em algumas, uma escolha única (shell,
 								terminal, editor, estrutura de pastas). As escolhas ficam salvas
 								neste computador. A última tela mostra exatamente o que será
-								feito.
+								feito. Em cada etapa dá para adicionar um item novo (nome do
+								pacote, ID do winget ou AppID da Steam) ou remover um
+								existente: isso altera os arquivos em <code>config/</code>.
 							</p>
 							<h3>Arquivos de configuração</h3>
 							<p>
@@ -436,8 +483,9 @@ export default function App() {
 							</p>
 							<h3>Aplicar</h3>
 							<p>
-								Instalar pacotes pede a senha do sudo, usada só naquela
-								execução. O log mostra item a item o que mudou, o que já estava
+								No Linux, instalar pacotes pede a senha do sudo, usada só
+								naquela execução; no Windows cada instalador pede a elevação
+								dele. O log mostra item a item o que mudou, o que já estava
 								em dia e o que falhou, e uma cópia em texto fica em{" "}
 								<code>~/.local/state/envsetup/</code>. Aplicar de novo é seguro:
 								o que está em dia é pulado.

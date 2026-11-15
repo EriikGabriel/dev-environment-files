@@ -71,3 +71,16 @@ func TestWindowsFamily(t *testing.T) {
 		t.Errorf("Family = %q, want windows", got.Family)
 	}
 }
+
+func TestCodename(t *testing.T) {
+	for _, tt := range []struct{ name, osRelease, want string }{
+		{"ubuntu", "ID=ubuntu\nVERSION_CODENAME=noble\nUBUNTU_CODENAME=noble\n", "noble"},
+		{"mint uses the ubuntu base", "ID=linuxmint\nID_LIKE=\"ubuntu debian\"\nVERSION_CODENAME=wilma\nUBUNTU_CODENAME=noble\n", "noble"},
+		{"debian", "ID=debian\nVERSION_CODENAME=bookworm\n", "bookworm"},
+		{"arch has none", "ID=arch\n", ""},
+	} {
+		if got := ParseOSRelease(strings.NewReader(tt.osRelease), "linux", "amd64").Codename; got != tt.want {
+			t.Errorf("%s: codename = %q, want %q", tt.name, got, tt.want)
+		}
+	}
+}

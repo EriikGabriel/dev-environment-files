@@ -1,20 +1,34 @@
 # Catalogue of every app envsetup knows how to install.
 #
-# Per-distro maps (names, method, source, check, post) are keyed by distro ID
-# ("ubuntu", "arch", "cachyos"), by ID_LIKE family ("debian", "arch"), or "*"
-# as fallback. The lookup order is: exact ID, each ID_LIKE entry, then "*".
-# So `debian:` also covers Ubuntu, Mint and Pop!_OS, and `arch:` covers CachyOS.
+# Per-distro maps (names, method, source, check, post, repo) are keyed by
+# distro ID ("ubuntu", "arch", "cachyos"), by ID_LIKE family ("debian",
+# "arch"), by "windows", or "*" as fallback. The lookup order is: exact ID,
+# each ID_LIKE entry, then "*". So `debian:` also covers Ubuntu, Mint and
+# Pop!_OS, and `arch:` covers CachyOS. "*" means every Linux distro: Windows
+# only uses what is under its own `windows:` key.
 #
 # method (default "native"):
-#   native   distro package manager (apt / pacman); `names` is the package
+#   native   system package manager (apt / pacman / winget); `names` is the
+#            package, or several packages separated by spaces (apt, pacman)
 #   aur      AUR through yay or paru; `names` is the AUR package
 #   deb-url  download the .deb in `source`; `names` is its dpkg package name
 #   flatpak  flathub; `names` is the application ID
 #   script   shell in `source`; `check` must exit 0 when already installed
+#   winget   Windows Package Manager; `names` is the exact package ID
+#   scoop    scoop (Windows); `names` is the package
+#   steam    a Steam app (Windows); `names` is the AppID. Steam opens its own
+#            install dialog, and the app must be in the account's library
 #
-# `source` expands {arch} (amd64|arm64) and {x64} (x64|arm64).
-# `post` and `script` commands run under sh with $SUDO set to "sudo", or to
-# nothing when already root. `post` runs on every apply, so keep it idempotent.
+# `repo` (Debian family, native method) registers a third-party apt repository
+# before installing: `key` is the signing key URL and `source` is the
+# "url suite components" part of the sources.list line.
+#
+# `source` and `repo.source` expand {arch} (amd64|arm64), {x64} (x64|arm64)
+# and {codename} (noble, bookworm).
+# `post`, `check` and `script` run under sh with $SUDO set to "sudo" (nothing
+# when already root); on Windows they run under PowerShell. They also see
+# $ENVSETUP_ROOT (the repo) and one $ENVSETUP_<KEY> per value given with --set.
+# `post` runs on every apply, so keep it idempotent.
 
 apps:
   # ---- base ----
@@ -32,18 +46,25 @@ apps:
 
   # ---- runtimes and services ----
   docker:
-    description: Docker engine, enabled at boot, user added to the docker group
-    # docker.io is Ubuntu's own package. The official docker-ce repo is not
-    # modelled yet (needs a `repo` block).
-    names: { debian: docker.io, arch: docker }
+    description: Docker engine, enabled at boot, user added to the docker group (docker-ce from Docker's apt repo on Debian and Ubuntu)
+    names:
+      debian: docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+      arch: docker
+    repo:
+      ubuntu: { key: https://download.docker.com/linux/ubuntu/gpg, source: "https://download.docker.com/linux/ubuntu {codename} stable" }
+      debian: { key: https://download.docker.com/linux/debian/gpg, source: "https://download.docker.com/linux/debian {codename} stable" }
     post:
       "*":
         - $SUDO systemctl enable --now docker
         - $SUDO usermod -aG docker "${USER:-$(id -un)}"
   nodejs:
-    description: Node.js (distro version; NodeSource repo is not modelled yet)
+    description: Node.js (24.x LTS from the NodeSource apt repo on Debian and Ubuntu, npm included; distro package on Arch)
     names: { "*": nodejs }
-  npm: { names: { "*": npm } }
+    repo:
+      debian: { key: https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key, source: "https://deb.nodesource.com/node_24.x nodistro main" }
+  npm:
+    names: { arch: npm }
+    unavailable: [debian] # ships inside the NodeSource nodejs package
   python: { names: { debian: python3, arch: python } }
   python-pip: { names: { debian: python3-pip, arch: python-pip } }
   python-venv:
@@ -51,6 +72,61 @@ apps:
     unavailable: [arch] # venv ships with the arch python package
   postgresql: { names: { "*": postgresql } }
   redis: { names: { debian: redis-server, arch: redis } }
+
+  # ---- libraries other items need ----
+  webkit2gtk:
+    description: WebKitGTK 4.1, the web view the envsetup desktop app runs on
+    names: { debian: libwebkit2gtk-4.1-0, arch: webkit2gtk-4.1 }
+  fuse2:
+    description: FUSE 2, needed to run AppImages (GodotHub, Vicinae on Ubuntu)
+    # libfuse2t64 is the name since Ubuntu 24.04 and Debian 13; older releases call it libfuse2.
+    names: { debian: libfuse2t64, arch: fuse2 }
+
+  # ---- identity (git, SSH, GitHub) ----
+  # git.name and git.email come from the fields of the profile step, through
+  # --set; nothing personal is stored in the repo.
+  openssh:
+    description: OpenSSH client (ssh, ssh-keygen)
+    names: { debian: openssh-client, arch: openssh }
+  git-identity:
+    description: Global git user.name and user.email, from the fields of this step
+    method: { "*": script }
+    check:
+      "*": |
+        [ -n "$(git config --global user.name)" ] && [ -n "$(git config --global user.email)" ] &&
+        { [ -z "$ENVSETUP_GIT_NAME" ] || [ "$(git config --global user.name)" = "$ENVSETUP_GIT_NAME" ]; } &&
+        { [ -z "$ENVSETUP_GIT_EMAIL" ] || [ "$(git config --global user.email)" = "$ENVSETUP_GIT_EMAIL" ]; }
+    source:
+      "*": |
+        if [ -z "$ENVSETUP_GIT_NAME" ] || [ -z "$ENVSETUP_GIT_EMAIL" ]; then
+          echo "the git name and e-mail are missing: fill in the fields of the step, or pass --set git.name=... --set git.email=..."
+          exit 1
+        fi
+        git config --global user.name "$ENVSETUP_GIT_NAME" &&
+        git config --global user.email "$ENVSETUP_GIT_EMAIL"
+  ssh-key:
+    description: An ed25519 SSH key in ~/.ssh, without passphrase (kept if one already exists)
+    method: { "*": script }
+    check:
+      "*": test -f "$HOME/.ssh/id_ed25519"
+    source:
+      "*": |
+        set -e
+        mkdir -p "$HOME/.ssh" && chmod 700 "$HOME/.ssh"
+        ssh-keygen -t ed25519 -N "" -f "$HOME/.ssh/id_ed25519" \
+          -C "${ENVSETUP_GIT_EMAIL:-$(git config --global user.email || id -un)}"
+  gh-auth:
+    description: Log the GitHub CLI in through the browser (the one-time code shows in the log) and upload the SSH key
+    method: { "*": script }
+    check:
+      "*": gh auth status -h github.com >/dev/null 2>&1
+    source:
+      "*": |
+        set -e
+        gh auth login -h github.com -p ssh -w --skip-ssh-key -s admin:public_key
+        if [ -f "$HOME/.ssh/id_ed25519.pub" ]; then
+          gh ssh-key add "$HOME/.ssh/id_ed25519.pub" -t "$(uname -n)" || echo "the SSH key was not uploaded (it may already be on the account)"
+        fi
 
   # ---- cli tools ----
   gh:
@@ -153,7 +229,9 @@ apps:
   micro: { description: Simple terminal editor, names: { "*": micro } }
   helix: { description: Modal terminal editor, names: { arch: helix } }
   pnpm: { names: { arch: pnpm } }
-  docker-compose: { names: { arch: docker-compose, debian: docker-compose-v2 } }
+  docker-compose:
+    names: { arch: docker-compose }
+    unavailable: [debian] # docker-compose-plugin comes with the docker entry there
   openjdk-21: { names: { debian: openjdk-21-jdk, arch: jdk21-openjdk } }
 
   # ---- shells and terminals ----
@@ -198,12 +276,12 @@ apps:
   obsidian: { names: { arch: obsidian } }
   discord:
     method: { debian: deb-url }
-    names: { debian: discord, arch: discord }
+    names: { debian: discord, arch: discord, windows: Discord.Discord }
     source:
       debian: https://discord.com/api/download?platform=linux&format=deb
   spotify:
     method: { debian: flatpak, arch: aur }
-    names: { debian: com.spotify.Client, arch: spotify }
+    names: { debian: com.spotify.Client, arch: spotify, windows: Spotify.Spotify }
   vlc: { names: { "*": vlc } }
   bruno:
     description: API client
@@ -330,20 +408,6 @@ apps:
           rm -rf "$tmp"
         fi
         gsettings set org.gnome.desktop.interface icon-theme "'WhiteSur-dark'"
-  gnome-dock-apps:
-    description: Pin Files, terminal, browser, editor and Discord to the dock (only the installed ones)
-    method: { debian: script }
-    check:
-      debian: gsettings get org.gnome.shell favorite-apps | grep -q wezterm
-    source:
-      debian: |
-        list=""
-        for app in org.gnome.Nautilus.desktop org.wezfurlong.wezterm.desktop google-chrome.desktop code.desktop dev.zed.Zed.desktop discord.desktop; do
-          for dir in /usr/share/applications /var/lib/flatpak/exports/share/applications "$HOME/.local/share/applications"; do
-            if [ -f "$dir/$app" ]; then list="$list${list:+, }'$app'"; break; fi
-          done
-        done
-        gsettings set org.gnome.shell favorite-apps "[$list]"
   mac-wallpaper:
     description: macOS-style wallpaper
     method: { debian: script }
@@ -409,3 +473,75 @@ apps:
         Terminal=false
         Categories=Development;
         EOD
+
+  # ---- launcher ----
+  vicinae:
+    description: Vicinae launcher (Alt+Space in the niri config). On Debian-family it is the AppImage.
+    method: { arch: aur, debian: script }
+    names: { arch: vicinae-bin }
+    check:
+      debian: test -x "$HOME/.local/bin/vicinae"
+    source:
+      debian: |
+        set -e
+        url="$(curl -fsSL https://api.github.com/repos/vicinaehq/vicinae/releases/latest | grep -o 'https://[^"]*Vicinae-x86_64\.AppImage' | head -n1)"
+        [ -n "$url" ] || { echo "could not find the Vicinae AppImage in the latest release"; exit 1; }
+        mkdir -p "$HOME/.local/bin"
+        curl -fL -o "$HOME/.local/bin/vicinae" "$url"
+        chmod +x "$HOME/.local/bin/vicinae"
+
+  # ---- windows / gaming ----
+  # winget IDs, checked against github.com/microsoft/winget-pkgs.
+  7zip: { description: File archiver, names: { windows: 7zip.7zip } }
+  vcredist:
+    description: Visual C++ 2015-2022 runtime (x64), which most games need
+    names: { windows: Microsoft.VCRedist.2015+.x64 }
+  directx:
+    description: DirectX end-user runtime, for older games
+    names: { windows: Microsoft.DirectX }
+  powertoys: { description: Microsoft PowerToys, names: { windows: Microsoft.PowerToys } }
+  scoop:
+    description: scoop, a command-line installer (needed by items that use the scoop method)
+    method: { windows: script }
+    check:
+      windows: if (-not (Get-Command scoop -ErrorAction SilentlyContinue)) { exit 1 }
+    source:
+      windows: |
+        Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
+        Invoke-RestMethod -Uri 'https://get.scoop.sh' | Invoke-Expression
+  amd-software:
+    description: "AMD Software: Adrenalin Edition (Radeon drivers and panel). Not in winget: downloads AMD's auto-detect installer and opens it"
+    method: { windows: script }
+    check:
+      windows: if (-not (Test-Path (Join-Path $env:ProgramFiles 'AMD\CNext\CNext\RadeonSoftware.exe'))) { exit 1 }
+    source:
+      windows: |
+        $page = 'https://www.amd.com/en/support/download/drivers.html'
+        $agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
+        $html = (Invoke-WebRequest -UseBasicParsing -Uri $page -UserAgent $agent).Content
+        $link = [regex]::Match($html, 'https://drivers\.amd\.com/[^''"]*minimalsetup[^''"]*_web\.exe')
+        if (-not $link.Success) {
+          Start-Process $page
+          throw 'could not find the installer link on the AMD page; the page was opened so you can download it by hand'
+        }
+        $exe = Join-Path $env:TEMP 'amd-software-setup.exe'
+        Write-Output ('downloading ' + $link.Value)
+        Invoke-WebRequest -UseBasicParsing -Uri $link.Value -OutFile $exe -UserAgent $agent -Headers @{ Referer = 'https://www.amd.com/' }
+        Write-Output 'the AMD installer is open: follow it to the end'
+        Start-Process -FilePath $exe -Wait
+  msi-afterburner:
+    description: MSI Afterburner (overclock, fan curve and the in-game overlay)
+    names: { windows: Guru3D.Afterburner }
+  hwinfo: { description: Hardware sensors and monitoring, names: { windows: REALiX.HWiNFO } }
+  steam: { description: Steam, names: { windows: Valve.Steam } }
+  epic-games: { description: Epic Games Launcher, names: { windows: EpicGames.EpicGamesLauncher } }
+  gog-galaxy: { description: GOG Galaxy, names: { windows: GOG.Galaxy } }
+  ea-app: { description: EA app, names: { windows: ElectronicArts.EADesktop } }
+  ubisoft-connect: { description: Ubisoft Connect, names: { windows: Ubisoft.Connect } }
+  battle-net: { description: Battle.net, names: { windows: Blizzard.BattleNet } }
+  opera-gx: { description: Opera GX browser, names: { windows: Opera.OperaGX } }
+  obs-studio: { description: OBS Studio (recording and streaming), names: { windows: OBSProject.OBSStudio } }
+  wallpaper-engine:
+    description: Wallpaper Engine, bought on Steam (AppID 431960). Steam opens its install dialog
+    method: { windows: steam }
+    names: { windows: "431960" }

@@ -18,6 +18,9 @@ type Info struct {
 	Like   []string // os-release ID_LIKE, e.g. [arch] or [ubuntu debian]
 	Family string   // normalized family: debian, arch, windows, unknown
 	Name   string   // PRETTY_NAME, for display
+	// Codename is the release codename apt repositories are keyed by. On
+	// Ubuntu derivatives (Mint, Pop!_OS) it is the Ubuntu base codename.
+	Codename string
 }
 
 // Candidates returns the keys to look up distro overrides with, most
@@ -40,6 +43,9 @@ func Detect() Info {
 			}
 		}
 	}
+	if info.OS == "windows" {
+		info.ID, info.Name = "windows", "Windows"
+	}
 	info.Family = family(info)
 	return info
 }
@@ -52,6 +58,7 @@ func ParseOSRelease(r io.Reader, goos, goarch string) Info {
 }
 
 func fromOSRelease(r io.Reader, info Info) Info {
+	var codename, ubuntuCodename string
 	sc := bufio.NewScanner(r)
 	for sc.Scan() {
 		line := strings.TrimSpace(sc.Text())
@@ -70,7 +77,15 @@ func fromOSRelease(r io.Reader, info Info) Info {
 			info.Like = strings.Fields(strings.ToLower(v))
 		case "PRETTY_NAME":
 			info.Name = v
+		case "VERSION_CODENAME":
+			codename = strings.ToLower(v)
+		case "UBUNTU_CODENAME":
+			ubuntuCodename = strings.ToLower(v)
 		}
+	}
+	info.Codename = codename
+	if ubuntuCodename != "" {
+		info.Codename = ubuntuCodename
 	}
 	return info
 }

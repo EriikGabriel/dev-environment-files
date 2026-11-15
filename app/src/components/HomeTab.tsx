@@ -65,7 +65,8 @@ export function HomeTab({ info, profile, wizard, plan, root, onStep, onApplyPend
           <span className="muted">
             {profile ? `Perfil: ${profile.name}` : "Nenhum perfil corresponde a esta máquina."}
             <Help title="Como o perfil é escolhido">
-              O app lê a distro desta máquina e procura o perfil feito para ela (CachyOS e Arch, ou Ubuntu e Debian).
+              O app lê o sistema desta máquina e procura o perfil feito para ele (CachyOS e Arch, Ubuntu e Debian, ou
+              Windows para jogos).
               Cada perfil é um arquivo em <code>config/profiles/</code> e leva a um ambiente final diferente. Dá para
               trocar na barra lateral.
             </Help>
@@ -77,10 +78,6 @@ export function HomeTab({ info, profile, wizard, plan, root, onStep, onApplyPend
           </div>
         )}
       </div>
-
-      {env === "gaming" && (
-        <p className="banner">O ambiente de jogos no Windows ainda não foi implementado. Por enquanto o foco é o ambiente de desenvolvimento no Linux.</p>
-      )}
 
       <div className="card">
         <dl className="facts">

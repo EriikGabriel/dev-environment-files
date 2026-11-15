@@ -3,6 +3,8 @@ package engine
 import (
 	"context"
 	"io"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"strings"
@@ -13,8 +15,9 @@ import (
 )
 
 var (
-	ubuntu = platform.Info{OS: "linux", Arch: "amd64", ID: "ubuntu", Like: []string{"debian"}, Family: "debian"}
+	ubuntu = platform.Info{OS: "linux", Arch: "amd64", ID: "ubuntu", Like: []string{"debian"}, Family: "debian", Codename: "noble"}
 	cachy  = platform.Info{OS: "linux", Arch: "amd64", ID: "cachyos", Like: []string{"arch"}, Family: "arch"}
+	win    = platform.Info{OS: "windows", Arch: "amd64", ID: "windows", Family: "windows", Name: "Windows"}
 )
 
 // realConfig loads the repository's own config so tests catch YAML mistakes.
@@ -99,6 +102,7 @@ type fakeRunner struct {
 	installed map[string]bool // package names considered installed
 	ran       [][]string
 	has       map[string]bool
+	answers   map[string]string // Output for commands whose last argument ends with the key
 }
 
 func (f *fakeRunner) Run(_ context.Context, _ io.Writer, cmd ...string) error {
@@ -108,6 +112,11 @@ func (f *fakeRunner) Run(_ context.Context, _ io.Writer, cmd ...string) error {
 
 func (f *fakeRunner) Output(_ context.Context, cmd ...string) (string, error) {
 	last := cmd[len(cmd)-1]
+	for suffix, answer := range f.answers {
+		if strings.HasSuffix(last, suffix) {
+			return answer, nil
+		}
+	}
 	if f.installed[last] {
 		if cmd[0] == "dpkg-query" {
 			return "install ok installed", nil
@@ -160,9 +169,9 @@ func TestBuildPlanAndExecuteIsIdempotent(t *testing.T) {
 
 func TestBuildPlanUnsupportedPlatform(t *testing.T) {
 	cfg := &config.Config{Profiles: map[string]config.Profile{"t": {}}}
-	env := &Env{Info: platform.Info{OS: "windows", Arch: "amd64", Family: "windows"}}
+	env := &Env{Info: platform.Info{OS: "darwin", Arch: "arm64", Family: "unknown"}}
 	if _, err := BuildPlan(cfg, "t", env, Options{}); err == nil {
-		t.Error("windows should be reported as unsupported for now")
+		t.Error("macOS should be reported as unsupported")
 	}
 }
 
@@ -296,7 +305,7 @@ func TestBuildPlanDefaultsAndChoices(t *testing.T) {
 func TestUbuntuProfileFollowsLegacy(t *testing.T) {
 	p, got := planTitles(t, "dev-ubuntu", ubuntu, Options{})
 	for _, want := range []string{",zsh,", ",powerlevel10k,", ",wezterm,", ",vscode,", ",google-chrome,",
-		",whitesur-gtk-theme,", ",gnome-extensions,", ",gnome-dock-apps,", ".zshrc", ".wezterm.lua"} {
+		",whitesur-gtk-theme,", ",gnome-extensions,", ",dock (ordem dos apps),", ".zshrc", ".wezterm.lua"} {
 		if !strings.Contains(got, want) {
 			t.Errorf("ubuntu plan misses %q", want)
 		}
@@ -305,7 +314,7 @@ func TestUbuntuProfileFollowsLegacy(t *testing.T) {
 		t.Errorf("every default ubuntu app should resolve, skipped: %+v", p.Skipped)
 	}
 	// The dock is configured after the apps it pins.
-	if strings.Index(got, ",gnome-dock-apps,") < strings.Index(got, ",google-chrome,") {
+	if strings.Index(got, ",dock (ordem dos apps),") < strings.Index(got, ",google-chrome,") {
 		t.Error("dock apps must come after the apps they pin")
 	}
 }
@@ -326,5 +335,254 @@ func TestWizardDescribesSteps(t *testing.T) {
 	}
 	if !byID["git"].Installed || !byID["git"].Default || byID["htop"].Default || byID["curl"].Installed {
 		t.Errorf("app states wrong: git=%+v htop=%+v curl=%+v", byID["git"], byID["htop"], byID["curl"])
+	}
+}
+
+func TestFindPinned(t *testing.T) {
+	text := "[bar]\npinned = [\"x\"]\n\n[dock]\nenabled = true\npinned = [\"a\", \"b.c\",\n  \"d\"]\nauto_hide = true\n"
+	start, end, found, vals := findPinned(text)
+	if !found || start != 5 || end != 7 || strings.Join(vals, ",") != "a,b.c,d" {
+		t.Errorf("got start=%d end=%d found=%v vals=%v", start, end, found, vals)
+	}
+	if _, _, found, _ := findPinned("[dock]\nenabled = true\n"); found {
+		t.Error("no pinned line should report not found")
+	}
+}
+
+func TestDockStepRewritesThroughSymlink(t *testing.T) {
+	home, repo := t.TempDir(), t.TempDir()
+	real := filepath.Join(repo, "config.toml")
+	must(t, os.WriteFile(real, []byte("[theme]\nmode = \"dark\"\n\n[dock]\nenabled = true\npinned = [\"old\"]\nauto_hide = true\n"), 0o644))
+	link := filepath.Join(home, ".config", "noctalia", "config.toml")
+	must(t, os.MkdirAll(filepath.Dir(link), 0o755))
+	must(t, os.Symlink(real, link))
+
+	s := &dockStep{env: &Env{Home: home, Runner: &fakeRunner{}}, kind: "niri-noctalia", pinned: []string{"kitty", "dev.zed.Zed"}}
+	if pending, _ := s.Pending(context.Background()); !pending {
+		t.Fatal("different order must be pending")
+	}
+	must(t, s.Run(context.Background(), io.Discard))
+	b, _ := os.ReadFile(real)
+	want := "[theme]\nmode = \"dark\"\n\n[dock]\nenabled = true\npinned = [\"kitty\", \"dev.zed.Zed\"]\nauto_hide = true\n"
+	if string(b) != want {
+		t.Errorf("repo file after apply:\n%s", b)
+	}
+	if fi, _ := os.Lstat(link); fi.Mode()&os.ModeSymlink == 0 {
+		t.Error("the symlink must survive the rewrite")
+	}
+	if pending, _ := s.Pending(context.Background()); pending {
+		t.Error("after applying, the dock step must be up to date")
+	}
+}
+
+func TestPreviewUsesRealEntriesAndIcons(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("XDG_DATA_DIRS", filepath.Join(home, "share"))
+	apps := filepath.Join(home, ".local", "share", "applications")
+	must(t, os.MkdirAll(apps, 0o755))
+	must(t, os.WriteFile(filepath.Join(apps, "godothub.desktop"), []byte("[Desktop Entry]\nName=GodotHub\nIcon=myicon\nStartupWMClass=godothub\n"), 0o644))
+	icons := filepath.Join(home, ".local", "share", "icons", "Tema", "apps", "scalable")
+	must(t, os.MkdirAll(icons, 0o755))
+	must(t, os.WriteFile(filepath.Join(icons, "myicon.svg"), []byte("<svg/>"), 0o644))
+	wp := filepath.Join(home, "wall.png")
+	must(t, os.WriteFile(wp, []byte{0x89, 'P', 'N', 'G'}, 0o644))
+
+	cfg := &config.Config{Profiles: map[string]config.Profile{"p": {Desktop: config.Desktop{
+		Kind: "gnome", Wallpaper: "~/wall.png", IconTheme: "Tema",
+		Dock: config.Dock{Pinned: []string{"GodotHub", "nope"}},
+	}}}}
+	p, err := Preview(context.Background(), cfg, "p", &Env{Home: home, Root: home})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(p.Dock.Items) != 2 || !p.Dock.Items[0].Found || p.Dock.Items[0].Name != "GodotHub" ||
+		!strings.HasPrefix(p.Dock.Items[0].Icon, "data:image/svg+xml;base64,") {
+		t.Errorf("first item = %+v", p.Dock.Items[0])
+	}
+	if p.Dock.Items[1].Found || p.Dock.Items[1].Icon != "" {
+		t.Errorf("missing app should be a placeholder: %+v", p.Dock.Items[1])
+	}
+	if !strings.HasPrefix(p.Wallpaper, "data:image/png;base64,") || p.WallpaperError != "" {
+		t.Errorf("wallpaper = %q err %q", p.Wallpaper[:min(24, len(p.Wallpaper))], p.WallpaperError)
+	}
+}
+
+func ranLines(fr *fakeRunner) string {
+	var out []string
+	for _, c := range fr.ran {
+		out = append(out, strings.Join(c, " "))
+	}
+	return strings.Join(out, "\n")
+}
+
+func TestGamingProfileOnWindows(t *testing.T) {
+	steam := t.TempDir()
+	fr := &fakeRunner{has: map[string]bool{"winget": true}}
+	env := &Env{Info: win, Root: "/repo", Home: t.TempDir(), Runner: fr, SteamDir: steam}
+	p, err := BuildPlan(realConfig(t), "gaming-windows", env, Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(p.Skipped) != 0 {
+		t.Fatalf("every default gaming app should resolve on Windows, skipped: %+v", p.Skipped)
+	}
+	var titles []string
+	for _, s := range p.Steps {
+		titles = append(titles, s.Title())
+	}
+	got := "," + strings.Join(titles, ",") + ","
+	for _, want := range []string{",steam,", ",amd-software,", ",opera-gx,", ",discord,", ",epic-games,", ",wallpaper-engine,"} {
+		if !strings.Contains(got, want) {
+			t.Errorf("gaming plan misses %q in %s", want, got)
+		}
+	}
+	if strings.Contains(got, ",gog-galaxy,") {
+		t.Error("optional apps must stay out by default")
+	}
+
+	// Steam is not there yet, so the Steam app fails and the rest goes on.
+	res := p.Execute(context.Background(), io.Discard, func(Event) {})
+	if res.Failed != 1 || res.Failures[0].Title != "wallpaper-engine" {
+		t.Fatalf("only wallpaper-engine should fail without Steam: %+v", res)
+	}
+	ran := ranLines(fr)
+	for _, want := range []string{
+		"winget install --id Valve.Steam --exact --silent",
+		"winget install --id Opera.OperaGX --exact",
+		"powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command $ErrorActionPreference = 'Stop'; $env:ENVSETUP_ROOT = '/repo'; ",
+	} {
+		if !strings.Contains(ran, want) {
+			t.Errorf("missing command %q in:\n%s", want, ran)
+		}
+	}
+	if strings.Contains(ran, "sudo") || strings.Contains(ran, "sh -c") {
+		t.Errorf("no sudo and no sh on Windows:\n%s", ran)
+	}
+
+	// With Steam installed the install dialog is requested...
+	must(t, os.WriteFile(filepath.Join(steam, "steam.exe"), nil, 0o644))
+	fr.ran = nil
+	p.Execute(context.Background(), io.Discard, func(Event) {})
+	if !strings.Contains(ranLines(fr), "cmd /c start  steam://install/431960") {
+		t.Errorf("steam install not requested:\n%s", ranLines(fr))
+	}
+	// ...and an app found in a library on another drive counts as installed.
+	lib := t.TempDir()
+	must(t, os.MkdirAll(filepath.Join(steam, "steamapps"), 0o755))
+	must(t, os.MkdirAll(filepath.Join(lib, "steamapps"), 0o755))
+	vdf := "\"libraryfolders\"\n{\n\t\"1\"\n\t{\n\t\t\"path\"\t\t\"" + strings.ReplaceAll(lib, `\`, `\\`) + "\"\n\t}\n}\n"
+	must(t, os.WriteFile(filepath.Join(steam, "steamapps", "libraryfolders.vdf"), []byte(vdf), 0o644))
+	must(t, os.WriteFile(filepath.Join(lib, "steamapps", "appmanifest_431960.acf"), nil, 0o644))
+	if !env.steamInstalled("431960") || env.steamInstalled("1") {
+		t.Error("steam library lookup is wrong")
+	}
+}
+
+func TestWindowsIgnoresWildcardEntries(t *testing.T) {
+	cfg := realConfig(t)
+	for _, id := range []string{"curl", "zed", "wezterm"} {
+		if _, err := Resolve(id, cfg.Apps[id], win); err == nil {
+			t.Errorf("%s has no windows entry and must not resolve there", id)
+		}
+	}
+	if r, err := Resolve("discord", cfg.Apps["discord"], win); err != nil || r.Name != "Discord.Discord" || r.Method != config.MethodNative {
+		t.Errorf("discord on windows = %+v, %v", r, err)
+	}
+	if _, err := Resolve("wallpaper-engine", cfg.Apps["wallpaper-engine"], cachy); err == nil {
+		t.Error("the steam method must be Windows only")
+	}
+}
+
+func TestAptRepoIsAddedBeforeInstall(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		io.WriteString(w, "-----BEGIN PGP PUBLIC KEY BLOCK-----\n")
+	}))
+	defer srv.Close()
+	cfg := &config.Config{
+		Apps: map[string]config.App{"tool": {
+			Names: map[string]string{"debian": "tool-ce tool-cli"},
+			Repo:  map[string]config.Repo{"ubuntu": {Key: srv.URL + "/gpg", Source: "https://example.com/linux/ubuntu {codename} stable"}},
+		}},
+		Profiles: map[string]config.Profile{"t": {Apps: []string{"tool"}}},
+	}
+	fr := &fakeRunner{}
+	apt := t.TempDir()
+	env := &Env{Info: ubuntu, Root: t.TempDir(), Home: t.TempDir(), Runner: fr, AptDir: apt}
+	p, err := BuildPlan(cfg, "t", env, Options{})
+	if err != nil || len(p.Skipped) != 0 {
+		t.Fatalf("plan: %v, skipped %+v", err, p.Skipped)
+	}
+	if _, detail := p.Steps[0].Pending(context.Background()); !strings.Contains(detail, "adds its apt repository") {
+		t.Errorf("detail = %q", detail)
+	}
+	var log strings.Builder
+	if res := p.Execute(context.Background(), &log, func(Event) {}); res.Failed != 0 {
+		t.Fatalf("failed: %+v", res.Failures)
+	}
+	ran := ranLines(fr)
+	keyring := filepath.Join(apt, "keyrings", "envsetup-tool.asc")
+	list := filepath.Join(apt, "sources.list.d", "envsetup-tool.list")
+	iKey, iList := strings.Index(ran, keyring), strings.Index(ran, list)
+	iUpdate, iInstall := strings.Index(ran, "apt-get update"), strings.Index(ran, "apt-get install -y tool-ce tool-cli")
+	if iKey < 0 || iList < iKey || iUpdate < iList || iInstall < iUpdate {
+		t.Errorf("wrong commands or order:\n%s", ran)
+	}
+	want := "deb [arch=amd64 signed-by=" + keyring + "] https://example.com/linux/ubuntu noble stable"
+	if !strings.Contains(log.String(), want) {
+		t.Errorf("source line: want %q in %q", want, log.String())
+	}
+
+	// Without a codename the repository cannot be written, so the app is skipped.
+	noCode := ubuntu
+	noCode.Codename = ""
+	p, _ = BuildPlan(cfg, "t", &Env{Info: noCode, Runner: fr}, Options{})
+	if len(p.Skipped) != 1 {
+		t.Errorf("an unknown codename must skip the app: %+v", p.Skipped)
+	}
+}
+
+func TestVarsReachScripts(t *testing.T) {
+	env := &Env{Info: cachy, Root: "/repo", Vars: map[string]string{"git.name": "Ana d'Ávila", "git.email": "a@b.c"}}
+	cmd := env.script("echo hi")
+	if cmd[0] != "sh" || !strings.Contains(cmd[2], `export ENVSETUP_GIT_EMAIL='a@b.c'; export ENVSETUP_GIT_NAME='Ana d'\''Ávila'; echo hi`) {
+		t.Errorf("sh script = %q", cmd)
+	}
+	env.Info = win
+	cmd = env.script("echo hi")
+	if cmd[0] != "powershell" || !strings.Contains(cmd[len(cmd)-1], `$env:ENVSETUP_GIT_NAME = 'Ana d''Ávila'; echo hi`) {
+		t.Errorf("powershell script = %q", cmd)
+	}
+
+	cfg := &config.Config{Profiles: map[string]config.Profile{"t": {}}}
+	if _, err := BuildPlan(cfg, "t", &Env{Info: cachy}, Options{Vars: map[string]string{"bad key;": "x"}}); err == nil {
+		t.Error("a --set key with odd characters must be rejected")
+	}
+}
+
+func TestIdentityStep(t *testing.T) {
+	fr := &fakeRunner{answers: map[string]string{"git config --global user.name": "Ana\n"}}
+	env := &Env{Info: cachy, Root: "/repo", Home: "/home/u", Runner: fr}
+	steps, err := Wizard(context.Background(), realConfig(t), "dev-cachyos", env)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var found bool
+	for _, s := range steps {
+		if s.ID != "identity" {
+			continue
+		}
+		found = true
+		if len(s.Inputs) != 2 || s.Inputs[0].ID != "git.name" || s.Inputs[0].Value != "Ana" || s.Inputs[1].Value != "" {
+			t.Errorf("inputs = %+v", s.Inputs)
+		}
+	}
+	if !found {
+		t.Error("dev-cachyos has no identity step")
+	}
+	_, got := planTitles(t, "dev-ubuntu", ubuntu, Options{})
+	for _, want := range []string{",git-identity,", ",ssh-key,", ",gh-auth,", ",webkit2gtk,", ",docker,", ",nodejs,"} {
+		if !strings.Contains(got, want) {
+			t.Errorf("ubuntu plan misses %q", want)
+		}
 	}
 }

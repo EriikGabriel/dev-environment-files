@@ -1,6 +1,41 @@
 name: Gaming · Windows
-description: Ambiente de jogos no Windows. Ainda não implementado (fase 2).
+description: O ambiente de jogos no Windows - drivers, lojas, comunicação e os apps da Steam.
 environment: gaming
 match: [windows]
-steps: []
+
+# Same model as the dev profiles: each step is one screen, `apps` start
+# selected and `optional` start unselected. Apps are installed with winget
+# (see config/apps.yaml); add or remove items here, or with the buttons in the
+# app (`envsetup add-app` / `remove-app`).
+steps:
+  - id: base
+    title: Essenciais
+    description: Runtimes que os jogos pedem e utilitários básicos.
+    apps: [7zip, vcredist, directx]
+    optional: [scoop, powertoys]
+
+  - id: drivers
+    title: Drivers e hardware
+    description: O software da placa de vídeo e as ferramentas de monitoramento.
+    apps: [amd-software]
+    optional: [msi-afterburner, hwinfo]
+
+  - id: launchers
+    title: Lojas e launchers
+    description: As lojas de onde os jogos são instalados.
+    apps: [steam, epic-games]
+    optional: [gog-galaxy, ea-app, ubisoft-connect, battle-net]
+
+  - id: social
+    title: Comunicação e navegador
+    description: Voz, navegador e o que roda junto com os jogos.
+    apps: [discord, opera-gx]
+    optional: [spotify, obs-studio]
+
+  # After the launchers on purpose: these are installed through Steam itself.
+  - id: steam-apps
+    title: Apps da Steam
+    description: Itens da sua biblioteca Steam. A Steam abre a janela de instalação de cada um.
+    apps: [wallpaper-engine]
+
 files: []

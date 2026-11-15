@@ -20,6 +20,10 @@ type Env struct {
 	Root   string // repo root: where dotfiles/ lives
 	Home   string
 	Runner backend.Runner
+	// Vars are the values given with --set, exported to scripts.
+	Vars map[string]string
+	// AptDir and SteamDir replace /etc/apt and the Steam folder in tests.
+	AptDir, SteamDir string
 
 	refreshed map[string]bool
 }
@@ -66,6 +70,9 @@ type Options struct {
 	Choices map[string]string
 	// NoFiles skips dotfile and extension steps.
 	NoFiles bool
+	// Vars are user-provided values (step inputs), exported to scripts as
+	// ENVSETUP_<KEY>.
+	Vars map[string]string
 }
 
 // BuildPlan resolves a profile for the host described by env. All apps come
@@ -76,9 +83,19 @@ func BuildPlan(cfg *config.Config, profileID string, env *Env, opt Options) (*Pl
 	if !ok {
 		return nil, fmt.Errorf("unknown profile %q (available: %s)", profileID, strings.Join(cfg.ProfileNames(), ", "))
 	}
-	if env.Info.Family != "debian" && env.Info.Family != "arch" {
-		return nil, fmt.Errorf("unsupported platform: %s/%s (%q); Linux Debian and Arch families only for now",
+	switch env.Info.Family {
+	case "debian", "arch", "windows":
+	default:
+		return nil, fmt.Errorf("unsupported platform: %s/%s (%q); only Debian and Arch based Linux, and Windows",
 			env.Info.OS, env.Info.Arch, env.Info.ID)
+	}
+	for k := range opt.Vars {
+		if !config.ValidVar(k) {
+			return nil, fmt.Errorf("invalid key %q in --set", k)
+		}
+	}
+	if opt.Vars != nil {
+		env.Vars = opt.Vars
 	}
 	for id := range opt.Choices {
 		found := false
@@ -191,15 +208,11 @@ func BuildPlan(cfg *config.Config, profileID string, env *Env, opt Options) (*Pl
 		if !appliesTo(f.Only, env.Info) || (f.App != "" && !included[f.App]) {
 			continue
 		}
-		mode := f.Mode
-		if mode == "" {
-			mode = "link"
-		}
 		p.Steps = append(p.Steps, &fileStep{
 			env:  env,
 			src:  filepath.Join(env.Root, f.Src),
 			dst:  expandHome(f.Dest, env.Home),
-			mode: mode,
+			mode: fileMode(f, env.Info),
 		})
 		p.groups = append(p.groups, in.group)
 	}
@@ -207,7 +220,25 @@ func BuildPlan(cfg *config.Config, profileID string, env *Env, opt Options) (*Pl
 		p.Steps = append(p.Steps, &vscodeStep{env: env, path: filepath.Join(env.Root, e[0])})
 		p.groups = append(p.groups, e[1])
 	}
+	// The dock comes last: it pins apps and config installed above.
+	if d := prof.Desktop; d.Kind != "" && len(d.Dock.Pinned) > 0 && (d.App == "" || included[d.App]) {
+		p.Steps = append(p.Steps, &dockStep{env: env, kind: d.Kind, pinned: d.Dock.Pinned})
+		p.groups = append(p.groups, "desktop")
+	}
 	return p, nil
+}
+
+// fileMode is how a file is deployed: what the entry says, else a symlink.
+// On Windows the default is a copy, because creating symlinks there needs
+// developer mode or an elevated process.
+func fileMode(f config.File, info platform.Info) string {
+	switch {
+	case f.Mode != "":
+		return f.Mode
+	case info.Family == "windows":
+		return "copy"
+	}
+	return "link"
 }
 
 func appliesTo(only []string, info platform.Info) bool {
@@ -236,7 +267,7 @@ func expandHome(p, home string) string {
 
 // Line is one row of a dry-run report.
 type Line struct {
-	Kind        string `json:"kind"` // app, file, dir or vscode
+	Kind        string `json:"kind"` // app, file, dir, dock or vscode
 	Step        string `json:"step"` // profile step id; "" for extras
 	ID          string `json:"id"`   // app id, or destination for files
 	Title       string `json:"title"`
@@ -265,6 +296,8 @@ func (p *Plan) Describe(ctx context.Context) []Line {
 			l.Kind = "vscode"
 		case *dirStep:
 			l.Kind = "dir"
+		case *dockStep:
+			l.Kind = "dock"
 		}
 		lines[i] = l
 	}

@@ -4,11 +4,11 @@ Centralizador das minhas configurações de ambiente. O `envsetup` detecta a má
 descrição declarativa do ambiente (apps, dotfiles e pastas) e aplica só o que falta. Tem um
 app desktop (Tauri + React) e uma linha de comando sobre o mesmo motor em Go.
 
-| Ambiente | Máquina | Estado |
-|---|---|---|
-| Desenvolvimento | CachyOS e Arch | niri + Noctalia, fish + starship, kitty, Zed |
+| Ambiente        | Máquina         | Estado                                                  |
+| --------------- | --------------- | ------------------------------------------------------- |
+| Desenvolvimento | CachyOS e Arch  | niri + Noctalia, fish + starship, kitty, Zed            |
 | Desenvolvimento | Ubuntu e Debian | GNOME + WhiteSur, zsh + powerlevel10k, WezTerm, VS Code |
-| Jogos | Windows | planejado; ainda sem etapas |
+| Jogos           | Windows         | planejado; ainda sem etapas                             |
 
 ## App desktop
 
@@ -103,6 +103,8 @@ real nele, o valor passa a estar dentro do repositório.
 - **Ícones:** MacTahoe no CachyOS e WhiteSur no Ubuntu.
 - **Bruno:** `dotfiles/bruno/workspace.yml` tem o caminho absoluto da home.
 - **niri:** `dotfiles/niri/monitors.kdl` é específico dos monitores desta máquina.
+- **Vicinae:** vem do AUR (`vicinae-bin`) no Arch; no Ubuntu é o AppImage, opcional. Só o
+  `settings.json` vai para o repo; as extensões e o histórico em `~/.local/share/vicinae` ficam de fora.
 - **GodotHub:** é um AppImage e precisa do FUSE 2.
 
 ## Desenvolvimento
@@ -124,8 +126,8 @@ de reinício com autostart, a identidade git, a chave SSH e o `gh auth login`.
 
 ## To-do
 
-- [ ] Perfil de jogos no Windows (backends winget/scoop)
-- [ ] Repositórios de terceiros declarativos (docker-ce, NodeSource)
-- [ ] Identidade git, chave SSH e `gh auth login`
-- [ ] `webkit2gtk` e FUSE 2 no catálogo
+- [x] Perfil de jogos no Windows (backends winget/scoop)
+- [x] Repositórios de terceiros declarativos (docker-ce, NodeSource)
+- [x] Identidade git, chave SSH e `gh auth login`
+- [x] `webkit2gtk` e FUSE 2 no catálogo
 - [ ] Testar os scripts do GNOME numa sessão real

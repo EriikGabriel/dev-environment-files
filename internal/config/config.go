@@ -7,7 +7,9 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"sort"
+	"strings"
 
 	"gopkg.in/yaml.v3"
 )
@@ -19,11 +21,25 @@ const (
 	MethodDebURL  = "deb-url" // download a .deb and install it with apt
 	MethodFlatpak = "flatpak" // flatpak from flathub
 	MethodScript  = "script"  // arbitrary shell, guarded by Check
+	MethodWinget  = "winget"  // Windows Package Manager; the native method on Windows
+	MethodScoop   = "scoop"   // scoop (Windows)
+	MethodSteam   = "steam"   // a Steam app, by AppID (Windows)
 )
 
 var validMethods = map[string]bool{
 	MethodNative: true, MethodAUR: true, MethodDebURL: true,
 	MethodFlatpak: true, MethodScript: true,
+	MethodWinget: true, MethodScoop: true, MethodSteam: true,
+}
+
+// Repo is a third-party apt repository an app needs before it can be
+// installed.
+type Repo struct {
+	// Key is the URL of the signing key (armored or binary).
+	Key string `yaml:"key"`
+	// Source is what follows the options in a sources.list line: the URL,
+	// the suite and the components. {codename} and {arch} are expanded.
+	Source string `yaml:"source"`
 }
 
 // Wildcard is the map key used as a fallback when no distro key matches.
@@ -34,7 +50,8 @@ const Wildcard = "*"
 // fallback. Lookup order is the exact ID, then each ID_LIKE entry, then "*".
 type App struct {
 	Description string `yaml:"description"`
-	// Names is the package name (or flatpak ID) per distro.
+	// Names is the package name per distro: a flatpak or winget ID, a Steam
+	// AppID, or several native packages separated by spaces.
 	Names map[string]string `yaml:"names"`
 	// Method defaults to "native" when absent.
 	Method map[string]string `yaml:"method"`
@@ -48,6 +65,9 @@ type App struct {
 	Post map[string][]string `yaml:"post"`
 	// Unavailable lists distro keys where the app does not exist.
 	Unavailable []string `yaml:"unavailable"`
+	// Repo is the apt repository to register before installing (Debian
+	// family only).
+	Repo map[string]Repo `yaml:"repo"`
 }
 
 // File is a config file to deploy.
@@ -75,6 +95,16 @@ type Option struct {
 	VSCodeExtensions string `yaml:"vscode_extensions"`
 }
 
+// Input is a value the user types in a step (a name, an e-mail). It is never
+// stored in the repo: front-ends keep it locally and pass it with --set, and
+// scripts read it as $ENVSETUP_<ID>, upper-cased with dots as underscores.
+type Input struct {
+	ID    string `yaml:"id"`
+	Label string `yaml:"label"`
+	// From is a shell command whose output pre-fills the field.
+	From string `yaml:"from"`
+}
+
 // Step is one stage of the setup. It can list apps the user toggles
 // (Apps start selected, Optional start unselected), files, and a
 // single-choice list of Options.
@@ -93,6 +123,8 @@ type Step struct {
 	// Default is the option used when none is chosen. "none" is always a
 	// valid choice and skips the options.
 	Default string `yaml:"default"`
+	// Inputs are values the step's scripts need from the user.
+	Inputs []Input `yaml:"inputs"`
 }
 
 // Option returns the option with the given id.
@@ -105,6 +137,44 @@ func (s Step) Option(id string) (Option, bool) {
 	return Option{}, false
 }
 
+// Dock describes the application dock.
+type Dock struct {
+	// Position is bottom (default), left, right or top.
+	Position string `yaml:"position"`
+	AutoHide bool   `yaml:"autohide"`
+	// Pinned is the ordered list of desktop-entry ids (without .desktop).
+	// The apply step writes it to the real desktop configuration.
+	Pinned []string `yaml:"pinned"`
+}
+
+// Bar describes the top (or bottom) panel: widget names by area.
+type Bar struct {
+	Position string   `yaml:"position"`
+	Start    []string `yaml:"start"`
+	Center   []string `yaml:"center"`
+	End      []string `yaml:"end"`
+}
+
+// Desktop is what the desktop looks like: used by the preview, and by the
+// apply step that writes the dock order to the system.
+type Desktop struct {
+	// Kind is niri-noctalia or gnome.
+	Kind string `yaml:"kind"`
+	// App is the app that provides the desktop; the dock is only applied
+	// when it is part of the plan.
+	App string `yaml:"app"`
+	// Wallpaper is a repo path, a ~ path or an https URL.
+	Wallpaper string `yaml:"wallpaper"`
+	IconTheme string `yaml:"icon_theme"`
+	Colors    struct {
+		Accent string `yaml:"accent"`
+		Panel  string `yaml:"panel"`
+		Text   string `yaml:"text"`
+	} `yaml:"colors"`
+	Dock Dock `yaml:"dock"`
+	Bar  Bar  `yaml:"bar"`
+}
+
 // Profile is a complete environment for one kind of machine.
 type Profile struct {
 	Name        string `yaml:"name"`
@@ -113,8 +183,9 @@ type Profile struct {
 	Environment string `yaml:"environment"`
 	// Match lists the distro keys (ID or ID_LIKE, or "windows") this
 	// profile is meant for; it is how the profile is picked automatically.
-	Match []string `yaml:"match"`
-	Steps []Step   `yaml:"steps"`
+	Match   []string `yaml:"match"`
+	Desktop Desktop  `yaml:"desktop"`
+	Steps   []Step   `yaml:"steps"`
 	// Files are extra managed files, always deployed. `envsetup add`
 	// appends here.
 	Files []File `yaml:"files"`
@@ -197,8 +268,28 @@ func (c *Config) Validate() error {
 				return fmt.Errorf("app %q: unknown method %q for %q", id, m, key)
 			}
 		}
+		for key, r := range a.Repo {
+			if !strings.HasPrefix(r.Key, "https://") || len(strings.Fields(r.Source)) < 2 {
+				return fmt.Errorf("app %q: repo for %q needs an https key and a source of \"url suite [components]\"", id, key)
+			}
+		}
 	}
 	for pid, p := range c.Profiles {
+		switch p.Desktop.Kind {
+		case "", "niri-noctalia", "gnome":
+		default:
+			return fmt.Errorf("profile %q: unknown desktop kind %q", pid, p.Desktop.Kind)
+		}
+		switch p.Desktop.Dock.Position {
+		case "", "bottom", "top", "left", "right":
+		default:
+			return fmt.Errorf("profile %q: bad dock position %q", pid, p.Desktop.Dock.Position)
+		}
+		if p.Desktop.App != "" {
+			if _, ok := c.Apps[p.Desktop.App]; !ok {
+				return fmt.Errorf("profile %q: desktop app %q is unknown", pid, p.Desktop.App)
+			}
+		}
 		for _, id := range p.Apps {
 			if _, ok := c.Apps[id]; !ok {
 				return fmt.Errorf("profile %q: unknown app %q", pid, id)
@@ -211,6 +302,11 @@ func (c *Config) Validate() error {
 				return fmt.Errorf("profile %q: step ids must be set and unique (%q)", pid, st.ID)
 			}
 			seen[st.ID] = true
+			for _, in := range st.Inputs {
+				if !inputID.MatchString(in.ID) {
+					return fmt.Errorf("profile %q: step %q: bad input id %q", pid, st.ID, in.ID)
+				}
+			}
 			ids := append(append([]string{}, st.Apps...), st.Optional...)
 			files = append(files, st.Files...)
 			opts := map[string]bool{}
@@ -242,6 +338,12 @@ func (c *Config) Validate() error {
 	}
 	return nil
 }
+
+// inputID is what an input id (and a --set key) may look like.
+var inputID = regexp.MustCompile(`^[a-z][a-z0-9]*([._][a-z0-9]+)*$`)
+
+// ValidVar reports whether key can be used with --set.
+func ValidVar(key string) bool { return inputID.MatchString(key) }
 
 // ProfileNames returns the profile IDs sorted.
 func (c *Config) ProfileNames() []string {

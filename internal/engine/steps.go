@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"time"
 
@@ -40,7 +41,11 @@ func (s *appStep) backend() (backend.Backend, error) {
 		return backend.AUR{}, nil
 	case config.MethodFlatpak:
 		return backend.Flatpak{}, nil
-	case config.MethodScript:
+	case config.MethodWinget:
+		return backend.Winget{}, nil
+	case config.MethodScoop:
+		return backend.Scoop{}, nil
+	case config.MethodScript, config.MethodSteam:
 		return nil, nil
 	default: // native and deb-url both end up in the distro manager
 		return backend.Native(s.env.Info)
@@ -48,12 +53,15 @@ func (s *appStep) backend() (backend.Backend, error) {
 }
 
 func (s *appStep) installed(ctx context.Context) bool {
-	if s.res.Method == config.MethodScript {
+	switch s.res.Method {
+	case config.MethodScript:
 		if s.res.Check == "" {
 			return false
 		}
-		_, err := s.env.Runner.Output(ctx, "sh", "-c", s.res.Check)
+		_, err := s.env.Runner.Output(ctx, s.env.script(s.res.Check)...)
 		return err == nil
+	case config.MethodSteam:
+		return s.env.steamInstalled(s.res.Name)
 	}
 	b, err := s.backend()
 	if err != nil {
@@ -78,12 +86,18 @@ func (s *appStep) describeInstall() string {
 		return "run install script"
 	case config.MethodDebURL:
 		return fmt.Sprintf("install %s from .deb", s.res.Name)
+	case config.MethodSteam:
+		return fmt.Sprintf("open the Steam install dialog for app %s", s.res.Name)
 	default:
 		b, err := s.backend()
 		if err != nil {
 			return "install " + s.res.Name
 		}
-		return fmt.Sprintf("install %s via %s", s.res.Name, b.Name())
+		d := fmt.Sprintf("install %s via %s", s.res.Name, b.Name())
+		if s.res.Repo != nil && !s.env.repoPresent(s.res.ID) {
+			d += " (adds its apt repository)"
+		}
+		return d
 	}
 }
 
@@ -95,7 +109,7 @@ func (s *appStep) Run(ctx context.Context, out io.Writer) error {
 	}
 	for _, cmd := range s.res.Post {
 		fmt.Fprintf(out, "$ %s\n", cmd)
-		if err := s.env.Runner.Run(ctx, out, "sh", "-c", withSudo(cmd, s.env.Root)); err != nil {
+		if err := s.env.Runner.Run(ctx, out, s.env.script(cmd)...); err != nil {
 			return fmt.Errorf("post-install %q: %w", cmd, err)
 		}
 	}
@@ -104,18 +118,26 @@ func (s *appStep) Run(ctx context.Context, out io.Writer) error {
 
 func (s *appStep) install(ctx context.Context, out io.Writer) error {
 	r := s.env.Runner
-	if s.res.Method == config.MethodScript {
-		return r.Run(ctx, out, "sh", "-c", withSudo(s.res.Source, s.env.Root))
+	switch s.res.Method {
+	case config.MethodScript:
+		return r.Run(ctx, out, s.env.script(s.res.Source)...)
+	case config.MethodSteam:
+		return s.env.steamInstall(ctx, out, s.res.Name)
 	}
 	b, err := s.backend()
 	if err != nil {
 		return err
 	}
+	if s.res.Repo != nil && !s.env.repoPresent(s.res.ID) {
+		if err := s.env.addRepo(ctx, out, s.res.ID, *s.res.Repo); err != nil {
+			return fmt.Errorf("add the %s repository: %w", s.res.ID, err)
+		}
+	}
 	if err := s.env.refresh(ctx, b, out); err != nil {
 		return fmt.Errorf("refresh %s: %w", b.Name(), err)
 	}
 	if s.res.Method == config.MethodDebURL {
-		path, err := download(ctx, s.res.Source)
+		path, err := download(ctx, s.res.Source, "envsetup-*.deb")
 		if err != nil {
 			return err
 		}
@@ -125,14 +147,40 @@ func (s *appStep) install(ctx context.Context, out io.Writer) error {
 	return b.Install(ctx, r, out, s.res.Name)
 }
 
-// withSudo prepares config-provided shell: $SUDO is "sudo" (empty as root)
-// and $ENVSETUP_ROOT is the repo root, for scripts that need bundled files.
-func withSudo(script, root string) string {
-	quoted := "'" + strings.ReplaceAll(root, "'", `'\''`) + "'"
-	return fmt.Sprintf("SUDO=%q; export ENVSETUP_ROOT=%s; ", strings.Join(backend.SudoPrefix(), " "), quoted) + script
+// script wraps config-provided shell in the host's interpreter: sh on Linux,
+// PowerShell on Windows. The script sees $ENVSETUP_ROOT (the repo root, for
+// bundled files), one $ENVSETUP_<NAME> per value given with --set and, on
+// Linux, $SUDO ("sudo", or empty when already root).
+func (e *Env) script(body string) []string {
+	keys := make([]string, 0, len(e.Vars))
+	for k := range e.Vars {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	var b strings.Builder
+	if e.Info.Family == "windows" {
+		quote := func(s string) string { return "'" + strings.ReplaceAll(s, "'", "''") + "'" }
+		fmt.Fprintf(&b, "$ErrorActionPreference = 'Stop'; $env:ENVSETUP_ROOT = %s; ", quote(e.Root))
+		for _, k := range keys {
+			fmt.Fprintf(&b, "$env:%s = %s; ", varName(k), quote(e.Vars[k]))
+		}
+		return []string{"powershell", "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-Command", b.String() + body}
+	}
+	quote := func(s string) string { return "'" + strings.ReplaceAll(s, "'", `'\''`) + "'" }
+	fmt.Fprintf(&b, "SUDO=%q; export ENVSETUP_ROOT=%s; ", strings.Join(backend.SudoPrefix(), " "), quote(e.Root))
+	for _, k := range keys {
+		fmt.Fprintf(&b, "export %s=%s; ", varName(k), quote(e.Vars[k]))
+	}
+	return []string{"sh", "-c", b.String() + body}
 }
 
-func download(ctx context.Context, url string) (string, error) {
+// varName turns a --set key into its environment variable: git.name becomes
+// ENVSETUP_GIT_NAME.
+func varName(key string) string {
+	return "ENVSETUP_" + strings.ToUpper(strings.NewReplacer(".", "_", "-", "_").Replace(key))
+}
+
+func download(ctx context.Context, url, pattern string) (string, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return "", err
@@ -147,7 +195,7 @@ func download(ctx context.Context, url string) (string, error) {
 	}
 	// apt only treats an argument as a local file when it is a path, and
 	// refuses files it cannot read as _apt, so keep it in a world-readable dir.
-	f, err := os.CreateTemp("", "envsetup-*.deb")
+	f, err := os.CreateTemp("", pattern)
 	if err != nil {
 		return "", err
 	}

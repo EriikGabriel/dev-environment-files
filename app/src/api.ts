@@ -1,6 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
-import type { AddResult, ApplyEvent, FileView, Plan, Profile, Selection, SystemInfo, Wizard } from "./types";
+import type { AddResult, ApplyEvent, DesktopPreview, FileView, NewApp, Plan, Profile, Selection, SystemInfo, Wizard } from "./types";
 
 const run = <T>(root: string, args: string[]) => invoke<T>("envsetup", { root, args });
 
@@ -11,14 +11,25 @@ export const info = (root: string) => run<SystemInfo>(root, ["info"]);
 export const profiles = (root: string) => run<Profile[]>(root, ["profiles"]);
 export const steps = (root: string, profile: string) => run<Wizard>(root, ["steps", "-p", profile]);
 
-/** CLI flags for a selection: the exact app set plus one --choose per step. */
+/** The typed values that are not empty. */
+const filledVars = (sel: Selection) => Object.fromEntries(Object.entries(sel.vars).filter(([, v]) => v.trim() !== ""));
+
+/** CLI flags for a selection: the exact app set, one --choose per step and one --set per value. */
 const selectionArgs = (sel: Selection) => [
   ...(sel.apps.length ? ["--apps", sel.apps.join(",")] : ["--no-apps"]),
   ...Object.entries(sel.choices).flatMap(([step, option]) => ["--choose", `${step}=${option}`]),
+  ...Object.entries(filledVars(sel)).flatMap(([key, value]) => ["--set", `${key}=${value.trim()}`]),
 ];
 
 export const plan = (root: string, profile: string, sel: Selection) =>
   run<Plan>(root, ["plan", "-p", profile, ...selectionArgs(sel)]);
+
+/** The desktop as the profile describes it, with real icons and wallpaper. */
+export const desktop = (root: string, profile: string) => run<DesktopPreview>(root, ["desktop", "-p", profile]);
+
+/** Saves the dock order into the profile (written to the system on apply). */
+export const setDock = (root: string, profile: string, ids: string[]) =>
+  run<{ pinned: string[] }>(root, ["set-dock", "-p", profile, ...ids]);
 
 /** Reads a file or lists a directory inside the repo. */
 export const show = (root: string, path: string) => run<FileView>(root, ["show", path]);
@@ -26,6 +37,20 @@ export const show = (root: string, path: string) => run<FileView>(root, ["show",
 /** Saves the directories a step option creates into the profile YAML. */
 export const setDirs = (root: string, profile: string, step: string, option: string, dirs: string[]) =>
   run<{ dirs: string[] }>(root, ["set-dirs", "-p", profile, "--step", step, ...(option ? ["--option", option] : []), ...dirs]);
+
+/** Puts an app in a step of the profile, creating its catalogue entry when it is new. */
+export const addApp = (root: string, profile: string, step: string, app: NewApp) =>
+  run<{ id: string; step: string; created: boolean }>(root, [
+    "add-app", "-p", profile, "--step", step, "--id", app.id,
+    ...(app.name ? ["--name", app.name] : []),
+    ...(app.method ? ["--method", app.method] : []),
+    ...(app.description ? ["--description", app.description] : []),
+    ...(app.optional ? ["--optional"] : []),
+  ]);
+
+/** Takes an app out of a step of the profile; its catalogue entry stays. */
+export const removeApp = (root: string, profile: string, step: string, id: string) =>
+  run<{ id: string; step: string }>(root, ["remove-app", "-p", profile, "--step", step, id]);
 
 export interface AddOptions {
   profile: string;
@@ -54,6 +79,7 @@ export const apply = (r: ApplyRequest) =>
     profile: r.profile,
     choices: r.selection.choices,
     apps: r.selection.apps,
+    vars: Object.fromEntries(Object.entries(filledVars(r.selection)).map(([k, v]) => [k, v.trim()])),
     noFiles: false,
     sudoPassword: r.sudoPassword ?? null,
   });

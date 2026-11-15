@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"runtime"
 )
 
 // Runner executes external commands. It exists so tests can fake the system.
@@ -45,9 +46,11 @@ func (ExecRunner) Has(bin string) bool {
 var NonInteractive bool
 
 // SudoPrefix returns the command words that elevate privileges: none when
-// already root.
+// already root, and none on Windows.
 func SudoPrefix() []string {
 	switch {
+	case runtime.GOOS == "windows":
+		return nil // installers ask for elevation themselves (UAC)
 	case os.Geteuid() == 0:
 		return nil
 	case NonInteractive:
