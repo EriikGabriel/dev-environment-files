@@ -1,0 +1,111 @@
+package config
+
+import (
+	"os"
+	"path/filepath"
+	"strings"
+	"testing"
+)
+
+func appendTo(t *testing.T, body string, f File) string {
+	t.Helper()
+	p := filepath.Join(t.TempDir(), "p.yaml")
+	if err := os.WriteFile(p, []byte(body), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := AppendFile(p, f); err != nil {
+		t.Fatal(err)
+	}
+	b, _ := os.ReadFile(p)
+	return string(b)
+}
+
+func TestAppendFileChangesOnlyOneLine(t *testing.T) {
+	in := "name: x\n\n# note\nfiles:\n  - { src: a, dest: ~/.a }\n\n# trailing comment\nother: 1\n"
+	out := appendTo(t, in, File{Src: "dotfiles/b", Dest: "~/.b", Mode: "copy"})
+	want := "name: x\n\n# note\nfiles:\n  - { src: a, dest: ~/.a }\n  - { src: dotfiles/b, dest: ~/.b, mode: copy }\n\n# trailing comment\nother: 1\n"
+	if out != want {
+		t.Errorf("got:\n%s\nwant:\n%s", out, want)
+	}
+}
+
+func TestAppendFileIntoEmptyList(t *testing.T) {
+	in := "name: x\n# c\nsteps: []\n\n# extras\nfiles: []\n"
+	out := appendTo(t, in, File{Src: "dotfiles/b", Dest: "~/.b"})
+	want := "name: x\n# c\nsteps: []\n\n# extras\nfiles:\n  - { src: dotfiles/b, dest: ~/.b }\n"
+	if out != want {
+		t.Errorf("got:\n%s\nwant:\n%s", out, want)
+	}
+	out = appendTo(t, "name: x\n", File{Src: "s", Dest: "~/d"})
+	if out != "name: x\n\nfiles:\n  - { src: s, dest: ~/d }\n" {
+		t.Errorf("missing key: got %q", out)
+	}
+}
+
+func TestAppendFileFallbacks(t *testing.T) {
+	// no files key at all
+	out := appendTo(t, "name: x\n", File{Src: "s", Dest: "~/d"})
+	if !strings.Contains(out, "files:") || !strings.Contains(out, "s") {
+		t.Errorf("files key not created:\n%s", out)
+	}
+	// block-style entry: cannot be edited as one line, must still produce valid YAML
+	out = appendTo(t, "files:\n  - src: a\n    dest: ~/.a\n", File{Src: "b", Dest: "~/.b"})
+	p := filepath.Join(t.TempDir(), "p.yaml")
+	_ = os.WriteFile(p, []byte(out), 0o644)
+	var prof Profile
+	if err := readYAML(p, &prof); err != nil || len(prof.Files) != 2 || prof.Files[1].Src != "b" {
+		t.Errorf("block fallback produced %+v, err %v\n%s", prof.Files, err, out)
+	}
+	// a value that needs quoting survives a round trip
+	out = appendTo(t, "files:\n  - { src: a, dest: ~/.a }\n", File{Src: "dotfiles/x: y", Dest: "~/# odd"})
+	_ = os.WriteFile(p, []byte(out), 0o644)
+	prof = Profile{}
+	if err := readYAML(p, &prof); err != nil || prof.Files[1].Src != "dotfiles/x: y" || prof.Files[1].Dest != "~/# odd" {
+		t.Errorf("quoting broke: %+v, err %v\n%s", prof.Files, err, out)
+	}
+}
+
+func TestSetDirsRewritesOneLine(t *testing.T) {
+	in := `name: x
+steps:
+  - id: a
+    dirs: [~/one]
+  - id: workspace
+    # keep
+    options:
+      - id: www
+        title: t
+        dirs: [~/www/projects, ~/www/games]
+        files: []
+`
+	p := filepath.Join(t.TempDir(), "p.yaml")
+	if err := os.WriteFile(p, []byte(in), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := SetDirs(p, "workspace", "www", []string{"~/www/projects", "~/www/my notes/", "~/code"}); err != nil {
+		t.Fatal(err)
+	}
+	b, _ := os.ReadFile(p)
+	want := strings.Replace(in, "dirs: [~/www/projects, ~/www/games]", "dirs: [~/www/projects, ~/www/my notes, ~/code]", 1)
+	if string(b) != want {
+		t.Errorf("got:\n%s", b)
+	}
+	var prof Profile
+	if err := readYAML(p, &prof); err != nil || prof.Steps[1].Options[0].Dirs[1] != "~/www/my notes" {
+		t.Errorf("round trip failed: %v %+v", err, prof.Steps)
+	}
+	if err := SetDirs(p, "a", "", nil); err != nil {
+		t.Fatal(err)
+	}
+	if b, _ = os.ReadFile(p); !strings.Contains(string(b), "  - id: a\n    dirs: []\n") {
+		t.Errorf("step-level dirs not emptied:\n%s", b)
+	}
+	for _, bad := range [][]string{{"/etc"}, {"~/a/../b"}, {"www"}, {"~/"}} {
+		if err := SetDirs(p, "workspace", "www", bad); err == nil {
+			t.Errorf("%v should be rejected", bad)
+		}
+	}
+	if err := SetDirs(p, "nope", "", nil); err == nil {
+		t.Error("unknown step should fail")
+	}
+}

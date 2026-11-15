@@ -1,0 +1,50 @@
+info:
+  name: extractedPageFindByTextHash
+  type: http
+  seq: 2
+  tags:
+    - ExtractedPage
+
+http:
+  method: GET
+  url: "{{baseUrl}}/v1/extracted-pages/hash/:textHash"
+  params:
+    - name: textHash
+      value: ""
+      type: path
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+examples:
+  - name: 200 Response
+    description: OK
+    request:
+      url: "{{baseUrl}}/v1/extracted-pages/hash/:textHash"
+      method: GET
+      params:
+        - name: textHash
+          value: ""
+          type: path
+    response:
+      status: 200
+      statusText: OK
+      headers:
+        - name: Content-Type
+          value: "*/*"
+      body:
+        type: text
+        data: |-
+          {
+            "extractionMethod": "",
+            "extractionRunId": "",
+            "id": "",
+            "pageNumber": "",
+            "textHash": "",
+            "textObjectId": ""
+          }

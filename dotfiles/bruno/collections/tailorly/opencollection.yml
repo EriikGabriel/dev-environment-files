@@ -1,0 +1,35 @@
+opencollection: 1.0.0
+
+info:
+  name: tailorly
+  version: v1
+config:
+  proxy:
+    inherit: true
+    config:
+      protocol: http
+      hostname: ""
+      port: ""
+      auth:
+        username: ""
+        password: ""
+      bypassProxy: ""
+
+request:
+  variables:
+    - name: baseUrl
+      value: http://localhost:8080
+      description: Base URL
+bundled: false
+extensions:
+  bruno:
+    ignore:
+      - node_modules
+      - .git
+    openapi:
+      - sourceUrl: http://localhost:8080/v3/api-docs
+        groupBy: tags
+        lastSyncDate: 2026-10-16T20:31:44.649Z
+        specHash: f019a1803d8c12af07e94a008040670b
+        autoCheck: true
+        autoCheckInterval: 5

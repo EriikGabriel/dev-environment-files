@@ -1,0 +1,68 @@
+info:
+  name: baseDocumentUpload
+  type: http
+  seq: 3
+  tags:
+    - BaseDocument
+
+http:
+  method: POST
+  url: "{{baseUrl}}/v1/base-documents/upload"
+  params:
+    - name: ownerId
+      value: ""
+      type: query
+  body:
+    type: multipart-form
+    data:
+      - name: file
+        type: file
+        value: []
+  auth:
+    type: bearer
+    token: "{{accessToken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+examples:
+  - name: 201 Response
+    description: Created
+    request:
+      url: "{{baseUrl}}/v1/base-documents/upload"
+      method: POST
+      params:
+        - name: ownerId
+          value: ""
+          type: query
+      body:
+        type: multipart-form
+        data:
+          - name: file
+            type: file
+            value: []
+    response:
+      status: 201
+      statusText: Created
+      headers:
+        - name: Content-Type
+          value: "*/*"
+      body:
+        type: text
+        data: |-
+          {
+            "document": {
+              "contentHash": "",
+              "createdAt": "",
+              "id": "",
+              "originalFilename": "",
+              "originalObjectId": "",
+              "ownerId": "",
+              "pageCount": ""
+            },
+            "reused": false
+          }

@@ -1,0 +1,64 @@
+info:
+  name: login
+  type: http
+  seq: 2
+  tags:
+    - authentication-controller
+
+http:
+  method: POST
+  url: "{{baseUrl}}/v1/auth/login"
+  body:
+    type: json
+    data: |-
+      {
+        "email": "admin@gmail.com",
+        "password": "<PASSWORD>"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        const data = res.getBody();
+
+        if (res.status === 200 && data?.accessToken) {
+          bru.setVar("accessToken", data.accessToken);
+        }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+examples:
+  - name: 200 Response
+    description: OK
+    request:
+      url: "{{baseUrl}}/v1/auth/login"
+      method: POST
+      body:
+        type: json
+        data: |-
+          {
+            "email": "",
+            "password": ""
+          }
+    response:
+      status: 200
+      statusText: OK
+      headers:
+        - name: Content-Type
+          value: "*/*"
+      body:
+        type: text
+        data: |-
+          {
+            "id": "",
+            "email": "",
+            "enabled": false,
+            "roles": []
+          }

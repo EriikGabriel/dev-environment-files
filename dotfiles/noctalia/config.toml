@@ -1,0 +1,72 @@
+# Migrated from Noctalia Shell v4 settings.json.
+[theme]
+mode = "dark"
+source = "custom"
+custom_palette = "Vesper"
+
+[bar.default]
+position = "top"
+background_opacity = 0.93
+capsule = true
+widget_spacing = 6
+start = ["launcher", "clock", "sysmon", "active_window", "media"]
+center = ["workspaces"]
+end = ["tray", "notifications", "screen_tools", "screen_recorder", "arch_updater", "battery", "volume", "brightness", "clipboard", "keybinds", "control-center"]
+
+[widget.screen_tools]
+type = "alexander/screen-toolkit:widget"
+
+[widget.screen_recorder]
+type = "noctalia/screen_recorder:recorder"
+
+[widget.arch_updater]
+type = "yuuto/arch-updater:widget"
+
+[widget.keybinds]
+type = "kenn/keybind-cheatsheet:keybinds"
+
+[dock]
+enabled = true
+position = "bottom"
+auto_hide = true
+background_opacity = 0.25
+pinned = ["org.gnome.Nautilus", "spotify", "discord", "kitty", "obsidian", "zen", "jetbrains-idea", "dev.zed.Zed", "beekeeper-studio", "GodotHub", "bruno"]
+
+[wallpaper]
+enabled = true
+directory = "/home/erik/Imagens/Wallpapers"
+fill_mode = "crop"
+
+[weather]
+enabled = true
+
+[location]
+auto_locate = true
+
+[desktop_widgets]
+enabled = false
+
+[shell]
+font_family = "Adwaita Sans"
+polkit_agent = true
+
+[shell.launcher]
+pinned = []
+
+[idle]
+behavior_order = ["screen-off", "lock", "lock-and-suspend"]
+
+[idle.behavior.screen-off]
+enabled = true
+timeout = 600
+action = "screen_off"
+
+[idle.behavior.lock]
+enabled = true
+timeout = 660
+action = "lock"
+
+[idle.behavior.lock-and-suspend]
+enabled = true
+timeout = 1800
+action = "lock_and_suspend"

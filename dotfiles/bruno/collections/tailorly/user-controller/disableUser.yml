@@ -1,0 +1,39 @@
+info:
+  name: disableUser
+  type: http
+  seq: 5
+  tags:
+    - user-controller
+
+http:
+  method: PATCH
+  url: "{{baseUrl}}/v1/users/:id/disable"
+  params:
+    - name: id
+      value: ""
+      type: path
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+examples:
+  - name: 204 Response
+    description: No Content
+    request:
+      url: "{{baseUrl}}/v1/users/:id/disable"
+      method: PATCH
+      params:
+        - name: id
+          value: ""
+          type: path
+    response:
+      status: 204
+      statusText: No Content
+      body:
+        type: text
+        data: ""

@@ -1,0 +1,6 @@
+name: Gaming · Windows
+description: Ambiente de jogos no Windows. Ainda não implementado (fase 2).
+environment: gaming
+match: [windows]
+steps: []
+files: []

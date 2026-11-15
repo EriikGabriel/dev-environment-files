@@ -1,0 +1,167 @@
+// Mirrors the JSON printed by the Go CLI (cmd/envsetup/json.go and
+// internal/engine). Keep the two in sync.
+
+export interface Platform {
+  os: string;
+  arch: string;
+  id: string;
+  like: string[];
+  family: string;
+  name: string;
+}
+
+/** Output of `info --json`. Unknown values come as empty strings or 0. */
+export interface SystemInfo extends Platform {
+  supported: boolean;
+  hostname: string;
+  user: string;
+  kernel: string;
+  desktop: string;
+  session: string;
+  shell: string;
+  cpu: string;
+  cores: number;
+  memory_gb: number;
+  package_manager: string;
+  aur_helper: string;
+  flatpak: boolean;
+}
+
+export type Environment = "dev" | "gaming" | "";
+
+export interface Profile {
+  id: string;
+  name: string;
+  description: string;
+  environment: Environment;
+  match: string[] | null;
+  /** True for the profile picked automatically for this machine. */
+  matches: boolean;
+}
+
+export interface WizardApp {
+  id: string;
+  description: string;
+  default: boolean;
+  available: boolean;
+  installed: boolean;
+  detail: string;
+}
+
+export interface WizardFile {
+  /** Path in the repo, relative to its root. */
+  src: string;
+  /** Where it is deployed, with ~. */
+  dest: string;
+  mode: "link" | "copy" | "install";
+  /** Deployed only together with this app; "" means always. */
+  app: string;
+}
+
+export interface FileEntry {
+  name: string;
+  dir: boolean;
+  size: number;
+}
+
+/** Output of `show --json`. */
+export interface FileView {
+  path: string;
+  kind: "text" | "dir" | "image" | "binary";
+  size: number;
+  content?: string;
+  truncated: boolean;
+  data_url?: string;
+  entries: FileEntry[];
+}
+
+export interface WizardOption {
+  id: string;
+  title: string;
+  description: string;
+  apps: WizardApp[];
+  files: WizardFile[];
+  /** Directories the option creates. */
+  dirs: string[];
+}
+
+export interface WizardStep {
+  id: string;
+  title: string;
+  description: string;
+  apps: WizardApp[];
+  files: WizardFile[];
+  dirs: string[];
+  choice_title: string;
+  options: WizardOption[];
+  default: string;
+}
+
+/** Output of `steps --json`. */
+export interface Wizard {
+  profile: string;
+  name: string;
+  description: string;
+  environment: Environment;
+  platform: Platform;
+  steps: WizardStep[];
+}
+
+/** What the user picked: toggled apps plus one option per choice step. */
+export interface Selection {
+  apps: string[];
+  choices: Record<string, string>;
+}
+
+export type StepKind = "app" | "file" | "dir" | "vscode";
+
+export interface PlanLine {
+  kind: StepKind;
+  /** Profile step id; "" for extra files. */
+  step: string;
+  id: string;
+  title: string;
+  description?: string;
+  pending: boolean;
+  detail: string;
+  src?: string;
+  mode?: "link" | "copy";
+}
+
+export interface Skipped {
+  id: string;
+  reason: string;
+}
+
+export interface Plan {
+  platform: Platform;
+  root: string;
+  profile: string;
+  choices: Record<string, string>;
+  steps: PlanLine[];
+  skipped: Skipped[];
+}
+
+export interface AddResult {
+  src: string;
+  dest: string;
+  mode: "link" | "copy";
+}
+
+/** One line of `apply --json`. */
+export type ApplyEvent =
+  | {
+      type: "step";
+      index: number;
+      total: number;
+      title: string;
+      status: "running" | "done" | "uptodate" | "failed";
+      detail?: string;
+      error?: string;
+      /** Profile step id the item belongs to. */
+      group?: string;
+      /** Set when the item finishes. */
+      duration_ms?: number;
+    }
+  | { type: "log"; index?: number; line: string }
+  | { type: "done"; done: number; up_to_date: number; failed: number; log_file?: string };

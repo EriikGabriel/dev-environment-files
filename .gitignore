@@ -3,3 +3,9 @@
 dash-to-dock
 /tmp
 .setup_reboot.flag
+/envsetup
+app/node_modules
+app/dist
+app/src-tauri/target
+app/src-tauri/binaries
+app/src-tauri/gen

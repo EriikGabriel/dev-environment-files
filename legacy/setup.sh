@@ -98,7 +98,7 @@ export AUTOSTART_FILE="$USER_HOME/.config/autostart/$DESKTOP_SCRIPT_NAME"
 setup_autostart() {
     local SCRIPT_PATH=$(realpath "$0")
     local AUTOSTART_DIR="$USER_HOME/.config/autostart"
-    local LOCAL_AUTOSTART_FILE="./autostart/$DESKTOP_SCRIPT_NAME"
+    local LOCAL_AUTOSTART_FILE="$SCRIPT_DIR/autostart/$DESKTOP_SCRIPT_NAME"
 
     # Verificar se o arquivo local existe
     if [[ ! -f "$LOCAL_AUTOSTART_FILE" ]]; then

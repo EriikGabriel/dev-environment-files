@@ -1,0 +1,411 @@
+# Catalogue of every app envsetup knows how to install.
+#
+# Per-distro maps (names, method, source, check, post) are keyed by distro ID
+# ("ubuntu", "arch", "cachyos"), by ID_LIKE family ("debian", "arch"), or "*"
+# as fallback. The lookup order is: exact ID, each ID_LIKE entry, then "*".
+# So `debian:` also covers Ubuntu, Mint and Pop!_OS, and `arch:` covers CachyOS.
+#
+# method (default "native"):
+#   native   distro package manager (apt / pacman); `names` is the package
+#   aur      AUR through yay or paru; `names` is the AUR package
+#   deb-url  download the .deb in `source`; `names` is its dpkg package name
+#   flatpak  flathub; `names` is the application ID
+#   script   shell in `source`; `check` must exit 0 when already installed
+#
+# `source` expands {arch} (amd64|arm64) and {x64} (x64|arm64).
+# `post` and `script` commands run under sh with $SUDO set to "sudo", or to
+# nothing when already root. `post` runs on every apply, so keep it idempotent.
+
+apps:
+  # ---- base ----
+  curl: { names: { "*": curl } }
+  wget: { names: { "*": wget } }
+  git: { names: { "*": git } }
+  vim: { names: { "*": vim } }
+  unzip: { names: { "*": unzip } }
+  tmux: { names: { "*": tmux } }
+  htop: { names: { "*": htop } }
+  zsh: { names: { "*": zsh } }
+  build-tools:
+    description: Compiler toolchain (gcc, make, ...)
+    names: { debian: build-essential, arch: base-devel }
+
+  # ---- runtimes and services ----
+  docker:
+    description: Docker engine, enabled at boot, user added to the docker group
+    # docker.io is Ubuntu's own package. The official docker-ce repo is not
+    # modelled yet (needs a `repo` block).
+    names: { debian: docker.io, arch: docker }
+    post:
+      "*":
+        - $SUDO systemctl enable --now docker
+        - $SUDO usermod -aG docker "${USER:-$(id -un)}"
+  nodejs:
+    description: Node.js (distro version; NodeSource repo is not modelled yet)
+    names: { "*": nodejs }
+  npm: { names: { "*": npm } }
+  python: { names: { debian: python3, arch: python } }
+  python-pip: { names: { debian: python3-pip, arch: python-pip } }
+  python-venv:
+    names: { debian: python3-venv }
+    unavailable: [arch] # venv ships with the arch python package
+  postgresql: { names: { "*": postgresql } }
+  redis: { names: { debian: redis-server, arch: redis } }
+
+  # ---- cli tools ----
+  gh:
+    description: GitHub CLI
+    names: { debian: gh, arch: github-cli }
+  fastfetch:
+    description: System info (needs Ubuntu 24.10+ or Debian 13+ for apt)
+    names: { "*": fastfetch }
+  eza: { names: { "*": eza } }
+  zoxide: { names: { "*": zoxide } }
+  fzf: { names: { "*": fzf } }
+  git-delta: { names: { "*": git-delta } }
+  thefuck: { names: { "*": thefuck } }
+  fd:
+    description: Fast find. Debian ships the binary as fdfind.
+    names: { debian: fd-find, arch: fd }
+    post:
+      debian:
+        - mkdir -p "$HOME/.local/bin" && ln -sf "$(command -v fdfind)" "$HOME/.local/bin/fd"
+  bat:
+    description: cat with syntax highlighting. Debian ships the binary as batcat.
+    names: { "*": bat }
+    post:
+      debian:
+        - mkdir -p "$HOME/.local/bin" && ln -sf "$(command -v batcat)" "$HOME/.local/bin/bat"
+
+  # ---- fonts ----
+  jetbrains-mono:
+    names: { debian: fonts-jetbrains-mono, arch: ttf-jetbrains-mono }
+  inter-font:
+    names: { debian: fonts-inter, arch: inter-font }
+  jetbrains-mono-nerd:
+    description: JetBrainsMono Nerd Font (icons used by powerlevel10k and wezterm)
+    method: { debian: script, arch: native }
+    names: { arch: ttf-jetbrains-mono-nerd }
+    check:
+      debian: ls "$HOME"/.local/share/fonts/JetBrainsMono/*.ttf >/dev/null 2>&1
+    source:
+      debian: |
+        set -e
+        dir="$HOME/.local/share/fonts/JetBrainsMono"
+        mkdir -p "$dir"
+        tmp="$(mktemp --suffix=.zip)"
+        curl -fsSL -o "$tmp" https://github.com/ryanoasis/nerd-fonts/releases/latest/download/JetBrainsMono.zip
+        unzip -oq "$tmp" -d "$dir"
+        rm -f "$tmp"
+        fc-cache -f
+
+  # ---- shell ----
+  oh-my-zsh:
+    method: { "*": script }
+    check:
+      "*": test -d "$HOME/.oh-my-zsh"
+    source:
+      "*": |
+        RUNZSH=no CHSH=no KEEP_ZSHRC=yes sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+  powerlevel10k:
+    method: { "*": script }
+    check:
+      "*": test -d "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k"
+    source:
+      "*": |
+        git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k"
+
+  # ---- desktop apps ----
+  flatpak:
+    description: Flatpak runtime plus the flathub remote (used on Debian-family only)
+    names: { "*": flatpak }
+    unavailable: [arch]
+    post:
+      "*":
+        - $SUDO flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+  wezterm:
+    description: GPU-accelerated terminal
+    method: { debian: flatpak, arch: native }
+    names: { debian: org.wezfurlong.wezterm, arch: wezterm }
+  google-chrome:
+    method: { debian: deb-url, arch: aur }
+    names: { debian: google-chrome-stable, arch: google-chrome }
+    source:
+      debian: https://dl.google.com/linux/direct/google-chrome-stable_current_{arch}.deb
+  vscode:
+    description: Visual Studio Code (the .deb registers Microsoft's apt repo for updates)
+    method: { debian: deb-url, arch: aur }
+    names: { debian: code, arch: visual-studio-code-bin }
+    source:
+      debian: https://code.visualstudio.com/sha/download?build=stable&os=linux-deb-{x64}
+  zed:
+    description: Zed editor (official installer, lands in ~/.local/bin/zed)
+    method: { "*": script }
+    check:
+      "*": test -x "$HOME/.local/bin/zed"
+    source:
+      "*": curl -fsSL https://zed.dev/install.sh | sh
+
+  # ---- more cli tools ----
+  ripgrep: { names: { "*": ripgrep } }
+  btop: { names: { "*": btop } }
+  tree: { names: { "*": tree } }
+  micro: { description: Simple terminal editor, names: { "*": micro } }
+  helix: { description: Modal terminal editor, names: { arch: helix } }
+  pnpm: { names: { arch: pnpm } }
+  docker-compose: { names: { arch: docker-compose, debian: docker-compose-v2 } }
+  openjdk-21: { names: { debian: openjdk-21-jdk, arch: jdk21-openjdk } }
+
+  # ---- shells and terminals ----
+  fish: { names: { "*": fish } }
+  cachyos-fish-config:
+    description: CachyOS fish defaults (sourced by the fish config)
+    names: { cachyos: cachyos-fish-config }
+  starship:
+    description: Cross-shell prompt
+    names: { arch: starship }
+  fish-plugins:
+    description: fisher plus autopair, fzf.fish and done
+    names: { arch: fisher }
+    post:
+      arch:
+        - test -f "$HOME/.config/fish/conf.d/done.fish" || fish -c "fisher install jorgebucaran/autopair.fish patrickf1/fzf.fish franciscolourenco/done"
+  fish-default-shell:
+    description: Make fish the login shell
+    method: { "*": script }
+    check:
+      "*": '[ "$(basename "$(getent passwd "$(id -un)" | cut -d: -f7)")" = fish ]'
+    source:
+      "*": $SUDO chsh -s "$(command -v fish)" "$(id -un)"
+  zsh-default-shell:
+    description: Make zsh the login shell
+    method: { "*": script }
+    check:
+      "*": '[ "$(basename "$(getent passwd "$(id -un)" | cut -d: -f7)")" = zsh ]'
+    source:
+      "*": $SUDO chsh -s "$(command -v zsh)" "$(id -un)"
+  kitty: { description: GPU terminal, names: { "*": kitty } }
+
+  # ---- desktop: niri + Noctalia (CachyOS) ----
+  niri-noctalia:
+    description: niri compositor with the Noctalia shell (CachyOS edition package)
+    names: { cachyos: cachyos-niri-noctalia }
+
+  # ---- desktop apps ----
+  zen-browser:
+    method: { cachyos: native, arch: aur }
+    names: { arch: zen-browser-bin }
+  obsidian: { names: { arch: obsidian } }
+  discord:
+    method: { debian: deb-url }
+    names: { debian: discord, arch: discord }
+    source:
+      debian: https://discord.com/api/download?platform=linux&format=deb
+  spotify:
+    method: { debian: flatpak, arch: aur }
+    names: { debian: com.spotify.Client, arch: spotify }
+  vlc: { names: { "*": vlc } }
+  bruno:
+    description: API client
+    method: { arch: aur }
+    names: { arch: bruno-bin }
+  beekeeper-studio:
+    description: SQL client
+    method: { arch: aur }
+    names: { arch: beekeeper-studio-bin }
+  localsend:
+    description: Share files on the local network
+    method: { arch: aur }
+    names: { arch: localsend-bin }
+  intellij-idea:
+    description: IntelliJ IDEA Ultimate
+    method: { arch: aur }
+    names: { arch: intellij-idea-ultimate-edition }
+
+  # ---- desktop: GNOME with the WhiteSur look (Ubuntu, ported from legacy/) ----
+  # These talk to the running GNOME session, so they only work from inside it.
+  sassc: { names: { debian: sassc } }
+  gnome-tweaks: { names: { debian: gnome-tweaks } }
+  gnome-extension-manager: { names: { debian: gnome-shell-extension-manager } }
+  gnome-settings:
+    description: Dark mode, edge tiling, bottom auto-hiding dock, centered windows
+    method: { debian: script }
+    check:
+      debian: |
+        [ "$(gsettings get org.gnome.desktop.interface color-scheme)" = "'prefer-dark'" ] &&
+        [ "$(gsettings get org.gnome.shell.extensions.dash-to-dock autohide)" = "true" ] &&
+        [ "$(gsettings get org.gnome.mutter center-new-windows)" = "true" ]
+    source:
+      debian: |
+        set -e
+        gsettings set org.gnome.desktop.interface color-scheme "'prefer-dark'"
+        gsettings set org.gnome.mutter edge-tiling true
+        gsettings set org.gnome.mutter center-new-windows true
+        gsettings set org.gnome.shell.extensions.ding icon-size "small"
+        gsettings set org.gnome.shell.extensions.ding show-home false
+        d=org.gnome.shell.extensions.dash-to-dock
+        gsettings set $d extend-height false
+        gsettings set $d dock-fixed false
+        gsettings set $d autohide true
+        gsettings set $d dock-position 'BOTTOM'
+        gsettings set $d dash-max-icon-size 40
+        gsettings set $d show-mounts false
+        gsettings set $d show-mounts-network false
+  gnome-extensions:
+    description: Blur my Shell, User Themes, Search Light, Clipboard Indicator and 6 more (GNOME asks to confirm each)
+    method: { debian: script }
+    check:
+      debian: |
+        for id in blur-my-shell@aunetx user-theme@gnome-shell-extensions.gcampax.github.com search-light@icedman.github.com clipboard-indicator@tudmotu.com window-title-is-back@fthx compiz-windows-effect@hermes83.github.com compiz-alike-magic-lamp-effect@hermes83.github.com custom-hot-corners-extended@G-dH.github.com emoji-copy@felipeftn color-picker@tuberry; do
+          gnome-extensions list | grep -qxF "$id" || exit 1
+        done
+    source:
+      debian: |
+        for id in blur-my-shell@aunetx user-theme@gnome-shell-extensions.gcampax.github.com search-light@icedman.github.com clipboard-indicator@tudmotu.com window-title-is-back@fthx compiz-windows-effect@hermes83.github.com compiz-alike-magic-lamp-effect@hermes83.github.com custom-hot-corners-extended@G-dH.github.com emoji-copy@felipeftn color-picker@tuberry; do
+          gnome-extensions list | grep -qxF "$id" && continue
+          echo "installing $id (confirm the GNOME dialog)"
+          gdbus call --session --dest org.gnome.Shell.Extensions --object-path /org/gnome/Shell/Extensions \
+            --method org.gnome.Shell.Extensions.InstallRemoteExtension "$id" || exit 1
+          n=0
+          until gnome-extensions list | grep -qxF "$id"; do
+            n=$((n + 1)); [ "$n" -gt 60 ] && { echo "timed out waiting for $id"; exit 1; }
+            sleep 1
+          done
+        done
+        e=/org/gnome/shell/extensions
+        dconf write $e/blur-my-shell/dash-to-dock/blur false
+        dconf write $e/search-light/show-panel-icon true
+        dconf write $e/search-light/scale-width 0.28
+        dconf write $e/search-light/scale-height 0.40
+        dconf write $e/search-light/border-thickness 1
+        dconf write $e/search-light/border-radius 7.0
+        dconf write $e/search-light/background-color "(0.0, 0.0, 0.0, 0.6)"
+        dconf write $e/window-title-is-back/show-title false
+        dconf write $e/window-title-is-back/fixed-width false
+        dconf write $e/custom-hot-corners-extended/monitor-0-top-right-0/action "'show-desktop-mon'"
+        dconf write $e/custom-hot-corners-extended/misc/panel-menu-enable false
+        dconf write $e/emoji-copy/always-show false
+        dconf write $e/emoji-copy/paste-on-select false
+        dconf write $e/color-picker/systray-dropper-icon "'tool_color_picker'"
+  whitesur-gtk-theme:
+    description: WhiteSur GTK and shell theme (macOS look), dark blue variant
+    method: { debian: script }
+    check:
+      debian: |
+        test -d /usr/share/themes/WhiteSur-Dark-blue &&
+        [ "$(gsettings get org.gnome.desktop.interface gtk-theme)" = "'WhiteSur-Dark-blue'" ]
+    source:
+      debian: |
+        set -e
+        if [ ! -d /usr/share/themes/WhiteSur-Dark-blue ]; then
+          tmp="$(mktemp -d)"
+          git clone --depth=1 https://github.com/vinceliuice/WhiteSur-gtk-theme.git "$tmp/theme"
+          cd "$tmp/theme"
+          $SUDO ./install.sh -n WhiteSur -t all -m -N glassy -l --shell -i ubuntu -h smaller --round --silent-mode
+          $SUDO ./tweaks.sh -g -i ubuntu -F -d --silent-mode
+          if command -v flatpak >/dev/null; then
+            $SUDO flatpak override --filesystem=xdg-config/gtk-3.0
+            $SUDO flatpak override --filesystem=xdg-config/gtk-4.0
+          fi
+          $SUDO cp -r "$ENVSETUP_ROOT/legacy/gtk/WhiteSur-Dark-blue" /usr/share/themes/
+          cd /; rm -rf "$tmp"
+        fi
+        gsettings set org.gnome.desktop.interface gtk-theme "'WhiteSur-Dark-blue'"
+        dconf write /org/gnome/shell/extensions/user-theme/name "'WhiteSur-Dark-blue'"
+        gsettings set org.gnome.desktop.interface accent-color "'blue'"
+  whitesur-icons:
+    description: WhiteSur icon theme
+    method: { debian: script }
+    check:
+      debian: |
+        test -d "$HOME/.local/share/icons/WhiteSur" &&
+        [ "$(gsettings get org.gnome.desktop.interface icon-theme)" = "'WhiteSur-dark'" ]
+    source:
+      debian: |
+        set -e
+        if [ ! -d "$HOME/.local/share/icons/WhiteSur" ]; then
+          tmp="$(mktemp -d)"
+          git clone --depth=1 https://github.com/vinceliuice/WhiteSur-icon-theme.git "$tmp/icons"
+          (cd "$tmp/icons" && ./install.sh -d "$HOME/.local/share/icons" -n WhiteSur -a)
+          rm -rf "$tmp"
+        fi
+        gsettings set org.gnome.desktop.interface icon-theme "'WhiteSur-dark'"
+  gnome-dock-apps:
+    description: Pin Files, terminal, browser, editor and Discord to the dock (only the installed ones)
+    method: { debian: script }
+    check:
+      debian: gsettings get org.gnome.shell favorite-apps | grep -q wezterm
+    source:
+      debian: |
+        list=""
+        for app in org.gnome.Nautilus.desktop org.wezfurlong.wezterm.desktop google-chrome.desktop code.desktop dev.zed.Zed.desktop discord.desktop; do
+          for dir in /usr/share/applications /var/lib/flatpak/exports/share/applications "$HOME/.local/share/applications"; do
+            if [ -f "$dir/$app" ]; then list="$list${list:+, }'$app'"; break; fi
+          done
+        done
+        gsettings set org.gnome.shell favorite-apps "[$list]"
+  mac-wallpaper:
+    description: macOS-style wallpaper
+    method: { debian: script }
+    check:
+      debian: '[ "$(gsettings get org.gnome.desktop.background picture-uri-dark)" = "''file:///usr/share/backgrounds/mac-wallpaper.jpg''" ]'
+    source:
+      debian: |
+        set -e
+        p=/usr/share/backgrounds/mac-wallpaper.jpg
+        $SUDO wget -qO "$p" https://www.iclarified.com/images/news/91914/440181/440181.jpg
+        $SUDO chmod 644 "$p"
+        gsettings set org.gnome.desktop.background picture-uri "'file://$p'"
+        gsettings set org.gnome.desktop.background picture-uri-dark "'file://$p'"
+
+  # ---- icons (macOS look) ----
+  mactahoe-icons:
+    description: MacTahoe icon theme (macOS-style app icons), dark variant
+    method: { "*": script }
+    check:
+      "*": |
+        test -d /usr/share/icons/MacTahoe-dark &&
+        [ "$(gsettings get org.gnome.desktop.interface icon-theme)" = "'MacTahoe-dark'" ]
+    source:
+      "*": |
+        set -e
+        if [ ! -d /usr/share/icons/MacTahoe-dark ]; then
+          tmp="$(mktemp -d)"
+          git clone --depth=1 https://github.com/vinceliuice/MacTahoe-icon-theme.git "$tmp/icons"
+          (cd "$tmp/icons" && $SUDO ./install.sh)
+          rm -rf "$tmp"
+        fi
+        gsettings set org.gnome.desktop.interface icon-theme 'MacTahoe-dark'
+        for f in "$HOME/.config/gtk-3.0/settings.ini" "$HOME/.config/gtk-4.0/settings.ini"; do
+          if [ -f "$f" ] && grep -q '^gtk-icon-theme-name=' "$f"; then
+            sed -i 's/^gtk-icon-theme-name=.*/gtk-icon-theme-name=MacTahoe-dark/' "$f"
+          fi
+        done
+
+  # ---- game dev ----
+  godothub:
+    description: GodotHub, Godot version and project manager (AppImage, needs FUSE 2)
+    method: { "*": script }
+    check:
+      "*": ls "$HOME"/.local/bin/GodotHub*.AppImage >/dev/null 2>&1
+    source:
+      "*": |
+        set -e
+        url="$(curl -fsSL https://api.github.com/repos/RykoTheDev/GodotHub/releases/latest | grep -o 'https://[^"]*linux-amd64\.AppImage"' | head -n1 | tr -d '"')"
+        [ -n "$url" ] || { echo "could not find the GodotHub AppImage in the latest release"; exit 1; }
+        bin="$HOME/.local/bin/GodotHub.AppImage"
+        mkdir -p "$HOME/.local/bin" "$HOME/.local/share/applications"
+        curl -fL -o "$bin" "$url"
+        chmod +x "$bin"
+        cat > "$HOME/.local/share/applications/godothub.desktop" <<EOD
+        [Desktop Entry]
+        Type=Application
+        Name=GodotHub
+        Comment=Godot Version and Project Management
+        Exec="$bin"
+        TryExec=$bin
+        Icon=godot
+        StartupWMClass=godothub
+        Terminal=false
+        Categories=Development;
+        EOD

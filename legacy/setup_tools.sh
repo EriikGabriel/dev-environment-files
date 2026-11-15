@@ -79,7 +79,7 @@ done
 # Criar arquivo de config do Zsh
 progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🔧 Configurando Zsh..."
 if [ ! -f "$USER_HOME/.zshrc" ] || [ -f "$SETUP_REBOOT_FLAG" ]; then
-    cp ./zsh/.zshrc $USER_HOME/.zshrc
+    cp $SCRIPT_DIR/../dotfiles/zsh/.zshrc $USER_HOME/.zshrc
     chown $SUDO_USER:$SUDO_USER $USER_HOME/.zshrc
     green "✅ Configuração do Zsh criada!"
 else
@@ -311,7 +311,7 @@ fi
 
 # Configuração do WezTerm
 if [ ! -f "$USER_HOME/.wezterm.lua" ]; then
-    cp ./wezterm/.wezterm.lua $USER_HOME/.wezterm.lua
+    cp $SCRIPT_DIR/../dotfiles/wezterm/.wezterm.lua $USER_HOME/.wezterm.lua
     chown $SUDO_USER:$SUDO_USER $USER_HOME/.wezterm.lua
     green "✅ Configuração do WezTerm criada!"
 else
@@ -355,7 +355,7 @@ fi
 progress_bar $TOTAL_STEPS $((++CURRENT_STEP)) "🚀 Instalando Powerlevel10k..."
 if [ ! -f "$USER_HOME/.p10k.zsh" ]; then
     git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "${ZSH_CUSTOM:-$USER_HOME/.oh-my-zsh/custom}/themes/powerlevel10k"
-    cp ./zsh/.p10k.zsh $USER_HOME/.p10k.zsh
+    cp $SCRIPT_DIR/../dotfiles/zsh/.p10k.zsh $USER_HOME/.p10k.zsh
     chown $SUDO_USER:$SUDO_USER $USER_HOME/.p10k.zsh
     green "✅ Powerlevel10k instalado com sucesso!"
 else
@@ -395,11 +395,11 @@ if ! grep -q "cli-ascii-1.txt" "$FASTFETCH_CONFIG_FILE"; then
     sudo mkdir -p $USER_HOME/.config/fastfetch/logos
 
     # Copiar todos os logos
-    sudo cp -r ./fastfetch/logos/* $USER_HOME/.config/fastfetch/logos
+    sudo cp -r $SCRIPT_DIR/../dotfiles/fastfetch/logos/* $USER_HOME/.config/fastfetch/logos
 
     # Substituir arquivo de configuração
     CONFIG_FILE_NAME="arch"
-    sudo cp ./fastfetch/$CONFIG_FILE_NAME.jsonc $FASTFETCH_CONFIG_FILE
+    sudo cp $SCRIPT_DIR/../dotfiles/fastfetch/$CONFIG_FILE_NAME.jsonc $FASTFETCH_CONFIG_FILE
     green "✅ fastfetch configurado com sucesso!"
 else
     blue "✅ Configuração do fastfetch já existe!"

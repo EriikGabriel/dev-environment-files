@@ -1,0 +1,49 @@
+info:
+  name: revoke
+  type: http
+  seq: 3
+  tags:
+    - anonymous-session-controller
+
+http:
+  method: PATCH
+  url: "{{baseUrl}}/v1/anonymous-sessions/:id/revoke"
+  params:
+    - name: id
+      value: ""
+      type: path
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+examples:
+  - name: 200 Response
+    description: OK
+    request:
+      url: "{{baseUrl}}/v1/anonymous-sessions/:id/revoke"
+      method: PATCH
+      params:
+        - name: id
+          value: ""
+          type: path
+    response:
+      status: 200
+      statusText: OK
+      headers:
+        - name: Content-Type
+          value: "*/*"
+      body:
+        type: text
+        data: |-
+          {
+            "id": "",
+            "ownerId": "",
+            "expiresAt": "",
+            "revokedAt": "",
+            "valid": false
+          }

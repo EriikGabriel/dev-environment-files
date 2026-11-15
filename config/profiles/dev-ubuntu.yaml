@@ -1,0 +1,86 @@
+name: Dev · Ubuntu (GNOME + WhiteSur)
+description: O ambiente dos scripts antigos - GNOME com visual WhiteSur, zsh + powerlevel10k, WezTerm e VS Code.
+environment: dev
+match: [ubuntu, debian]
+
+# Same model as dev-cachyos.yaml. The end result follows legacy/setup*.sh.
+steps:
+  - id: base
+    title: Essenciais
+    description: Ferramentas básicas de linha de comando e de compilação.
+    apps: [curl, wget, git, vim, unzip, build-tools, tmux, htop, flatpak]
+    optional: [ripgrep, btop, tree, micro]
+
+  - id: shell
+    title: Shell
+    description: zsh com oh-my-zsh, zinit e powerlevel10k, mais os utilitários que o .zshrc usa.
+    apps: [zsh, oh-my-zsh, powerlevel10k, zsh-default-shell, eza, bat, fd, fzf, zoxide, thefuck, git-delta, fastfetch]
+    files:
+      - { src: dotfiles/zsh/.zshrc, dest: ~/.zshrc, app: zsh }
+      - { src: dotfiles/zsh/.p10k.zsh, dest: ~/.p10k.zsh, app: powerlevel10k }
+      - { src: dotfiles/fastfetch/arch.jsonc, dest: ~/.config/fastfetch/config.jsonc, app: fastfetch }
+      - { src: dotfiles/fastfetch/logos, dest: ~/.config/fastfetch/logos, app: fastfetch }
+
+  - id: terminal
+    title: Terminal e fontes
+    description: WezTerm com o tema Poimandres e as fontes JetBrains Mono e Inter.
+    apps: [wezterm, jetbrains-mono, jetbrains-mono-nerd, inter-font]
+    optional: [kitty]
+    files:
+      - { src: dotfiles/wezterm/.wezterm.lua, dest: ~/.wezterm.lua, app: wezterm }
+
+  - id: runtimes
+    title: Linguagens e serviços
+    description: Runtimes, containers e bancos de dados.
+    apps: [nodejs, npm, python, python-pip, python-venv, openjdk-21, docker, postgresql, redis, gh]
+    optional: [docker-compose]
+
+  - id: editor
+    title: Editor de código
+    description: O editor principal, com configurações e extensões.
+    choice_title: Editor
+    default: vscode
+    options:
+      - id: vscode
+        title: VS Code
+        description: O editor dos scripts antigos - settings, keybindings e extensões.
+        apps: [vscode]
+        files:
+          - { src: dotfiles/vscode/settings.jsonc, dest: ~/.config/Code/User/settings.json }
+          - { src: dotfiles/vscode/keybinds.json, dest: ~/.config/Code/User/keybindings.json }
+        vscode_extensions: dotfiles/vscode/extensions.json
+      - id: zed
+        title: Zed
+        description: Settings, keymap, snippets e extensões (instaladas pelo próprio Zed).
+        apps: [zed]
+        files:
+          - { src: dotfiles/zed/settings.json, dest: ~/.config/zed/settings.json }
+          - { src: dotfiles/zed/keymap.json, dest: ~/.config/zed/keymap.json }
+          - { src: dotfiles/zed/snippets, dest: ~/.config/zed/snippets }
+
+  - id: apps
+    title: Aplicativos
+    description: Navegador e, se quiser, os apps de entretenimento.
+    apps: [google-chrome]
+    optional: [discord, spotify, vlc, godothub]
+
+  - id: workspace
+    title: Pastas de trabalho
+    description: A estrutura da pasta www, como nos scripts antigos.
+    choice_title: Estrutura
+    default: www
+    options:
+      - id: www
+        title: ~/www
+        description: Cria projects e ufscar.
+        # Edit this list to change the structure.
+        dirs: [~/www/projects, ~/www/ufscar]
+
+  # Last on purpose: the dock pins apps installed in the steps above.
+  - id: desktop
+    title: Desktop
+    description: GNOME com o visual WhiteSur, extensões e dock, como nos scripts antigos.
+    apps: [sassc, gnome-tweaks, gnome-extension-manager, gnome-settings, gnome-extensions, whitesur-gtk-theme, whitesur-icons, gnome-dock-apps]
+    optional: [mac-wallpaper]
+
+files: []

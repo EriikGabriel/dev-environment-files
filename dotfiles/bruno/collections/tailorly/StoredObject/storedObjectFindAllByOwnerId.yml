@@ -1,0 +1,55 @@
+info:
+  name: storedObjectFindAllByOwnerId
+  type: http
+  seq: 2
+  tags:
+    - StoredObject
+
+http:
+  method: GET
+  url: "{{baseUrl}}/v1/stored-objects/owner/:ownerId"
+  params:
+    - name: ownerId
+      value: ""
+      type: path
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+examples:
+  - name: 200 Response
+    description: OK
+    request:
+      url: "{{baseUrl}}/v1/stored-objects/owner/:ownerId"
+      method: GET
+      params:
+        - name: ownerId
+          value: ""
+          type: path
+    response:
+      status: 200
+      statusText: OK
+      headers:
+        - name: Content-Type
+          value: "*/*"
+      body:
+        type: text
+        data: |-
+          [
+            {
+              "contentHash": "",
+              "deletionStatus": "",
+              "expiresAt": "",
+              "id": "",
+              "mimeType": "",
+              "ownerId": "",
+              "purpose": "",
+              "sizeBytes": 0,
+              "storageKey": ""
+            }
+          ]
