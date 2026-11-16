@@ -12,6 +12,7 @@ import (
 	"github.com/EriikGabriel/dev-environment-files/internal/backend"
 	"github.com/EriikGabriel/dev-environment-files/internal/config"
 	"github.com/EriikGabriel/dev-environment-files/internal/platform"
+	"github.com/EriikGabriel/dev-environment-files/internal/winsetup"
 )
 
 // Env is everything steps need from the outside world.
@@ -24,6 +25,10 @@ type Env struct {
 	Vars map[string]string
 	// AptDir and SteamDir replace /etc/apt and the Steam folder in tests.
 	AptDir, SteamDir string
+	// StateDir is where envsetup remembers what it did (default: the user's
+	// state directory). Fetch downloads a file; nil is the real download.
+	StateDir string
+	Fetch    winsetup.Fetch
 
 	refreshed map[string]bool
 }

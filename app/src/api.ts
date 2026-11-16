@@ -1,6 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
-import type { AddResult, ApplyEvent, DesktopPreview, FileView, NewApp, Plan, Profile, Selection, SystemInfo, Wizard } from "./types";
+import type { AddResult, ApplyEvent, DesktopPreview, FileView, Layout, LayoutChoice, Media, NewApp, Plan, Policies, Profile, Selection, SystemInfo, VentoyDrive, Wizard, Written } from "./types";
 
 const run = <T>(root: string, args: string[]) => invoke<T>("envsetup", { root, args });
 
@@ -96,3 +96,44 @@ export const onApplyEvent = (fn: (e: ApplyEvent) => void): Promise<UnlistenFn> =
   });
 
 export const errorMessage = (e: unknown): string => (typeof e === "string" ? e : e instanceof Error ? e.message : String(e));
+
+// ---- Windows installation media and group policies ----
+
+/** The answer file, the Ninite list and the Ventoy drives of the profile. */
+export const media = (root: string, profile: string) => run<Media>(root, ["media", "-p", profile]);
+
+/** Saves the Ninite list: app names, or a ninite.com link. */
+export const setNinite = (root: string, profile: string, apps: string[]) =>
+  run<{ selected: string[]; unknown: string[] }>(root, ["set-ninite", "-p", profile, ...apps]);
+
+/** Replaces the profile's answer file with one downloaded from the generator. */
+export const setUnattend = (root: string, profile: string, file: string) =>
+  run<{ path: string; has_password: boolean; has_link: boolean }>(root, ["set-unattend", "-p", profile, file]);
+
+/** Writes the answer file, ventoy.json and (optionally) the Ninite installer to a Ventoy drive. */
+export const writeMedia = (root: string, profile: string, drive: string, ninite: boolean) =>
+  run<{ written: Written[]; drive: VentoyDrive }>(root, ["write-media", "-p", profile, "--drive", drive, ...(ninite ? [] : ["--no-ninite"])]);
+
+export type Site = "unattend" | "generator" | "ninite" | "ninite-home" | "policies-source";
+
+/** Opens one of the sites the setup uses in the default browser. */
+export const openSite = (root: string, profile: string, site: Site) => run<{ opened: string }>(root, ["open-url", "-p", profile, site]);
+
+export const policies = (root: string) => run<Policies>(root, ["policies"]);
+
+/** Saves the choice of one or more policies (`{ id: choice }`) in config/policies.yaml. */
+export const setPolicies = (root: string, choices: Record<string, string>) =>
+  run<{ changed: number }>(root, ["set-policy", ...Object.entries(choices).map(([id, c]) => `${id}=${c}`)]);
+
+/** Writes the chosen policies to the registry; Windows asks for elevation once. */
+export const applyPolicies = (root: string) => run<Policies>(root, ["apply-policies"]);
+
+/** The saved desktop layout and the apps that can be pinned; `apps` are the profile's ticked apps. */
+export const layout = (root: string, profile: string, apps: string[]) => run<Layout>(root, ["layout", "-p", profile, "--apps", apps.join(",")]);
+
+/** Saves the layout in config/layout.yaml. */
+export const setLayout = (root: string, profile: string, c: LayoutChoice) =>
+  run<LayoutChoice>(root, ["set-layout", "-p", profile, `--taskbar=${c.taskbar.join(",")}`, `--clear-start=${c.clear_start}`, `--hide-icons=${c.hide_desktop_icons}`]);
+
+/** Applies the saved layout to this machine; Windows asks for elevation once. */
+export const applyLayout = (root: string, profile: string) => run<{ applied: boolean }>(root, ["apply-layout", "-p", profile]);

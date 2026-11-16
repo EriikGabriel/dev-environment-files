@@ -7,18 +7,28 @@ match: [windows]
 # selected and `optional` start unselected. Apps are installed with winget
 # (see config/apps.yaml); add or remove items here, or with the buttons in the
 # app (`envsetup add-app` / `remove-app`).
+# The unattended Windows installation: the answer file made at
+# schneegans.de/windows/unattend-generator, the ventoy.json that ties it to
+# the image, and the catalogue app whose Ninite installer goes on the drive.
+# The app's Instalação tab shows what the answer file does and writes all of
+# it to a Ventoy USB drive (`envsetup media`, `write-media`).
+media:
+  unattend: windows/autounattend.xml
+  ventoy: windows/ventoy.json
+  ninite: ninite
+
 steps:
   - id: base
     title: Essenciais
     description: Runtimes que os jogos pedem e utilitários básicos.
     apps: [7zip, vcredist, directx]
-    optional: [scoop, powertoys]
+    optional: [scoop, powertoys, ninite]
 
   - id: drivers
     title: Drivers e hardware
     description: O software da placa de vídeo e as ferramentas de monitoramento.
     apps: [amd-software]
-    optional: [msi-afterburner, hwinfo]
+    optional: [nvidia-app, msi-afterburner, hwinfo]
 
   - id: launchers
     title: Lojas e launchers
@@ -30,7 +40,13 @@ steps:
     title: Comunicação e navegador
     description: Voz, navegador e o que roda junto com os jogos.
     apps: [discord, opera-gx]
-    optional: [spotify, obs-studio]
+    optional: [brave, spotify, obs-studio]
+
+  - id: tuning
+    title: Otimizações
+    description: Políticas de grupo que cortam telemetria, sugestões e tarefas em segundo plano. Veja e ajuste cada uma na aba Políticas.
+    apps: []
+    optional: [group-policies]
 
   # After the launchers on purpose: these are installed through Steam itself.
   - id: steam-apps

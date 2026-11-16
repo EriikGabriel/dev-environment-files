@@ -18,6 +18,11 @@
 #   scoop    scoop (Windows); `names` is the package
 #   steam    a Steam app (Windows); `names` is the AppID. Steam opens its own
 #            install dialog, and the app must be in the account's library
+#   ninite   one Ninite installer (Windows); `names` is the list of ninite.com
+#            apps, separated by spaces. It counts as done once it ran for
+#            that exact list
+#   policies the group policies of config/policies.yaml (Windows), written to
+#            the registry; no `names`
 #
 # `repo` (Debian family, native method) registers a third-party apt repository
 # before installing: `key` is the signing key URL and `source` is the
@@ -533,6 +538,7 @@ apps:
     description: MSI Afterburner (overclock, fan curve and the in-game overlay)
     names: { windows: Guru3D.Afterburner }
   hwinfo: { description: Hardware sensors and monitoring, names: { windows: REALiX.HWiNFO } }
+  nvidia-app: { description: "NVIDIA app (GeForce drivers, game optimization and the in-game overlay)", names: { windows: Nvidia.NvidiaApp } }
   steam: { description: Steam, names: { windows: Valve.Steam } }
   epic-games: { description: Epic Games Launcher, names: { windows: EpicGames.EpicGamesLauncher } }
   gog-galaxy: { description: GOG Galaxy, names: { windows: GOG.Galaxy } }
@@ -540,8 +546,16 @@ apps:
   ubisoft-connect: { description: Ubisoft Connect, names: { windows: Ubisoft.Connect } }
   battle-net: { description: Battle.net, names: { windows: Blizzard.BattleNet } }
   opera-gx: { description: Opera GX browser, names: { windows: Opera.OperaGX } }
+  brave: { description: Brave browser, names: { windows: Brave.Brave } }
   obs-studio: { description: OBS Studio (recording and streaming), names: { windows: OBSProject.OBSStudio } }
   wallpaper-engine:
     description: Wallpaper Engine, bought on Steam (AppID 431960). Steam opens its install dialog
     method: { windows: steam }
     names: { windows: "431960" }
+  ninite:
+    description: "Ninite: one installer for the apps picked in the Instalação tab (it installs and updates them, with no questions)"
+    method: { windows: ninite }
+    names: { windows: brave discord steam epic git spotify powertoys adoptjavax21 node.js24 }
+  group-policies:
+    description: "Group policies from config/policies.yaml (telemetry, suggestions, widgets, Windows Update...); review them in the Políticas tab"
+    method: { windows: policies }

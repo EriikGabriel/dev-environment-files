@@ -45,7 +45,7 @@ func (s *appStep) backend() (backend.Backend, error) {
 		return backend.Winget{}, nil
 	case config.MethodScoop:
 		return backend.Scoop{}, nil
-	case config.MethodScript, config.MethodSteam:
+	case config.MethodScript, config.MethodSteam, config.MethodNinite, config.MethodPolicies:
 		return nil, nil
 	default: // native and deb-url both end up in the distro manager
 		return backend.Native(s.env.Info)
@@ -62,6 +62,10 @@ func (s *appStep) installed(ctx context.Context) bool {
 		return err == nil
 	case config.MethodSteam:
 		return s.env.steamInstalled(s.res.Name)
+	case config.MethodNinite:
+		return s.env.niniteDone(s.res.Name)
+	case config.MethodPolicies:
+		return s.env.policiesApplied(ctx)
 	}
 	b, err := s.backend()
 	if err != nil {
@@ -88,6 +92,10 @@ func (s *appStep) describeInstall() string {
 		return fmt.Sprintf("install %s from .deb", s.res.Name)
 	case config.MethodSteam:
 		return fmt.Sprintf("open the Steam install dialog for app %s", s.res.Name)
+	case config.MethodPolicies:
+		return "write the group policies of config/policies.yaml to the registry (asks for elevation)"
+	case config.MethodNinite:
+		return fmt.Sprintf("download and run the Ninite installer for %d apps (%s)", len(strings.Fields(s.res.Name)), strings.Join(strings.Fields(s.res.Name), ", "))
 	default:
 		b, err := s.backend()
 		if err != nil {
@@ -123,6 +131,10 @@ func (s *appStep) install(ctx context.Context, out io.Writer) error {
 		return r.Run(ctx, out, s.env.script(s.res.Source)...)
 	case config.MethodSteam:
 		return s.env.steamInstall(ctx, out, s.res.Name)
+	case config.MethodNinite:
+		return s.env.niniteInstall(ctx, out, s.res.Name)
+	case config.MethodPolicies:
+		return s.env.ApplyPolicies(ctx, out)
 	}
 	b, err := s.backend()
 	if err != nil {

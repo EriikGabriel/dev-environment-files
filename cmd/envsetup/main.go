@@ -515,6 +515,7 @@ func newRoot() *cobra.Command {
 	removeApp.Flags().BoolVar(&f.json, "json", false, "machine-readable output")
 
 	root.AddCommand(plan, apply, detect, info, profiles, steps, add, show, setDirs, desktop, setDock, addApp, removeApp)
+	root.AddCommand(windowsCommands(&f)...)
 	root.SetContext(signalContext())
 	return root
 }

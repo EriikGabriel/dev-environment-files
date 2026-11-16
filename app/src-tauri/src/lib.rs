@@ -13,7 +13,31 @@ use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Emitter, Manager, State};
 
 /// Subcommands the front-end may run through [`envsetup`].
-const ALLOWED: &[&str] = &["detect", "info", "profiles", "steps", "plan", "add", "show", "set-dirs", "desktop", "set-dock", "add-app", "remove-app"];
+const ALLOWED: &[&str] = &[
+    "detect",
+    "info",
+    "profiles",
+    "steps",
+    "plan",
+    "add",
+    "show",
+    "set-dirs",
+    "desktop",
+    "set-dock",
+    "add-app",
+    "remove-app",
+    "media",
+    "set-ninite",
+    "set-unattend",
+    "write-media",
+    "open-url",
+    "policies",
+    "set-policy",
+    "apply-policies",
+    "layout",
+    "set-layout",
+    "apply-layout",
+];
 
 #[derive(Default)]
 struct ApplyState(Mutex<Option<Arc<Mutex<Child>>>>);
@@ -43,20 +67,32 @@ fn read_settings(app: &AppHandle) -> Settings {
 
 /// Walks up from `start` looking for a directory that holds config/apps.yaml.
 fn find_upwards(start: &Path) -> Option<PathBuf> {
-    start.ancestors().find(|d| is_repo(d)).map(Path::to_path_buf)
+    start
+        .ancestors()
+        .find(|d| is_repo(d))
+        .map(Path::to_path_buf)
 }
 
 /// Where the repo lives: the saved choice, then $ENVSETUP_ROOT, then the
 /// nearest parent of the working directory or of this executable.
 #[tauri::command]
 fn get_root(app: AppHandle) -> Option<String> {
-    let saved = read_settings(&app).root.map(PathBuf::from).filter(|p| is_repo(p));
-    let env = std::env::var_os("ENVSETUP_ROOT").map(PathBuf::from).filter(|p| is_repo(p));
+    let saved = read_settings(&app)
+        .root
+        .map(PathBuf::from)
+        .filter(|p| is_repo(p));
+    let env = std::env::var_os("ENVSETUP_ROOT")
+        .map(PathBuf::from)
+        .filter(|p| is_repo(p));
     let cwd = std::env::current_dir().ok().and_then(|d| find_upwards(&d));
     let exe = std::env::current_exe()
         .ok()
         .and_then(|e| e.parent().and_then(find_upwards));
-    saved.or(env).or(cwd).or(exe).map(|p| p.to_string_lossy().into_owned())
+    saved
+        .or(env)
+        .or(cwd)
+        .or(exe)
+        .map(|p| p.to_string_lossy().into_owned())
 }
 
 #[tauri::command]
@@ -65,9 +101,14 @@ fn set_root(app: AppHandle, root: String) -> Result<String, String> {
     if !is_repo(&dir) {
         return Err(format!("{root} has no config/apps.yaml"));
     }
-    let s = Settings { root: Some(root.clone()) };
-    std::fs::write(settings_path(&app)?, serde_json::to_string_pretty(&s).unwrap())
-        .map_err(|e| e.to_string())?;
+    let s = Settings {
+        root: Some(root.clone()),
+    };
+    std::fs::write(
+        settings_path(&app)?,
+        serde_json::to_string_pretty(&s).unwrap(),
+    )
+    .map_err(|e| e.to_string())?;
     Ok(root)
 }
 
@@ -119,7 +160,13 @@ async fn envsetup(root: String, args: Vec<String>) -> Result<serde_json::Value, 
         if !out.status.success() {
             let err = String::from_utf8_lossy(&out.stderr);
             // cobra prints "Error: message"
-            return Err(err.trim().trim_start_matches("Error: ").lines().next().unwrap_or("failed").to_string());
+            return Err(err
+                .trim()
+                .trim_start_matches("Error: ")
+                .lines()
+                .next()
+                .unwrap_or("failed")
+                .to_string());
         }
         serde_json::from_slice(&out.stdout).map_err(|e| format!("invalid JSON from envsetup: {e}"))
     })
@@ -142,7 +189,12 @@ async fn apply(
 ) -> Result<(), String> {
     let bin = sidecar()?;
     let mut cmd = sidecar_command(bin);
-    cmd.arg("--root").arg(&root).arg("-p").arg(&profile).arg("apply").arg("--json");
+    cmd.arg("--root")
+        .arg(&root)
+        .arg("-p")
+        .arg(&profile)
+        .arg("apply")
+        .arg("--json");
     if let Some(list) = apps {
         // An empty selection must select nothing, not everything.
         if list.is_empty() && no_files {
@@ -167,7 +219,9 @@ async fn apply(
     if use_pw {
         cmd.arg("--sudo-password-stdin");
     }
-    cmd.stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::piped());
+    cmd.stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped());
 
     let child = {
         let mut slot = state.0.lock().unwrap();
@@ -195,7 +249,11 @@ async fn apply(
     let result = tauri::async_runtime::spawn_blocking(move || {
         let err_thread = stderr.map(|e| {
             std::thread::spawn(move || {
-                BufReader::new(e).lines().map_while(Result::ok).collect::<Vec<_>>().join("\n")
+                BufReader::new(e)
+                    .lines()
+                    .map_while(Result::ok)
+                    .collect::<Vec<_>>()
+                    .join("\n")
             })
         });
         if let Some(out) = stdout {
@@ -209,7 +267,11 @@ async fn apply(
             Ok(())
         } else {
             let msg = stderr_text.trim().trim_start_matches("Error: ").to_string();
-            Err(if msg.is_empty() { format!("envsetup exited with {status}") } else { msg })
+            Err(if msg.is_empty() {
+                format!("envsetup exited with {status}")
+            } else {
+                msg
+            })
         }
     })
     .await
@@ -231,7 +293,13 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .manage(ApplyState::default())
-        .invoke_handler(tauri::generate_handler![get_root, set_root, envsetup, apply, cancel_apply])
+        .invoke_handler(tauri::generate_handler![
+            get_root,
+            set_root,
+            envsetup,
+            apply,
+            cancel_apply
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

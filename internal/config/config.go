@@ -24,12 +24,16 @@ const (
 	MethodWinget  = "winget"  // Windows Package Manager; the native method on Windows
 	MethodScoop   = "scoop"   // scoop (Windows)
 	MethodSteam   = "steam"   // a Steam app, by AppID (Windows)
+	MethodNinite  = "ninite"  // one Ninite installer for a list of its apps (Windows)
+	// MethodPolicies applies config/policies.yaml: group policies, written to
+	// the registry (Windows).
+	MethodPolicies = "policies"
 )
 
 var validMethods = map[string]bool{
 	MethodNative: true, MethodAUR: true, MethodDebURL: true,
 	MethodFlatpak: true, MethodScript: true,
-	MethodWinget: true, MethodScoop: true, MethodSteam: true,
+	MethodWinget: true, MethodScoop: true, MethodSteam: true, MethodNinite: true, MethodPolicies: true,
 }
 
 // Repo is a third-party apt repository an app needs before it can be
@@ -175,6 +179,18 @@ type Desktop struct {
 	Bar  Bar  `yaml:"bar"`
 }
 
+// Media describes the Windows installation drive of a profile: what goes on
+// a Ventoy USB stick so the system installs itself.
+type Media struct {
+	// Unattend is the autounattend.xml answer file, relative to the repo root.
+	Unattend string `yaml:"unattend"`
+	// Ventoy is the ventoy.json that ties the answer file to the image.
+	Ventoy string `yaml:"ventoy"`
+	// Ninite is the catalogue app (method ninite) whose installer is put on
+	// the drive, for the answer file's first-logon script to run.
+	Ninite string `yaml:"ninite"`
+}
+
 // Profile is a complete environment for one kind of machine.
 type Profile struct {
 	Name        string `yaml:"name"`
@@ -185,7 +201,9 @@ type Profile struct {
 	// profile is meant for; it is how the profile is picked automatically.
 	Match   []string `yaml:"match"`
 	Desktop Desktop  `yaml:"desktop"`
-	Steps   []Step   `yaml:"steps"`
+	// Media is the unattended Windows installation; empty on Linux profiles.
+	Media Media  `yaml:"media"`
+	Steps []Step `yaml:"steps"`
 	// Files are extra managed files, always deployed. `envsetup add`
 	// appends here.
 	Files []File `yaml:"files"`
@@ -293,6 +311,16 @@ func (c *Config) Validate() error {
 		for _, id := range p.Apps {
 			if _, ok := c.Apps[id]; !ok {
 				return fmt.Errorf("profile %q: unknown app %q", pid, id)
+			}
+		}
+		for _, path := range []string{p.Media.Unattend, p.Media.Ventoy} {
+			if clean := filepath.ToSlash(filepath.Clean(path)); path != "" && (filepath.IsAbs(path) || clean == ".." || strings.HasPrefix(clean, "../")) {
+				return fmt.Errorf("profile %q: media path %q must be inside the repo", pid, path)
+			}
+		}
+		if id := p.Media.Ninite; id != "" {
+			if _, ok := c.Apps[id]; !ok {
+				return fmt.Errorf("profile %q: media ninite app %q is unknown", pid, id)
 			}
 		}
 		files := append([]File{}, p.Files...)

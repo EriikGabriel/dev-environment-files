@@ -8,11 +8,15 @@ import { DotfilesTab } from "./components/DotfilesTab";
 import { Drawer } from "./components/Drawer";
 import { FileDrawer, type FileTarget } from "./components/FileDrawer";
 import { ENV_LABEL, HomeTab } from "./components/HomeTab";
+import { LayoutTab } from "./components/LayoutTab";
+import { MediaTab } from "./components/MediaTab";
 import { PasswordDialog } from "./components/PasswordDialog";
+import { PoliciesTab } from "./components/PoliciesTab";
 import { SetupWizard } from "./components/SetupWizard";
 import { defaultSelection, loadSelection, saveSelection } from "./selection";
 import type {
 	ApplyEvent,
+	Media,
 	NewApp,
 	Plan,
 	Profile,
@@ -22,7 +26,7 @@ import type {
 } from "./types";
 import "./styles.css";
 
-type Tab = "home" | "setup" | "preview" | "dotfiles";
+type Tab = "home" | "setup" | "preview" | "dotfiles" | "media" | "policies";
 type Summary = Extract<ApplyEvent, { type: "done" }>;
 
 interface ApplyState {
@@ -36,11 +40,16 @@ interface ApplyState {
 	error: string | null;
 }
 
+// Tabs that only exist for a profile with a Windows installation (`media:`).
+const WINDOWS_TABS: Tab[] = ["media", "policies"];
+
 const TABS: { id: Tab; label: string; icon: string }[] = [
 	{ id: "home", label: "Início", icon: "⌂" },
 	{ id: "setup", label: "Configurar", icon: "☰" },
 	{ id: "preview", label: "Preview", icon: "▣" },
 	{ id: "dotfiles", label: "Dotfiles", icon: "❖" },
+	{ id: "media", label: "Instalação", icon: "⏏" },
+	{ id: "policies", label: "Políticas", icon: "⚙" },
 ];
 
 export default function App() {
@@ -60,6 +69,7 @@ export default function App() {
 	const planSeq = useRef(0);
 	const [openFile, setOpenFile] = useState<FileTarget | null>(null);
 	const [helpOpen, setHelpOpen] = useState(false);
+	const [media, setMedia] = useState<Media | null>(null);
 
 	const profile = profiles.find((p) => p.id === profileId);
 	const env = profile?.environment ?? (info?.os === "windows" ? "gaming" : "");
@@ -111,6 +121,28 @@ export default function App() {
 		setStepIndex(0);
 		void loadWizard(false);
 	}, [loadWizard]);
+
+	// the Windows installation media of the profile, when it has one
+	const loadMedia = useCallback(async () => {
+		if (!root || !profileId) return;
+		try {
+			setMedia(await api.media(root, profileId));
+		} catch {
+			setMedia(null);
+		}
+	}, [root, profileId]);
+
+	useEffect(() => {
+		setMedia(null);
+		void loadMedia();
+	}, [loadMedia]);
+
+	const hasWindows = !!media?.available;
+	const tabs = TABS.filter((t) => hasWindows || !WINDOWS_TABS.includes(t.id));
+	useEffect(() => {
+		// a profile without those tabs cannot stay on one of them
+		if (media && !media.available) setTab((t) => (WINDOWS_TABS.includes(t) ? "home" : t));
+	}, [media]);
 
 	// the plan follows the selection; a sequence number drops stale answers
 	const loadPlan = useCallback(async () => {
@@ -315,7 +347,7 @@ export default function App() {
 				</div>
 
 				<nav>
-					{TABS.map((t) => (
+					{tabs.map((t) => (
 						<button
 							key={t.id}
 							className={tab === t.id && !run ? "side active" : "side"}
@@ -397,6 +429,24 @@ export default function App() {
 						onStep={goStep}
 						onApplyPending={requestApply}
 					/>
+				) : tab === "media" && media?.available ? (
+					<MediaTab
+						root={root}
+						profile={media.profile}
+						media={media}
+						onChanged={async () => {
+							await loadMedia();
+							void loadWizard(true); // the Ninite item follows the list
+						}}
+						onOpenFile={setOpenFile}
+					/>
+				) : tab === "policies" && media?.available ? (
+					<PoliciesTab
+						root={root}
+						profile={media.profile}
+						windows={info?.os === "windows"}
+						onApplied={() => void loadWizard(true)}
+					/>
 				) : !ready ? (
 					<p className="banner">
 						{wizard && wizard.steps.length === 0
@@ -418,6 +468,8 @@ export default function App() {
 						onAddApp={addApp}
 						onRemoveApp={removeApp}
 					/>
+				) : tab === "preview" && media?.available ? (
+					<LayoutTab root={root} profile={media.profile} apps={selection?.apps ?? []} windows={info?.os === "windows"} />
 				) : tab === "preview" ? (
 					<DesktopTab root={root} profile={wizard.profile} info={info} plan={plan} onSaved={() => void loadPlan()} />
 					) : plan ? (
@@ -472,6 +524,16 @@ export default function App() {
 								feito. Em cada etapa dá para adicionar um item novo (nome do
 								pacote, ID do winget ou AppID da Steam) ou remover um
 								existente: isso altera os arquivos em <code>config/</code>.
+							</p>
+							<h3>Instalação do Windows</h3>
+							<p>
+								No perfil de jogos, a aba <strong>Instalação</strong> mostra o
+								que o <code>autounattend.xml</code> faz (idioma, conta, ajustes,
+								apps removidos, scripts), abre o gerador com essas opções para
+								mudar, guarda a lista de programas do Ninite e grava tudo num
+								pendrive Ventoy. A aba <strong>Políticas</strong> explica cada
+								política de grupo, deixa escolher o valor (o padrão é o do
+								vídeo de onde vieram) e aplica no registro.
 							</p>
 							<h3>Arquivos de configuração</h3>
 							<p>

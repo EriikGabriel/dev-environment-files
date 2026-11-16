@@ -214,3 +214,158 @@ export type ApplyEvent =
     }
   | { type: "log"; index?: number; line: string }
   | { type: "done"; done: number; up_to_date: number; failed: number; log_file?: string };
+
+// ---- Windows installation media (`media --json`) ----
+
+export interface UnattendItem {
+  label: string;
+  value?: string;
+}
+
+export interface UnattendScript {
+  /** When it runs. */
+  phase: string;
+  type: string;
+  body: string;
+}
+
+export interface Unattend {
+  /** Path in the repo. */
+  path: string;
+  /** The site that builds answer files. */
+  generator: string;
+  error?: string;
+  /** Link that reopens the generator with this file's settings; "" when the file has none. */
+  url: string;
+  sections: { title: string; items: UnattendItem[] }[];
+  scripts: UnattendScript[];
+  /** A script runs a Ninite installer found on a drive root at first logon. */
+  ninite_hook: boolean;
+  /** An account has a password, readable in the file. */
+  has_password: boolean;
+}
+
+export interface NiniteApp {
+  slug: string;
+  name: string;
+  category: string;
+}
+
+export interface Ninite {
+  /** Catalogue item that holds the list. */
+  app: string;
+  selected: string[];
+  /** Selected names that ninite.com does not list. */
+  unknown: string[];
+  page: string;
+  installer: string;
+  /** File name of the installer at the root of the drive. */
+  on_drive: string;
+  catalog: NiniteApp[];
+}
+
+export type DriveFile = "missing" | "current" | "outdated";
+
+export interface VentoyDrive {
+  path: string;
+  images: { path: string; present: boolean }[];
+  unattend: DriveFile;
+  config: DriveFile;
+  ninite: boolean;
+}
+
+export interface Media {
+  /** False when the profile has no installation media (the Linux ones). */
+  available: boolean;
+  profile: string;
+  unattend?: Unattend;
+  ventoy?: { path: string; error?: string; auto_install: { image: string; template: string }[] };
+  ninite?: Ninite;
+  drives: VentoyDrive[];
+}
+
+export interface Written {
+  path: string;
+  action: "written" | "unchanged" | "downloaded";
+  backup?: string;
+}
+
+// ---- group policies (`policies --json`) ----
+
+export interface PolicyValue {
+  key: string;
+  name: string;
+  value: number;
+}
+
+export interface Policy {
+  id: string;
+  group: string;
+  /** Folder in gpedit.msc, under Computer Configuration > Administrative Templates. */
+  path: string;
+  title: string;
+  /** The state the video sets, in gpedit's words. */
+  video: string;
+  about: string;
+  caution?: string;
+  /** "video", "off" (not configured) or the id of an option. */
+  choice: string;
+  set: PolicyValue[];
+  options: { id: string; title: string; set: PolicyValue[] }[];
+  /** The registry already matches the choice. */
+  applied: boolean;
+}
+
+export interface Policies {
+  source: string;
+  /** False when the registry could not be read (not on Windows). */
+  readable: boolean;
+  policies: Policy[];
+}
+
+// ---- desktop layout (`layout --json`) ----
+
+export type LayoutSource = "windows" | "ninite" | "unattend" | "catalog";
+
+export interface LayoutItem {
+  id: string;
+  name: string;
+  sources: LayoutSource[];
+  /** False for what has no window to pin (Java, Node, runtimes). */
+  pinnable: boolean;
+  /** The installer usually leaves a shortcut on the desktop. */
+  desktop: boolean;
+  glyph: string;
+  color: string;
+}
+
+/** How the answer file sets up the desktop. */
+export interface Shell {
+  taskbar_left: boolean;
+  hide_search: boolean;
+  hide_task_view: boolean;
+  no_widgets: boolean;
+  start_pins_empty: boolean;
+  desktop_icons: string;
+  desktop_system_icons: string[];
+  no_edge_desktop_icon: boolean;
+}
+
+export interface Layout {
+  available: boolean;
+  items: LayoutItem[];
+  /** Saved taskbar order, by item id. */
+  taskbar: string[];
+  clear_start: boolean;
+  hide_desktop_icons: boolean;
+  /** config/layout.yaml exists. */
+  saved: boolean;
+  shell: Shell;
+  installs: { id: string; name: string; kind: "ninite" | "github" | "runtime" }[];
+}
+
+export interface LayoutChoice {
+  taskbar: string[];
+  clear_start: boolean;
+  hide_desktop_icons: boolean;
+}

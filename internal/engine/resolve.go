@@ -8,6 +8,7 @@ import (
 
 	"github.com/EriikGabriel/dev-environment-files/internal/config"
 	"github.com/EriikGabriel/dev-environment-files/internal/platform"
+	"github.com/EriikGabriel/dev-environment-files/internal/winsetup"
 )
 
 // Unavailable means an app has no definition for the current distro.
@@ -67,6 +68,15 @@ func Resolve(id string, app config.App, info platform.Info) (Resolved, error) {
 		if r.Name == "" || strings.Trim(r.Name, "0123456789") != "" {
 			return Resolved{}, Unavailable{"steam needs the numeric AppID in names"}
 		}
+	case config.MethodNinite:
+		slugs, err := winsetup.ParseNinite([]string{r.Name})
+		if err != nil {
+			return Resolved{}, Unavailable{err.Error()}
+		}
+		if len(slugs) == 0 {
+			return Resolved{}, Unavailable{"no Ninite apps selected"}
+		}
+		r.Name = strings.Join(slugs, " ")
 	case config.MethodDebURL:
 		if r.Name == "" || r.Source == "" {
 			return Resolved{}, Unavailable{fmt.Sprintf("deb-url needs names and source for %s", info.ID)}
@@ -84,7 +94,7 @@ func Resolve(id string, app config.App, info platform.Info) (Resolved, error) {
 		return Resolved{}, Unavailable{"deb-url method only works on Debian-based distros"}
 	case r.Method == config.MethodFlatpak && windows:
 		return Resolved{}, Unavailable{"flatpak does not exist on Windows"}
-	case (r.Method == config.MethodWinget || r.Method == config.MethodScoop || r.Method == config.MethodSteam) && !windows:
+	case (r.Method == config.MethodWinget || r.Method == config.MethodScoop || r.Method == config.MethodSteam || r.Method == config.MethodNinite || r.Method == config.MethodPolicies) && !windows:
 		return Resolved{}, Unavailable{r.Method + " method only works on Windows"}
 	}
 	return r, nil

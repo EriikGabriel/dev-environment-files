@@ -8,7 +8,7 @@ app desktop (Tauri + React) e uma linha de comando sobre o mesmo motor em Go.
 | --------------- | --------------- | ------------------------------------------------------- |
 | Desenvolvimento | CachyOS e Arch  | niri + Noctalia, fish + starship, kitty, Zed            |
 | Desenvolvimento | Ubuntu e Debian | GNOME + WhiteSur, zsh + powerlevel10k, WezTerm, VS Code |
-| Jogos           | Windows         | planejado; ainda sem etapas                             |
+| Jogos           | Windows         | instalação automática (Ventoy), winget, Ninite, políticas |
 
 ## App desktop
 
@@ -46,6 +46,16 @@ go build -o envsetup ./cmd/envsetup
 ./envsetup set-dirs --step workspace --option www ~/www/projects ~/www/games
 ./envsetup desktop                                            # o que o preview mostra
 ./envsetup set-dock kitty dev.zed.Zed GodotHub                # ordem da dock no perfil
+
+# Windows (perfil de jogos)
+./envsetup media                                  # o que o autounattend.xml faz, Ninite e pendrives Ventoy
+./envsetup open-url unattend                      # abre o gerador com as opções do arquivo atual
+./envsetup set-unattend ~/Downloads/autounattend.xml   # troca o arquivo pelo que o gerador baixou
+./envsetup set-ninite 7zip steam discord          # lista do Ninite (ou um link https://ninite.com/...)
+./envsetup write-media --drive D:                # grava XML, ventoy.json e Ninite no pendrive
+./envsetup policies                               # políticas de grupo: escolha e estado de cada uma
+./envsetup set-policy widgets=off                 # video (padrão), off ou uma opção da política
+./envsetup apply-policies                         # grava no registro (pede elevação uma vez)
 ```
 
 `-p/--profile` escolhe o perfil; sem ele vale o que corresponde à máquina. `--root` aponta
@@ -56,6 +66,8 @@ para o repo quando o binário está fora dele. A maioria dos comandos aceita `--
 ```
 config/apps.yaml          catálogo de apps, com nome e método de instalação por distro
 config/profiles/*.yaml    um perfil por tipo de máquina, dividido em etapas
+config/policies.yaml      políticas de grupo do Windows, com explicação e escolha de cada uma
+windows/                  autounattend.xml e ventoy.json da instalação automática do Windows
 dotfiles/                 os arquivos de configuração
 app/                      app desktop (Tauri + React)
 cmd/, internal/           motor e CLI em Go
@@ -91,12 +103,49 @@ está em dia é pulado (comandos `post` rodam sempre). Cada execução grava um 
 
 Para adicionar um app, crie a entrada em `config/apps.yaml` e ponha o id numa etapa do perfil.
 
+## Windows: instalação automática, Ninite e políticas
+
+O perfil `gaming-windows` tem uma seção `media:` e, no app, as abas **Instalação** e **Políticas**; a aba **Preview** mostra o desktop do Windows.
+
+- **Arquivo de resposta.** `windows/autounattend.xml` foi feito em
+  [schneegans.de](https://schneegans.de/windows/unattend-generator/) e traz, num comentário, o
+  link que reabre o gerador com tudo o que foi marcado. O envsetup lê esse link para mostrar o
+  que o arquivo faz (idioma, conta, ajustes, apps removidos, scripts) e para abrir o site já
+  preenchido. Para mudar: abra o site, ajuste, baixe o XML e importe (`set-unattend`).
+- **Ninite.** A lista de programas é o item `ninite` do catálogo (`names: { windows: ... }`).
+  Marque os programas no app, ou monte a seleção em ninite.com e cole o link. O instalador é
+  baixado na hora de `https://ninite.com/<lista>/ninite.exe`. O item `ninite` da etapa
+  Essenciais roda esse instalador; ele conta como feito depois de rodar para aquela lista exata.
+- **Pendrive Ventoy.** `write-media` copia o XML para o caminho indicado no `ventoy.json`,
+  mescla o `ventoy.json` (o que só existe no pendrive é mantido; o que muda ganha um `.bak`) e
+  baixa o Ninite para a **raiz** como `NiniteInstaller.exe`, que é onde o script de primeiro
+  login do XML o procura (`Ninite*Installer.exe` na raiz de cada unidade). A imagem do Windows
+  não é copiada.
+- **Políticas de grupo.** `config/policies.yaml` lista as 42 configurações do gpedit feitas
+  [neste vídeo](https://youtu.be/kQM-iv7TQz0?t=1617), com o que cada uma faz e as ressalvas. Cada
+  uma tem uma escolha: `video` (padrão), `off` (não configurar) ou uma opção própria. O item
+  `group-policies` da etapa Otimizações (desmarcado por padrão) e o botão da aba Políticas gravam
+  os mesmos valores que o gpedit gravaria, no `Registry.pol` (que o gpedit lê) e no registro, e
+  rodam `gpupdate`. Reabra o gpedit para ver as políticas como Habilitadas/Desabilitadas.
+- **Preview e layout.** Como no perfil de dev, a aba Preview mostra o desktop: a barra de tarefas (com as
+  opções do arquivo de resposta: alinhamento, pesquisa, widgets), o menu Iniciar e os ícones. A
+  *bandeja de apps* reúne os apps da lista do Ninite, os que o arquivo de resposta instala por
+  script (como o Hydra) e os marcados em Configurar; arraste-os para a barra e reordene. As
+  escolhas ficam em `config/layout.yaml` (`set-layout`) e `apply-layout` as grava no Windows: a
+  barra por um arquivo `TaskbarLayout.xml` apontado pela política "Start layout", o menu Iniciar
+  limpo pela política `ConfigureStartPins` e os ícones da área de trabalho por `HideIcons`. Os
+  atalhos são procurados no menu Iniciar, então um app só entra na barra depois de instalado.
+  Uma barra vazia deixa a barra atual como está.
+
 ## Segredos
 
 Não faça commit de chaves ou senhas. Nas cópias guardadas aqui:
 
 - `dotfiles/zed/settings.json` tem `<FIGMA_API_KEY>` no lugar da chave do Figma;
-- `dotfiles/bruno/collections` tem `<PASSWORD>` no lugar das senhas das requisições.
+- `dotfiles/bruno/collections` tem `<PASSWORD>` no lugar das senhas das requisições;
+- `windows/autounattend.xml` tem o nome da conta local e nenhuma senha. Se você puser uma senha
+  no gerador, ela fica legível no XML e no link (a "ofuscação" é só Base64): o app avisa ao
+  importar, e esse arquivo não deve ir para um repositório público.
 
 Depois de aplicar, o arquivo da home é um symlink para o do repo: se você preencher o valor
 real nele, o valor passa a estar dentro do repositório.

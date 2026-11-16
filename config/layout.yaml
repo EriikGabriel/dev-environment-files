@@ -1,0 +1,18 @@
+# How the Windows desktop is laid out, edited in the app's Layout tab or with
+# `envsetup set-layout`; `envsetup apply-layout` writes it to the machine.
+#
+# taskbar            apps pinned to the taskbar, left to right. Empty leaves the
+#                    taskbar as it is. Ids are the ones the Layout tab shows.
+# clear_start        remove the apps pinned to the Start menu
+# hide_desktop_icons hide every icon on the desktop
+
+taskbar:
+    - explorer
+    - spotify
+    - discord
+    - brave
+    - steam
+    - epic
+    - hydra
+clear_start: true
+hide_desktop_icons: true
