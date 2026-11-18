@@ -28,12 +28,18 @@ const (
 	// MethodPolicies applies config/policies.yaml: group policies, written to
 	// the registry (Windows).
 	MethodPolicies = "policies"
+	// MethodPlaynite restores the Playnite snapshot of config/playnite.yaml
+	// (Windows).
+	MethodPlaynite = "playnite"
+	// MethodWindhawk imports windows/windhawk/backup.json into Windhawk 2
+	// (Windows).
+	MethodWindhawk = "windhawk"
 )
 
 var validMethods = map[string]bool{
 	MethodNative: true, MethodAUR: true, MethodDebURL: true,
 	MethodFlatpak: true, MethodScript: true,
-	MethodWinget: true, MethodScoop: true, MethodSteam: true, MethodNinite: true, MethodPolicies: true,
+	MethodWinget: true, MethodScoop: true, MethodSteam: true, MethodNinite: true, MethodPolicies: true, MethodPlaynite: true, MethodWindhawk: true,
 }
 
 // Repo is a third-party apt repository an app needs before it can be

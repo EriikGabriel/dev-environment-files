@@ -136,6 +136,57 @@ O perfil `gaming-windows` tem uma seção `media:` e, no app, as abas **Instala�
   limpo pela política `ConfigureStartPins` e os ícones da área de trabalho por `HideIcons`. Os
   atalhos são procurados no menu Iniciar, então um app só entra na barra depois de instalado.
   Uma barra vazia deixa a barra atual como está.
+- **Ícones no estilo macOS.** O Windows não tem tema de ícones (o ícone de um `.exe` fica dentro
+  do arquivo), então o envsetup troca o que dá: o ícone dos atalhos (`.lnk`) da área de trabalho,
+  do menu Iniciar e da barra de tarefas, e, se o pack tiver, os ícones de Este Computador, Lixeira,
+  Arquivos do usuário e Rede. Para cada atalho ele pega o ícone que o shell mostra (256 px) e usa o
+  arquivo do icon pack que tiver o nome do app (`discord.png`, `epic-games.ico`...); quem não tem
+  recebe o ícone original numa placa de cantos arredondados, clara ou escura. O pack que vem no
+  repositório é o **MacTahoe** (`windows/icons/mactahoe`): os ~1400 ícones de apps do
+  [MacTahoe-icon-theme](https://github.com/vinceliuice/MacTahoe-icon-theme), de vinceliuice
+  (GPL-3.0, licença na pasta), já desenhados em PNG de 256 px, mais os outros nomes de cada ícone
+  (`aliases.json`) e os ícones do sistema. Nada é baixado ao aplicar; `go run ./cmd/iconpack`
+  refaz a pasta a partir do tema (usa o Edge para desenhar os SVGs). Programas do Windows com outro
+  nome no tema (`cmd`, PowerShell, Git Bash, Gerenciador de Tarefas...) têm o ícone equivalente, e
+  `icon-pack --query nome` lista os ícones do pack, que o app mostra numa galeria com busca. Fica em
+  `config/icons.yaml` (`set-icons`); `icons --scan` mostra o antes e o depois, `apply-icons` aplica
+  (uma elevação, e o Explorer reinicia) e `restore-icons` (no app, "Voltar aos ícones do Windows") desfaz tudo:
+  devolve o ícone original de cada atalho, guardado em `%ProgramData%\envsetup\icons\manifest.json`,
+  e o de qualquer outro atalho que ainda aponte para um ícone criado (um app fixado depois de
+  aplicar, por exemplo), tira os ícones do sistema, apaga os ícones criados e refaz o cache de
+  ícones do Windows. Atalhos sem alvo `.exe` (os do Office
+  instalados pelo MSI, por exemplo) e links de desinstalar/ajuda ficam como estão. Não muda o ícone
+  de um `.exe` no Explorer nem o de janelas abertas, e um app que recria o atalho ao atualizar
+  (Discord, Steam) volta ao ícone dele até você aplicar de novo.
+- **Dock na barra de tarefas (Windhawk).** A dock é a do mod "Ilha e Dock estilo Mac"
+  (`mac-island-dock`). `envsetup taskbar-dock` põe a opção "Barra de tarefas" dele em "Dock" pelo
+  `windhawk-cli` (instala o mod se ele faltar; uma elevação, porque o Windhawk guarda as
+  configurações em HKLM) e lembra o modo anterior; `--restore` o devolve. No app: "Ligar dock" e
+  "Desligar dock". Tamanho, ampliação e animações são configurações do mod e ficam no backup do
+  Windhawk.
+- **Mods do Windhawk.** O Windhawk 2 exporta num arquivo só as configurações dele, os mods
+  instalados e as configurações de cada mod; o repo guarda esse arquivo em
+  `windows/windhawk/backup.json`. `envsetup windhawk` compara o arquivo com o que está instalado
+  (mod faltando, versão, ativado/desativado, configurações diferentes), `windhawk-import` aplica
+  com o `windhawk-cli` (instala os mods do repositório do Windhawk e grava as configurações; uma
+  elevação) e `windhawk-export` troca o arquivo pelo que está na máquina. No perfil de jogos, a
+  etapa **Aparência** instala o Windhawk e aplica o backup; a aba **Windhawk** do app mostra cada
+  mod e as configurações dele.
+- **Playnite portable por snapshot.** O Playnite portable guarda tudo na própria pasta (biblioteca,
+  capas, trailers, músicas de tema, temas, extensões e as configurações delas), então uma cópia da
+  pasta é o setup inteiro. Ela tem dezenas de GB e não vai para o git: `config/playnite.yaml` diz
+  onde está a pasta (`path`, padrão `C:\Playnite`) e onde fica o snapshot (`store`: HD externo, NAS,
+  pasta sincronizada). `playnite-save` espelha a pasta em `<store>\Playnite` com o robocopy (só o que
+  mudou; só ficam de fora `JITProfiles` e os logs, então capas, trailers, músicas e os logins das lojas
+  vão junto) e grava um manifesto ao lado;
+  `playnite-restore` copia de volta, corrige os caminhos fixos das extensões (ffmpeg, yt-dlp) se a
+  pasta mudou e registra o Playnite no menu Iniciar (`windows/register-portable-app.ps1`). Os dois
+  recusam rodar com o Playnite aberto. No perfil de jogos, a etapa **Playnite** faz a restauração. A
+  aba **Playnite** do app mostra temas, extensões, o tamanho de cada pasta (dá para tirar uma do
+  snapshot) e o que a pasta não leva, com botão para corrigir: o **Windows Media Player**, que o
+  Playnite usa para tocar trailers (o `autounattend.xml` não o remove mais, e o item
+  `windows-media-player` da etapa Essenciais o reinstala em máquinas antigas), o atalho no menu
+  Iniciar e programas fora da pasta, como o `ffmpeg-normalize` do Playnite Sounds Mod.
 
 ## Segredos
 
@@ -188,4 +239,8 @@ de reinício com autostart, a identidade git, a chave SSH e o `gh auth login`.
 - [x] Repositórios de terceiros declarativos (docker-ce, NodeSource)
 - [x] Identidade git, chave SSH e `gh auth login`
 - [x] `webkit2gtk` e FUSE 2 no catálogo
+- [ ] Configurar Playnite (o snapshot já está pronto: falta escolher o `store` e salvar)
+- [ ] Emulador (?)
+- [ ] Terminar de configurar video do ET
+- [ ] Configurar aparencia geral com alguns tweaks temas e icones (pra dps jogar pro app)
 - [ ] Testar os scripts do GNOME numa sessão real

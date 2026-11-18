@@ -21,7 +21,7 @@ steps:
   - id: base
     title: Essenciais
     description: Runtimes que os jogos pedem e utilitários básicos.
-    apps: [7zip, vcredist, directx]
+    apps: [7zip, vcredist, directx, windows-media-player]
     optional: [scoop, powertoys, ninite]
 
   - id: drivers
@@ -35,6 +35,17 @@ steps:
     description: As lojas de onde os jogos são instalados.
     apps: [steam, epic-games]
     optional: [gog-galaxy, ea-app, ubisoft-connect, battle-net]
+
+  - id: appearance
+    title: Aparência
+    description: O Windhawk e os mods do backup do repo, já com as configurações (dock e ilha estilo Mac, menu Iniciar, Explorer, cantos, animações). Veja e atualize na aba Windhawk.
+    apps: [windhawk, windhawk-mods]
+
+  # After the launchers: Playnite imports the libraries of those stores.
+  - id: playnite
+    title: Playnite
+    description: O Playnite portable copiado do snapshot, já com biblioteca, capas, trailers, temas e extensões. Salve e confira o snapshot na aba Playnite.
+    apps: [playnite]
 
   - id: social
     title: Comunicação e navegador

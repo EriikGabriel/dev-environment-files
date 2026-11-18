@@ -25,6 +25,7 @@ files:
 }
 
 func TestCaptureDirectoryLinksAndRegisters(t *testing.T) {
+	mustHaveSymlink(t)
 	root, home := setupRepo(t)
 	dir := filepath.Join(home, ".config", "foo")
 	must(t, os.MkdirAll(filepath.Join(dir, "sub"), 0o755))
@@ -105,6 +106,7 @@ func TestCaptureCopyModeLeavesOriginal(t *testing.T) {
 }
 
 func TestViewStaysInsideRepo(t *testing.T) {
+	mustHaveSymlink(t)
 	root := t.TempDir()
 	must(t, os.MkdirAll(filepath.Join(root, "dotfiles", "d"), 0o755))
 	must(t, os.WriteFile(filepath.Join(root, "dotfiles", "d", "a.conf"), []byte("x=1\n"), 0o644))

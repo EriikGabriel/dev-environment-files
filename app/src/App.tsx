@@ -11,7 +11,9 @@ import { ENV_LABEL, HomeTab } from "./components/HomeTab";
 import { LayoutTab } from "./components/LayoutTab";
 import { MediaTab } from "./components/MediaTab";
 import { PasswordDialog } from "./components/PasswordDialog";
+import { PlayniteTab } from "./components/PlayniteTab";
 import { PoliciesTab } from "./components/PoliciesTab";
+import { WindhawkTab } from "./components/WindhawkTab";
 import { SetupWizard } from "./components/SetupWizard";
 import { defaultSelection, loadSelection, saveSelection } from "./selection";
 import type {
@@ -26,7 +28,7 @@ import type {
 } from "./types";
 import "./styles.css";
 
-type Tab = "home" | "setup" | "preview" | "dotfiles" | "media" | "policies";
+type Tab = "home" | "setup" | "preview" | "dotfiles" | "media" | "policies" | "windhawk" | "playnite";
 type Summary = Extract<ApplyEvent, { type: "done" }>;
 
 interface ApplyState {
@@ -41,7 +43,7 @@ interface ApplyState {
 }
 
 // Tabs that only exist for a profile with a Windows installation (`media:`).
-const WINDOWS_TABS: Tab[] = ["media", "policies"];
+const WINDOWS_TABS: Tab[] = ["media", "policies", "windhawk", "playnite"];
 
 const TABS: { id: Tab; label: string; icon: string }[] = [
 	{ id: "home", label: "Início", icon: "⌂" },
@@ -50,6 +52,8 @@ const TABS: { id: Tab; label: string; icon: string }[] = [
 	{ id: "dotfiles", label: "Dotfiles", icon: "❖" },
 	{ id: "media", label: "Instalação", icon: "⏏" },
 	{ id: "policies", label: "Políticas", icon: "⚙" },
+	{ id: "windhawk", label: "Windhawk", icon: "✦" },
+	{ id: "playnite", label: "Playnite", icon: "▶" },
 ];
 
 export default function App() {
@@ -447,6 +451,10 @@ export default function App() {
 						windows={info?.os === "windows"}
 						onApplied={() => void loadWizard(true)}
 					/>
+				) : tab === "windhawk" && media?.available ? (
+					<WindhawkTab root={root} onChanged={() => void loadWizard(true)} />
+				) : tab === "playnite" && media?.available ? (
+					<PlayniteTab root={root} onChanged={() => void loadWizard(true)} />
 				) : !ready ? (
 					<p className="banner">
 						{wizard && wizard.steps.length === 0

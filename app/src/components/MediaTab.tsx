@@ -92,6 +92,11 @@ export function MediaTab({ root, profile, media, onChanged, onOpenFile }: Props)
             repositório público.
           </p>
         )}
+        {u?.warnings?.map((w) => (
+          <p key={w} className="banner bad">
+            {w}
+          </p>
+        ))}
         {u && !u.error && !u.url && (
           <p className="muted small-note">
             O arquivo é válido, mas não traz o link do gerador: não dá para resumir o que ele faz nem reabri-lo no site.

@@ -155,6 +155,7 @@ var table = []known{
 	{id: "vivaldi", name: "Vivaldi", ninite: []string{"vivaldi"}, match: []string{"Vivaldi"}, glyph: "V", color: "#ef3939", desktop: true},
 	{id: "discord", name: "Discord", ninite: []string{"discord"}, apps: []string{"discord"}, match: []string{"Discord"}, glyph: "D", color: "#5865f2", desktop: true},
 	{id: "steam", name: "Steam", ninite: []string{"steam"}, apps: []string{"steam"}, match: []string{"Steam"}, glyph: "S", color: "#1b2838", desktop: true},
+	{id: "playnite", name: "Playnite", apps: []string{"playnite"}, match: []string{"Playnite"}, glyph: "P", color: "#7b2fbe"},
 	{id: "epic", name: "Epic Games Launcher", ninite: []string{"epic"}, apps: []string{"epic-games"}, match: []string{"Epic Games Launcher"}, glyph: "E", color: "#2a2a2a", desktop: true},
 	{id: "spotify", name: "Spotify", ninite: []string{"spotify"}, apps: []string{"spotify"}, match: []string{"Spotify"}, glyph: "♫", color: "#1db954"},
 	{id: "powertoys", name: "PowerToys", ninite: []string{"powertoys"}, apps: []string{"powertoys"}, match: []string{"PowerToys"}, glyph: "P", color: "#f2c811"},

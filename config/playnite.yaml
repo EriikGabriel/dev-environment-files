@@ -1,0 +1,20 @@
+# The portable Playnite (Desktop and Fullscreen), kept as a snapshot outside
+# the repo: covers, trailers, theme music, themes, extensions and their
+# settings are all inside its folder, so a copy of the folder is the setup.
+# Edited in the app's Playnite tab or with `envsetup set-playnite`;
+# `playnite-save` copies the folder to the store, `playnite-restore` copies it back.
+#
+# path        the Playnite folder on this machine
+# store       folder for the snapshot (external drive, NAS...): the copy goes to
+#             <store>\Playnite and a manifest to <store>\envsetup-playnite.json
+# exclude     left out of the snapshot: names with * or a dot are file
+#             patterns, the rest are folders relative to path
+# start_menu  after a restore, add Playnite to the Start menu and to
+#             Settings > Apps (windows/register-portable-app.ps1)
+
+path: C:\Playnite
+store: ""
+exclude:
+  - JITProfiles
+  - '*.log'
+start_menu: true

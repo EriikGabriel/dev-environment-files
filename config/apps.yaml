@@ -23,6 +23,10 @@
 #            that exact list
 #   policies the group policies of config/policies.yaml (Windows), written to
 #            the registry; no `names`
+#   playnite the portable Playnite of config/playnite.yaml (Windows), copied
+#            back from its snapshot; no `names`
+#   windhawk the Windhawk 2 export windows/windhawk/backup.json (mods, their
+#            settings and Windhawk's), imported with windhawk-cli; no `names`
 #
 # `repo` (Debian family, native method) registers a third-party apt repository
 # before installing: `key` is the signing key URL and `source` is the
@@ -504,6 +508,18 @@ apps:
   directx:
     description: DirectX end-user runtime, for older games
     names: { windows: Microsoft.DirectX }
+  windows-media-player:
+    description: "Windows Media Player (the Media.WindowsMediaPlayer capability). Playnite plays trailers with it; the answer file used to remove it. Asks for elevation"
+    method: { windows: script }
+    check:
+      windows: if (-not (Test-Path (Join-Path $env:SystemRoot 'System32\wmp.dll'))) { exit 1 }
+    source:
+      windows: |
+        $cmd = '$ErrorActionPreference = ''Stop''; Get-WindowsCapability -Online -Name ''Media.WindowsMediaPlayer*'' | Where-Object State -ne ''Installed'' | Add-WindowsCapability -Online'
+        $enc = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($cmd))
+        Write-Output 'installing Windows Media Player from Windows Update: accept the elevation prompt'
+        $p = Start-Process powershell.exe -Verb RunAs -Wait -PassThru -WindowStyle Hidden -ArgumentList '-NoProfile', '-EncodedCommand', $enc
+        if ($p.ExitCode) { throw "Add-WindowsCapability failed (code $($p.ExitCode))" }
   powertoys: { description: Microsoft PowerToys, names: { windows: Microsoft.PowerToys } }
   scoop:
     description: scoop, a command-line installer (needed by items that use the scoop method)
@@ -552,6 +568,15 @@ apps:
     description: Wallpaper Engine, bought on Steam (AppID 431960). Steam opens its install dialog
     method: { windows: steam }
     names: { windows: "431960" }
+  windhawk:
+    description: "Windhawk 2, the customization platform for Windows programs (mods for the taskbar, Start menu, Explorer, windows...)"
+    names: { windows: RamenSoftware.Windhawk }
+  windhawk-mods:
+    description: "The Windhawk mods of windows/windhawk/backup.json, installed with their settings (dock, Start menu, Explorer, corners, animations...). See the Windhawk tab"
+    method: { windows: windhawk }
+  playnite:
+    description: "Playnite portable, copied back from the snapshot of config/playnite.yaml: library, covers, trailers, theme music, themes and extensions, configured. See the Playnite tab"
+    method: { windows: playnite }
   ninite:
     description: "Ninite: one installer for the apps picked in the Instalação tab (it installs and updates them, with no questions)"
     method: { windows: ninite }

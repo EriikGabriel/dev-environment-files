@@ -19,7 +19,7 @@ const choiceLabel = (p: Policy, choice: string) =>
   choice === "video" ? `${p.video} (Recomendado)` : choice === "off" ? "Não configurar" : (p.options.find((o) => o.id === choice)?.title ?? choice);
 
 /** The group policies of config/policies.yaml: what each does, what it is set to, and applying them. */
-export function PoliciesTab({ root, profile, windows, onApplied }: Props) {
+export function PoliciesTab({ root, windows, onApplied }: Props) {
   const [data, setData] = useState<Policies | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [note, setNote] = useState<string | null>(null);

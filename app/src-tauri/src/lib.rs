@@ -37,6 +37,21 @@ const ALLOWED: &[&str] = &[
     "layout",
     "set-layout",
     "apply-layout",
+    "icons",
+    "set-icons",
+    "apply-icons",
+    "restore-icons",
+    "icon-pack",
+    "taskbar-dock",
+    "playnite",
+    "set-playnite",
+    "playnite-save",
+    "playnite-restore",
+    "playnite-fix",
+    "playnite-open",
+    "windhawk",
+    "windhawk-export",
+    "windhawk-import",
 ];
 
 #[derive(Default)]
@@ -159,14 +174,15 @@ async fn envsetup(root: String, args: Vec<String>) -> Result<serde_json::Value, 
             .map_err(|e| e.to_string())?;
         if !out.status.success() {
             let err = String::from_utf8_lossy(&out.stderr);
-            // cobra prints "Error: message"
-            return Err(err
-                .trim()
-                .trim_start_matches("Error: ")
+            // cobra prints "Error: message" last; the commands that do work
+            // print their progress to stderr before it
+            let line = err
                 .lines()
-                .next()
-                .unwrap_or("failed")
-                .to_string());
+                .rev()
+                .find_map(|l| l.trim().strip_prefix("Error: "))
+                .or_else(|| err.trim().lines().next())
+                .unwrap_or("failed");
+            return Err(line.to_string());
         }
         serde_json::from_slice(&out.stdout).map_err(|e| format!("invalid JSON from envsetup: {e}"))
     })

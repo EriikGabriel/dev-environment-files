@@ -45,7 +45,7 @@ func (s *appStep) backend() (backend.Backend, error) {
 		return backend.Winget{}, nil
 	case config.MethodScoop:
 		return backend.Scoop{}, nil
-	case config.MethodScript, config.MethodSteam, config.MethodNinite, config.MethodPolicies:
+	case config.MethodScript, config.MethodSteam, config.MethodNinite, config.MethodPolicies, config.MethodPlaynite, config.MethodWindhawk:
 		return nil, nil
 	default: // native and deb-url both end up in the distro manager
 		return backend.Native(s.env.Info)
@@ -66,6 +66,10 @@ func (s *appStep) installed(ctx context.Context) bool {
 		return s.env.niniteDone(s.res.Name)
 	case config.MethodPolicies:
 		return s.env.policiesApplied(ctx)
+	case config.MethodPlaynite:
+		return s.env.playniteInstalled()
+	case config.MethodWindhawk:
+		return s.env.windhawkApplied(ctx)
 	}
 	b, err := s.backend()
 	if err != nil {
@@ -94,6 +98,10 @@ func (s *appStep) describeInstall() string {
 		return fmt.Sprintf("open the Steam install dialog for app %s", s.res.Name)
 	case config.MethodPolicies:
 		return "write the group policies of config/policies.yaml to the registry (asks for elevation)"
+	case config.MethodPlaynite:
+		return "copy the Playnite snapshot of config/playnite.yaml back and register it in the Start menu"
+	case config.MethodWindhawk:
+		return "install the Windhawk mods of windows/windhawk/backup.json with their settings (asks for elevation)"
 	case config.MethodNinite:
 		return fmt.Sprintf("download and run the Ninite installer for %d apps (%s)", len(strings.Fields(s.res.Name)), strings.Join(strings.Fields(s.res.Name), ", "))
 	default:
@@ -135,6 +143,10 @@ func (s *appStep) install(ctx context.Context, out io.Writer) error {
 		return s.env.niniteInstall(ctx, out, s.res.Name)
 	case config.MethodPolicies:
 		return s.env.ApplyPolicies(ctx, out)
+	case config.MethodPlaynite:
+		return s.env.playniteInstall(ctx, out)
+	case config.MethodWindhawk:
+		return s.env.ImportWindhawk(ctx, out)
 	}
 	b, err := s.backend()
 	if err != nil {

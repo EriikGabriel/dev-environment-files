@@ -75,13 +75,21 @@ type Overview struct {
 	HasPassword bool      `json:"has_password"`
 	Shell       Shell     `json:"shell"`
 	Installs    []Install `json:"installs"`
+	// Warnings are choices of the file that break something else of the
+	// setup, in the words shown to the user.
+	Warnings []string `json:"warnings"`
+}
+
+// conflicts are generator options that break something of this setup.
+var conflicts = map[string]string{
+	"RemoveWindowsMediaPlayer": "O arquivo remove o Windows Media Player, e o Playnite toca os trailers com ele. Desmarque \"Windows Media Player\" na lista de apps removidos do gerador (o item windows-media-player do perfil o reinstala, pedindo elevação).",
 }
 
 var generatorLink = regexp.MustCompile(`<!--\s*(` + regexp.QuoteMeta(GeneratorURL) + `\?\S+?)\s*-->`)
 
 // ReadUnattend checks that data is an unattend answer file and describes it.
 func ReadUnattend(data []byte) (Overview, error) {
-	ov := Overview{Sections: []Section{}, Scripts: []Script{}, Installs: []Install{}, Shell: Shell{DesktopSystemIcons: []string{}}}
+	ov := Overview{Sections: []Section{}, Scripts: []Script{}, Installs: []Install{}, Shell: Shell{DesktopSystemIcons: []string{}}, Warnings: []string{}}
 	if err := checkUnattendXML(data); err != nil {
 		return ov, err
 	}
@@ -248,6 +256,9 @@ func describe(ov *Overview, params []param) {
 			accounts = append(accounts, Item{accountLabels[k], v})
 		case strings.HasPrefix(k, "Remove") && v == "true":
 			removed = append(removed, Item{Label: words(strings.TrimPrefix(k, "Remove"))})
+			if w := conflicts[k]; w != "" {
+				ov.Warnings = append(ov.Warnings, w)
+			}
 		case v == "true":
 			label := tweakLabels[k]
 			if label == "" {

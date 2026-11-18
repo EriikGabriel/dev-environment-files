@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import * as api from "../api";
 import { errorMessage } from "../api";
-import type { Layout, LayoutItem, LayoutSource } from "../types";
+import type { IconEntry, Icons, Layout, LayoutItem, LayoutSource } from "../types";
 import { Help } from "./Help";
+import { IconsCard } from "./IconsCard";
 
 interface Props {
   root: string;
@@ -22,12 +23,43 @@ const SOURCE: Record<LayoutSource, string> = {
 
 const sameList = (a: string[], b: string[]) => a.length === b.length && a.every((x, i) => x === b[i]);
 
-function Icon({ item, small }: { item: LayoutItem; small?: boolean }) {
+/** How an app's icon is drawn in the preview: the real one when the shortcuts were scanned, else a stand-in. */
+interface Look {
+  img?: string;
+  /** The macOS style is on but there is no scanned icon: draw a plate with the app's colour. */
+  plate?: "light" | "dark";
+}
+
+function Icon({ item, small, look }: { item: LayoutItem; small?: boolean; look?: Look }) {
+  const size = small ? "app-icon small" : "app-icon";
+  if (look?.img) return <img className={`${size} img`} src={look.img} alt="" aria-hidden />;
+  if (look?.plate) {
+    return (
+      <span className={`${size} plate ${look.plate}`} style={{ color: look.plate === "light" ? item.color : "#fff" }} aria-hidden>
+        {item.glyph}
+      </span>
+    );
+  }
   return (
-    <span className={small ? "app-icon small" : "app-icon"} style={{ background: item.color }} aria-hidden>
+    <span className={size} style={{ background: item.color }} aria-hidden>
       {item.glyph}
     </span>
   );
+}
+
+const squash = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "");
+const ORDER = ["taskbar", "desktop", "start-menu"];
+
+/** The scanned shortcut that stands for an app of the preview, if any. */
+function entryFor(item: LayoutItem, entries: IconEntry[]): IconEntry | undefined {
+  const key = squash(item.name);
+  const first = squash(item.name.split(" ")[0]);
+  return entries
+    .filter((e) => {
+      const n = squash(e.name);
+      return n === key || (first.length >= 4 && n.startsWith(first)) || (n.length >= 4 && key.startsWith(n));
+    })
+    .sort((a, b) => ORDER.indexOf(a.scope) - ORDER.indexOf(b.scope))[0];
 }
 
 /** The desktop as it will look: taskbar pins you can rearrange, the Start menu and the desktop icons. */
@@ -42,7 +74,16 @@ export function LayoutTab({ root, profile, apps, windows }: Props) {
   const [showStart, setShowStart] = useState(true);
   const [dragId, setDragId] = useState<string | null>(null);
   const [overIndex, setOverIndex] = useState<number | null>(null);
+  const [icons, setIcons] = useState<Icons | null>(null);
   const appsKey = apps.join(",");
+
+  // the icon style and the last scan of the shortcuts, which the preview draws
+  useEffect(() => {
+    api
+      .icons(root, "cached")
+      .then(setIcons)
+      .catch(() => setIcons(null));
+  }, [root]);
 
   const load = useCallback(async () => {
     try {
@@ -115,6 +156,14 @@ export function LayoutTab({ root, profile, apps, windows }: Props) {
     return "Layout aplicado. A barra de tarefas reiniciou; se ela não mudou, saia da conta e entre de novo.";
   });
 
+  const look = (item: LayoutItem): Look | undefined => {
+    if (!icons?.config.enabled && !icons?.applied && !icons?.scanned) return undefined;
+    const style = icons?.config.style ?? "light";
+    const entry = icons?.scanned ? entryFor(item, icons.entries) : undefined;
+    if (entry && entry.from !== "skip" && entry.after) return { img: entry.after };
+    if (entry?.from === "skip" && entry.before) return { img: entry.before };
+    return icons?.config.enabled ? { plate: style } : undefined;
+  };
   const systemIcons = shell.desktop_icons === "Custom" ? shell.desktop_system_icons : ["Lixeira"];
   const shortcuts = data.items.filter((i) => i.desktop && i.pinnable);
 
@@ -187,7 +236,7 @@ export function LayoutTab({ root, profile, apps, windows }: Props) {
               ))}
               {shortcuts.map((i) => (
                 <span className="desk-icon" key={i.id} title="Atalho que o instalador costuma deixar">
-                  <Icon item={i} />
+                  <Icon item={i} look={look(i)} />
                   {i.name}
                 </span>
               ))}
@@ -257,7 +306,7 @@ export function LayoutTab({ root, profile, apps, windows }: Props) {
                   }
                 }}
               >
-                <Icon item={i} small />
+                <Icon item={i} small look={look(i)} />
               </button>
             ))}
             {pinned.length === 0 && <span className="tb-empty">arraste apps para cá</span>}
@@ -317,7 +366,7 @@ export function LayoutTab({ root, profile, apps, windows }: Props) {
                 setOverIndex(null);
               }}
             >
-              <Icon item={i} small />
+              <Icon item={i} small look={look(i)} />
               <span className="grow">{i.name}</span>
               {i.sources.map((s) => (
                 <span key={s} className="chip">
@@ -328,6 +377,8 @@ export function LayoutTab({ root, profile, apps, windows }: Props) {
           ))}
         </div>
       </div>
+
+      {icons && <IconsCard root={root} windows={windows} data={icons} onData={setIcons} />}
     </section>
   );
 }

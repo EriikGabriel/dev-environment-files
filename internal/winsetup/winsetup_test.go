@@ -106,8 +106,22 @@ func TestReadUnattendOfTheRepo(t *testing.T) {
 	has("Apps e recursos removidos", "3D Viewer=")
 	has("Apps e recursos removidos", "Office 365=")
 	has("Outras opções", "Start Pins=Empty")
-	if n := len(flat["Apps e recursos removidos"]); n != 42 {
-		t.Errorf("want 42 removed apps, got %d", n)
+	// Windows Media Player stays: Playnite plays the trailers with it.
+	if n := len(flat["Apps e recursos removidos"]); n != 41 {
+		t.Errorf("want 41 removed apps, got %d", n)
+	}
+	if len(ov.Warnings) != 0 {
+		t.Errorf("the answer file of the repo should not conflict with the setup: %v", ov.Warnings)
+	}
+}
+
+func TestUnattendWarnsAboutMediaPlayer(t *testing.T) {
+	ov, err := ReadUnattend([]byte(`<?xml version="1.0"?><unattend xmlns="urn:schemas-microsoft-com:unattend"><!--` + GeneratorURL + `?RemoveWindowsMediaPlayer=true&RemoveMaps=true--></unattend>`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(ov.Warnings) != 1 || !strings.Contains(ov.Warnings[0], "Playnite") {
+		t.Errorf("warnings = %v", ov.Warnings)
 	}
 }
 

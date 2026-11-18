@@ -29,6 +29,8 @@ type Env struct {
 	// state directory). Fetch downloads a file; nil is the real download.
 	StateDir string
 	Fetch    winsetup.Fetch
+	// WindhawkCLI replaces windhawk-cli.exe in tests.
+	WindhawkCLI string
 
 	refreshed map[string]bool
 }

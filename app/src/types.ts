@@ -243,6 +243,8 @@ export interface Unattend {
   ninite_hook: boolean;
   /** An account has a password, readable in the file. */
   has_password: boolean;
+  /** Choices of the file that break something else of the setup. */
+  warnings: string[];
 }
 
 export interface NiniteApp {
@@ -364,8 +366,176 @@ export interface Layout {
   installs: { id: string; name: string; kind: "ninite" | "github" | "runtime" }[];
 }
 
+// ---- shortcut icons (`icons --json`) ----
+
+export type IconScope = "desktop" | "start-menu" | "taskbar";
+
+export interface IconsConfig {
+  enabled: boolean;
+  style: "light" | "dark";
+  pack: string;
+  scopes: IconScope[];
+  system_icons: boolean;
+  skip: string[];
+  overrides: Record<string, string>;
+}
+
+export interface IconEntry {
+  id: string;
+  name: string;
+  scope: IconScope;
+  path: string;
+  target: string;
+  /** The shortcut already points at an icon made here. */
+  themed: boolean;
+  from: "style" | "pack" | "override" | "skip";
+  file?: string;
+  /** Data URLs of the icon it shows and of the one it would get. */
+  before: string;
+  after: string;
+  error?: string;
+}
+
+/** A page of the icons of the pack (`icon-pack --json`). */
+export interface IconPackPage {
+  path: string;
+  count: number;
+  /** How many icons the query found; `icons` holds a page of them. */
+  total: number;
+  icons: { name: string; file: string; image: string }[];
+}
+
+export interface Icons {
+  config: IconsConfig;
+  saved: boolean;
+  pack: { path: string; count: number; error?: string; system: string[] };
+  /** The pack the repo ships (repo-relative), to offer it. */
+  builtin_pack: string;
+  /** envsetup changed icons on this machine and can undo it. */
+  applied: boolean;
+  /** The taskbar is the dock of the Windhawk mod Ilha e Dock estilo Mac. */
+  dock: boolean;
+  /** That mod's taskbarMode (dock, windowsTransparent, windowsApps, windows); "" when it is not installed. */
+  dock_mode: string;
+  /** `entries` holds the shortcuts found by a scan. */
+  scanned: boolean;
+  entries: IconEntry[];
+}
+
 export interface LayoutChoice {
   taskbar: string[];
   clear_start: boolean;
   hide_desktop_icons: boolean;
+}
+
+// ---- Playnite (envsetup playnite --json) ----
+
+export interface PlayniteConfig {
+  /** The Playnite folder on this machine. */
+  path: string;
+  /** Folder of the snapshot ("" until chosen): the copy is <store>\Playnite. */
+  store: string;
+  /** Left out of the snapshot: names with * or a dot are file patterns, the rest folders. */
+  exclude: string[];
+  /** Register Playnite in the Start menu after a restore. */
+  start_menu: boolean;
+}
+
+export interface PlayniteTheme {
+  mode: "desktop" | "fullscreen";
+  id: string;
+  name: string;
+  author: string;
+  version: string;
+  active: boolean;
+}
+
+export interface PlayniteExtension {
+  id: string;
+  name: string;
+  author: string;
+  version: string;
+  type: string;
+  enabled: boolean;
+  /** Its settings folder in ExtensionsData, when found. */
+  data?: string;
+}
+
+export interface PlayniteFolder {
+  name: string;
+  bytes: number;
+  files: number;
+  excluded: boolean;
+}
+
+export interface PlayniteManifest {
+  saved_at: string;
+  source: string;
+  computer: string;
+  bytes: number;
+  files: number;
+  desktop_theme: string;
+  fullscreen_theme: string;
+  extensions: string[];
+}
+
+export interface PlayniteRequirement {
+  id: string;
+  title: string;
+  about: string;
+  ok: boolean;
+  detail?: string;
+  fixable: boolean;
+  elevated: boolean;
+}
+
+export interface Playnite {
+  config: PlayniteConfig;
+  saved: boolean;
+  windows: boolean;
+  install: {
+    found: boolean;
+    themes: PlayniteTheme[];
+    extensions: PlayniteExtension[];
+    /** Empty unless asked with sizes. */
+    folders: PlayniteFolder[];
+    bytes: number;
+    files: number;
+  };
+  /** Null until a store is chosen. */
+  snapshot: { path: string; manifest: PlayniteManifest | null; error?: string } | null;
+  /** Playnite programs that are open. */
+  running: string[];
+  requirements: PlayniteRequirement[];
+}
+
+// ---- Windhawk (envsetup windhawk --json) ----
+
+export interface WindhawkMod {
+  id: string;
+  name: string;
+  /** Version in the repo ("" for a mod only on the machine). */
+  version: string;
+  enabled: boolean;
+  settings: Record<string, unknown>;
+  /** "" when the machine was not read. */
+  state: "" | "same" | "changed" | "missing" | "extra";
+  /** Version on the machine ("" when missing). */
+  installed: string;
+  changes: string[];
+}
+
+export interface Windhawk {
+  path: string;
+  exists: boolean;
+  windows: boolean;
+  /** windhawk-cli.exe; "" when Windhawk 2 is not installed. */
+  cli: string;
+  read: boolean;
+  error?: string;
+  app_settings: Record<string, unknown>;
+  app_settings_changed: boolean;
+  mods: WindhawkMod[];
+  pending: boolean;
+  warnings: string[];
 }
