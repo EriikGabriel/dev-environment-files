@@ -309,7 +309,7 @@ apps:
     method: { arch: aur }
     names: { arch: intellij-idea-ultimate-edition }
 
-  # ---- desktop: GNOME with the WhiteSur look (Ubuntu, ported from legacy/) ----
+  # ---- desktop: GNOME with the WhiteSur look (Ubuntu; the GTK theme is in dotfiles/gtk/) ----
   # These talk to the running GNOME session, so they only work from inside it.
   sassc: { names: { debian: sassc } }
   gnome-tweaks: { names: { debian: gnome-tweaks } }
@@ -394,7 +394,7 @@ apps:
             $SUDO flatpak override --filesystem=xdg-config/gtk-3.0
             $SUDO flatpak override --filesystem=xdg-config/gtk-4.0
           fi
-          $SUDO cp -r "$ENVSETUP_ROOT/legacy/gtk/WhiteSur-Dark-blue" /usr/share/themes/
+          $SUDO cp -r "$ENVSETUP_ROOT/dotfiles/gtk/WhiteSur-Dark-blue" /usr/share/themes/
           cd /; rm -rf "$tmp"
         fi
         gsettings set org.gnome.desktop.interface gtk-theme "'WhiteSur-Dark-blue'"

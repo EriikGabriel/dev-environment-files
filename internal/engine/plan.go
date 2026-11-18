@@ -6,13 +6,14 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"time"
 
 	"github.com/EriikGabriel/dev-environment-files/internal/backend"
 	"github.com/EriikGabriel/dev-environment-files/internal/config"
 	"github.com/EriikGabriel/dev-environment-files/internal/platform"
-	"github.com/EriikGabriel/dev-environment-files/internal/winsetup"
+	"github.com/EriikGabriel/dev-environment-files/internal/windows/install"
 )
 
 // Env is everything steps need from the outside world.
@@ -28,7 +29,7 @@ type Env struct {
 	// StateDir is where envsetup remembers what it did (default: the user's
 	// state directory). Fetch downloads a file; nil is the real download.
 	StateDir string
-	Fetch    winsetup.Fetch
+	Fetch    install.Fetch
 	// WindhawkCLI replaces windhawk-cli.exe in tests.
 	WindhawkCLI string
 
@@ -378,3 +379,21 @@ func (p *Plan) Execute(ctx context.Context, out io.Writer, emit func(Event)) Res
 
 // DefaultHome is the home directory steps deploy into.
 func DefaultHome() (string, error) { return os.UserHomeDir() }
+
+// StateDir is where envsetup keeps its logs and markers: $XDG_STATE_HOME,
+// %LocalAppData% on Windows, else ~/.local/state, plus "envsetup". It
+// returns "" when none of them can be found.
+func StateDir() string {
+	dir := os.Getenv("XDG_STATE_HOME")
+	if dir == "" && runtime.GOOS == "windows" {
+		dir, _ = os.UserCacheDir()
+	}
+	if dir == "" {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			return ""
+		}
+		dir = filepath.Join(home, ".local", "state")
+	}
+	return filepath.Join(dir, "envsetup")
+}

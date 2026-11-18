@@ -7,7 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/EriikGabriel/dev-environment-files/internal/windhawk"
+	"github.com/EriikGabriel/dev-environment-files/internal/windows/windhawk"
 )
 
 // windhawkJSON is part of the contract with the desktop app; see
@@ -60,11 +60,10 @@ func describeWindhawk(cmd *cobra.Command, f flags) (windhawkJSON, error) {
 	return out, nil
 }
 
+// windhawkCommands keep the Windhawk mods in the repo (windows/windhawk/backup.json)
+// and turn the dock of the mod Ilha e Dock estilo Mac on and off.
 func windhawkCommands(f *flags) []*cobra.Command {
-	jsonFlag := func(c *cobra.Command) *cobra.Command {
-		c.Flags().BoolVar(&f.json, "json", false, "machine-readable output")
-		return c
-	}
+	jsonFlag := withJSON(f)
 
 	status := jsonFlag(&cobra.Command{
 		Use:   "windhawk",
@@ -145,5 +144,33 @@ func windhawkCommands(f *flags) []*cobra.Command {
 		},
 	})
 
-	return []*cobra.Command{status, export, imp}
+	var dockRestore bool
+	taskbarDock := jsonFlag(&cobra.Command{
+		Use:   "taskbar-dock",
+		Short: "Turn on the dock of the Windhawk mod Ilha e Dock estilo Mac (mac-island-dock), or undo it with --restore",
+		Args:  cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			_, env, err := load(*f)
+			if err != nil {
+				return err
+			}
+			if env.Info.OS != "windows" {
+				return fmt.Errorf("the taskbar dock is for Windows")
+			}
+			out := os.Stdout
+			if f.json {
+				out = os.Stderr
+			}
+			if err := env.TaskbarDock(cmd.Context(), out, dockRestore); err != nil {
+				return err
+			}
+			if f.json {
+				return printJSON(os.Stdout, map[string]any{"dock": env.DockApplied(cmd.Context())})
+			}
+			return nil
+		},
+	})
+	taskbarDock.Flags().BoolVar(&dockRestore, "restore", false, "put back the taskbar mode the mod had before")
+
+	return []*cobra.Command{status, export, imp, taskbarDock}
 }

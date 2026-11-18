@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/EriikGabriel/dev-environment-files/internal/engine"
-	"github.com/EriikGabriel/dev-environment-files/internal/playnite"
+	"github.com/EriikGabriel/dev-environment-files/internal/windows/playnite"
 )
 
 // The JSON shapes below are part of the contract with the desktop app; see
@@ -64,10 +64,7 @@ func describePlaynite(cmd *cobra.Command, f flags, sizes bool) (playniteJSON, er
 }
 
 func playniteCommands(f *flags) []*cobra.Command {
-	jsonFlag := func(c *cobra.Command) *cobra.Command {
-		c.Flags().BoolVar(&f.json, "json", false, "machine-readable output")
-		return c
-	}
+	jsonFlag := withJSON(f)
 	windowsEnv := func(what string) (*engine.Env, error) {
 		_, env, err := load(*f)
 		if err != nil {

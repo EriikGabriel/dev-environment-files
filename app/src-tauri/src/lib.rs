@@ -88,8 +88,10 @@ fn find_upwards(start: &Path) -> Option<PathBuf> {
         .map(Path::to_path_buf)
 }
 
-/// Where the repo lives: the saved choice, then $ENVSETUP_ROOT, then the
-/// nearest parent of the working directory or of this executable.
+/// Where the data lives (config/, dotfiles/, windows/): the saved choice,
+/// then $ENVSETUP_ROOT, then the nearest parent of the working directory or
+/// of this executable (a git clone, in development), then the folder the
+/// installer's data was copied to. None until the user picks one.
 #[tauri::command]
 fn get_root(app: AppHandle) -> Option<String> {
     let saved = read_settings(&app)
@@ -103,11 +105,26 @@ fn get_root(app: AppHandle) -> Option<String> {
     let exe = std::env::current_exe()
         .ok()
         .and_then(|e| e.parent().and_then(find_upwards));
+    let seeded = default_data_dir(&app).ok().filter(|p| is_repo(p));
     saved
         .or(env)
         .or(cwd)
         .or(exe)
+        .or(seeded)
         .map(|p| p.to_string_lossy().into_owned())
+}
+
+fn save_root(app: &AppHandle, dir: &Path) -> Result<String, String> {
+    let root = dir.to_string_lossy().into_owned();
+    let s = Settings {
+        root: Some(root.clone()),
+    };
+    std::fs::write(
+        settings_path(app)?,
+        serde_json::to_string_pretty(&s).unwrap(),
+    )
+    .map_err(|e| e.to_string())?;
+    Ok(root)
 }
 
 #[tauri::command]
@@ -116,15 +133,133 @@ fn set_root(app: AppHandle, root: String) -> Result<String, String> {
     if !is_repo(&dir) {
         return Err(format!("{root} has no config/apps.yaml"));
     }
-    let s = Settings {
-        root: Some(root.clone()),
+    save_root(&app, &dir)
+}
+
+// ---- the data shipped in the installer ----
+//
+// The installer carries config/, dotfiles/ and windows/ under resources/data
+// (see bundle.resources in tauri.conf.json). The install folder is read-only,
+// so on first run they are copied to a folder of the user, which becomes the
+// root and is edited from then on. The copy never overwrites a file.
+
+/// Marker written in a folder made from the installer's data.
+const DATA_MARKER: &str = ".envsetup-data";
+
+/// The data shipped with this build; None in a development build.
+fn bundled_data(app: &AppHandle) -> Option<PathBuf> {
+    let dir = app.path().resource_dir().ok()?.join("data");
+    is_repo(&dir).then_some(dir)
+}
+
+/// Where the shipped data is copied: Documents\envsetup on Windows,
+/// ~/envsetup elsewhere.
+fn default_data_dir(app: &AppHandle) -> Result<PathBuf, String> {
+    let base = if cfg!(windows) {
+        app.path().document_dir()
+    } else {
+        app.path().home_dir()
     };
-    std::fs::write(
-        settings_path(&app)?,
-        serde_json::to_string_pretty(&s).unwrap(),
-    )
-    .map_err(|e| e.to_string())?;
-    Ok(root)
+    base.map(|d| d.join("envsetup")).map_err(|e| e.to_string())
+}
+
+#[derive(Default, Serialize)]
+struct CopyReport {
+    /// Files copied because they were missing.
+    added: usize,
+    /// Files that were already there and were left as they are.
+    kept: usize,
+}
+
+/// Copies the files of `src` that `dst` does not have. A file that exists is
+/// never touched, so the user's edits survive; symlinks are skipped.
+fn copy_missing(src: &Path, dst: &Path, report: &mut CopyReport) -> std::io::Result<()> {
+    std::fs::create_dir_all(dst)?;
+    for entry in std::fs::read_dir(src)? {
+        let entry = entry?;
+        let kind = entry.file_type()?;
+        let to = dst.join(entry.file_name());
+        if kind.is_dir() {
+            copy_missing(&entry.path(), &to, report)?;
+        } else if kind.is_file() {
+            match std::fs::OpenOptions::new().write(true).create_new(true).open(&to) {
+                Ok(mut out) => {
+                    let mut from = std::fs::File::open(entry.path())?;
+                    std::io::copy(&mut from, &mut out)?;
+                    report.added += 1;
+                }
+                Err(e) if e.kind() == std::io::ErrorKind::AlreadyExists => report.kept += 1,
+                Err(e) => return Err(e),
+            }
+        }
+    }
+    Ok(())
+}
+
+fn write_marker(app: &AppHandle, dir: &Path) -> Result<(), String> {
+    let marker = serde_json::json!({ "version": app.package_info().version.to_string() });
+    std::fs::write(dir.join(DATA_MARKER), marker.to_string()).map_err(|e| e.to_string())
+}
+
+#[derive(Serialize)]
+struct DataInfo {
+    /// This build carries the data (an installed app, not a dev build).
+    bundled: bool,
+    /// Where "use the included data" copies it.
+    default_dir: Option<String>,
+    /// The root is a git clone: it is updated with git, not from the app.
+    git: bool,
+    /// Version of the app whose data was copied to the root (None when the
+    /// root was not made from the installer's data).
+    seeded_version: Option<String>,
+    app_version: String,
+}
+
+/// What the data of `root` is and whether the installer's data can update it.
+#[tauri::command]
+fn data_info(app: AppHandle, root: Option<String>) -> DataInfo {
+    let root = root.map(PathBuf::from);
+    let seeded_version = root
+        .as_ref()
+        .and_then(|r| std::fs::read_to_string(r.join(DATA_MARKER)).ok())
+        .and_then(|s| serde_json::from_str::<serde_json::Value>(&s).ok())
+        .and_then(|v| v["version"].as_str().map(String::from));
+    DataInfo {
+        bundled: bundled_data(&app).is_some(),
+        default_dir: default_data_dir(&app)
+            .ok()
+            .map(|p| p.to_string_lossy().into_owned()),
+        git: root.as_ref().is_some_and(|r| r.join(".git").exists()),
+        seeded_version,
+        app_version: app.package_info().version.to_string(),
+    }
+}
+
+/// Copies the installer's data to the default folder (only what is missing
+/// there) and makes it the root.
+#[tauri::command]
+fn seed_data(app: AppHandle) -> Result<String, String> {
+    let src = bundled_data(&app).ok_or("this build carries no data: choose a folder with the repo")?;
+    let dst = default_data_dir(&app)?;
+    let mut report = CopyReport::default();
+    copy_missing(&src, &dst, &mut report).map_err(|e| format!("copy the data to {}: {e}", dst.display()))?;
+    write_marker(&app, &dst)?;
+    save_root(&app, &dst)
+}
+
+/// Adds to `root` the files of the installer's data it does not have (new
+/// profiles, icons, scripts of a newer version). Nothing that exists changes.
+#[tauri::command]
+fn update_data(app: AppHandle, root: String) -> Result<CopyReport, String> {
+    let dst = PathBuf::from(&root);
+    if dst.join(".git").exists() {
+        return Err(format!("{root} is a git clone: update it with git pull"));
+    }
+    let src = bundled_data(&app).ok_or("this build carries no data")?;
+    let mut report = CopyReport::default();
+    copy_missing(&src, &dst, &mut report).map_err(|e| e.to_string())?;
+    write_marker(&app, &dst)?;
+    Ok(report)
 }
 
 /// Finds the bundled `envsetup` binary: $ENVSETUP_BIN, else next to this
@@ -312,10 +447,37 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             get_root,
             set_root,
+            data_info,
+            seed_data,
+            update_data,
             envsetup,
             apply,
             cancel_apply
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn copy_missing_never_overwrites() {
+        let base = std::env::temp_dir().join(format!("envsetup-copy-{}", std::process::id()));
+        let (src, dst) = (base.join("src"), base.join("dst"));
+        std::fs::create_dir_all(src.join("config")).unwrap();
+        std::fs::write(src.join("config").join("apps.yaml"), "new").unwrap();
+        std::fs::write(src.join("config").join("added.yaml"), "added").unwrap();
+        std::fs::create_dir_all(dst.join("config")).unwrap();
+        std::fs::write(dst.join("config").join("apps.yaml"), "edited by the user").unwrap();
+
+        let mut report = CopyReport::default();
+        copy_missing(&src, &dst, &mut report).unwrap();
+        assert_eq!((report.added, report.kept), (1, 1));
+        let read = |p: &str| std::fs::read_to_string(dst.join("config").join(p)).unwrap();
+        assert_eq!(read("apps.yaml"), "edited by the user");
+        assert_eq!(read("added.yaml"), "added");
+        std::fs::remove_dir_all(&base).unwrap();
+    }
 }

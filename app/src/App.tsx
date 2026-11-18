@@ -1,24 +1,45 @@
 import { open } from "@tauri-apps/plugin-dialog";
+import {
+	Command as CommandIcon,
+	FileCode,
+	FolderOpen,
+	Gamepad2,
+	HardDriveDownload,
+	House,
+	Info,
+	type LucideIcon,
+	MonitorSmartphone,
+	Rocket,
+	ShieldCheck,
+	SlidersHorizontal,
+	Sparkles,
+	UserRound,
+} from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import * as api from "./api";
 import { errorMessage } from "./api";
-import { ApplyView, type StepState } from "./components/ApplyView";
-import { DesktopTab } from "./components/DesktopTab";
+import { ApplyView } from "./components/ApplyView";
 import { DotfilesTab } from "./components/DotfilesTab";
+import { DataFolder } from "./components/DataFolder";
 import { Drawer } from "./components/Drawer";
 import { FileDrawer, type FileTarget } from "./components/FileDrawer";
 import { ENV_LABEL, HomeTab } from "./components/HomeTab";
-import { LayoutTab } from "./components/LayoutTab";
-import { MediaTab } from "./components/MediaTab";
+import { LinuxPreviewTab } from "./components/linux/LinuxPreviewTab";
 import { PasswordDialog } from "./components/PasswordDialog";
-import { PlayniteTab } from "./components/PlayniteTab";
-import { PoliciesTab } from "./components/PoliciesTab";
-import { WindhawkTab } from "./components/WindhawkTab";
+import { RootPicker } from "./components/RootPicker";
+import { InstallTab } from "./components/windows/InstallTab";
+import { PlayniteTab } from "./components/windows/PlayniteTab";
+import { PoliciesTab } from "./components/windows/PoliciesTab";
+import { WindhawkTab } from "./components/windows/WindhawkTab";
+import { WindowsPreviewTab } from "./components/windows/WindowsPreviewTab";
 import { SetupWizard } from "./components/SetupWizard";
+import { Aurora } from "./components/ui/Aurora";
+import { type Command, CommandPalette } from "./components/ui/CommandPalette";
+import { Skeleton } from "./components/ui/Skeleton";
 import { defaultSelection, loadSelection, saveSelection } from "./selection";
 import type {
-	ApplyEvent,
-	Media,
+	InstallMedia,
 	NewApp,
 	Plan,
 	Profile,
@@ -27,33 +48,23 @@ import type {
 	Wizard,
 } from "./types";
 import "./styles.css";
+import { useApplyRun } from "./useApplyRun";
 
-type Tab = "home" | "setup" | "preview" | "dotfiles" | "media" | "policies" | "windhawk" | "playnite";
-type Summary = Extract<ApplyEvent, { type: "done" }>;
+type Tab = "home" | "setup" | "preview" | "dotfiles" | "install" | "policies" | "windhawk" | "playnite";
 
-interface ApplyState {
-	steps: StepState[];
-	total: number;
-	summary: Summary | null;
-	running: boolean;
-	cancelled: boolean;
-	startedAt: number;
-	endedAt: number | null;
-	error: string | null;
-}
+// Tabs that only exist for a profile with a Windows installation (`media:`
+// in the profile).
+const WINDOWS_TABS: Tab[] = ["install", "policies", "windhawk", "playnite"];
 
-// Tabs that only exist for a profile with a Windows installation (`media:`).
-const WINDOWS_TABS: Tab[] = ["media", "policies", "windhawk", "playnite"];
-
-const TABS: { id: Tab; label: string; icon: string }[] = [
-	{ id: "home", label: "Início", icon: "⌂" },
-	{ id: "setup", label: "Configurar", icon: "☰" },
-	{ id: "preview", label: "Preview", icon: "▣" },
-	{ id: "dotfiles", label: "Dotfiles", icon: "❖" },
-	{ id: "media", label: "Instalação", icon: "⏏" },
-	{ id: "policies", label: "Políticas", icon: "⚙" },
-	{ id: "windhawk", label: "Windhawk", icon: "✦" },
-	{ id: "playnite", label: "Playnite", icon: "▶" },
+const TABS: { id: Tab; label: string; icon: LucideIcon; hint: string }[] = [
+	{ id: "home", label: "Início", icon: House, hint: "resumo da máquina e do perfil" },
+	{ id: "setup", label: "Configurar", icon: SlidersHorizontal, hint: "etapas, apps e escolhas" },
+	{ id: "preview", label: "Preview", icon: MonitorSmartphone, hint: "como o desktop vai ficar" },
+	{ id: "dotfiles", label: "Dotfiles", icon: FileCode, hint: "arquivos de configuração" },
+	{ id: "install", label: "Instalação", icon: HardDriveDownload, hint: "autounattend, Ninite e pendrive" },
+	{ id: "policies", label: "Políticas", icon: ShieldCheck, hint: "políticas de grupo do Windows" },
+	{ id: "windhawk", label: "Windhawk", icon: Sparkles, hint: "mods e a dock" },
+	{ id: "playnite", label: "Playnite", icon: Gamepad2, hint: "snapshot do Playnite portable" },
 ];
 
 export default function App() {
@@ -69,11 +80,24 @@ export default function App() {
 	const [stepIndex, setStepIndex] = useState(0);
 	const [error, setError] = useState<string | null>(null);
 	const [askPassword, setAskPassword] = useState(false);
-	const [run, setRun] = useState<ApplyState | null>(null);
+	const { run, start: startRun, cancel: cancelRun, close: closeRun } = useApplyRun();
 	const planSeq = useRef(0);
 	const [openFile, setOpenFile] = useState<FileTarget | null>(null);
 	const [helpOpen, setHelpOpen] = useState(false);
-	const [media, setMedia] = useState<Media | null>(null);
+	const [installMedia, setInstallMedia] = useState<InstallMedia | null>(null);
+	const [paletteOpen, setPaletteOpen] = useState(false);
+
+	// Ctrl+K (⌘K on macOS) opens the command palette from anywhere
+	useEffect(() => {
+		const onKey = (e: KeyboardEvent) => {
+			if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+				e.preventDefault();
+				setPaletteOpen((o) => !o);
+			}
+		};
+		window.addEventListener("keydown", onKey);
+		return () => window.removeEventListener("keydown", onKey);
+	}, []);
 
 	const profile = profiles.find((p) => p.id === profileId);
 	const env = profile?.environment ?? (info?.os === "windows" ? "gaming" : "");
@@ -126,27 +150,27 @@ export default function App() {
 		void loadWizard(false);
 	}, [loadWizard]);
 
-	// the Windows installation media of the profile, when it has one
-	const loadMedia = useCallback(async () => {
+	// the unattended Windows installation of the profile, when it has one
+	const loadInstallMedia = useCallback(async () => {
 		if (!root || !profileId) return;
 		try {
-			setMedia(await api.media(root, profileId));
+			setInstallMedia(await api.installMedia(root, profileId));
 		} catch {
-			setMedia(null);
+			setInstallMedia(null);
 		}
 	}, [root, profileId]);
 
 	useEffect(() => {
-		setMedia(null);
-		void loadMedia();
-	}, [loadMedia]);
+		setInstallMedia(null);
+		void loadInstallMedia();
+	}, [loadInstallMedia]);
 
-	const hasWindows = !!media?.available;
+	const hasWindows = !!installMedia?.available;
 	const tabs = TABS.filter((t) => hasWindows || !WINDOWS_TABS.includes(t.id));
 	useEffect(() => {
 		// a profile without those tabs cannot stay on one of them
-		if (media && !media.available) setTab((t) => (WINDOWS_TABS.includes(t) ? "home" : t));
-	}, [media]);
+		if (installMedia && !installMedia.available) setTab((t) => (WINDOWS_TABS.includes(t) ? "home" : t));
+	}, [installMedia]);
 
 	// the plan follows the selection; a sequence number drops stale answers
 	const loadPlan = useCallback(async () => {
@@ -177,7 +201,7 @@ export default function App() {
 		const dir = await open({
 			directory: true,
 			multiple: false,
-			title: "Selecione a pasta dev-environment-files",
+			title: "Selecione a pasta de dados (com config/ e dotfiles/)",
 		});
 		if (typeof dir !== "string") return;
 		try {
@@ -192,79 +216,12 @@ export default function App() {
 	const startApply = async (password: string) => {
 		if (!root || !wizard || !selection) return;
 		setAskPassword(false);
-		setRun({
-			steps: [],
-			total: 0,
-			summary: null,
-			running: true,
-			cancelled: false,
-			startedAt: Date.now(),
-			endedAt: null,
-			error: null,
-		});
-
-		const off = await api.onApplyEvent((ev) => {
-			setRun((cur) => {
-				if (!cur) return cur;
-				const now = Date.now();
-				if (ev.type === "done") return { ...cur, summary: ev };
-				if (ev.type === "log") {
-					// the line belongs to the step that printed it
-					const i = cur.steps.findIndex((s) => s.index === ev.index);
-					if (i < 0) return cur;
-					const s = cur.steps[i];
-					const steps = [...cur.steps];
-					steps[i] = {
-						...s,
-						log: [...s.log.slice(-400), ev.line],
-						lastOutputAt: now,
-					};
-					return { ...cur, steps };
-				}
-				const i = cur.steps.findIndex((s) => s.index === ev.index);
-				const prev = i >= 0 ? cur.steps[i] : undefined;
-				const next: StepState = {
-					index: ev.index,
-					title: ev.title,
-					group: ev.group ?? "",
-					status: ev.status,
-					detail: ev.detail ?? prev?.detail,
-					error: ev.error,
-					durationMs: ev.duration_ms,
-					log: prev?.log ?? [],
-					startedAt: prev?.startedAt ?? now,
-					lastOutputAt: prev?.lastOutputAt ?? now,
-				};
-				const steps = prev
-					? cur.steps.map((s, k) => (k === i ? next : s))
-					: [...cur.steps, next];
-				return { ...cur, steps, total: ev.total };
-			});
-		});
-
-		try {
-			await api.apply({
-				root,
-				profile: wizard.profile,
-				selection,
-				sudoPassword: password,
-			});
-			setRun((cur) => cur && { ...cur, running: false, endedAt: Date.now() });
-		} catch (e) {
-			setRun(
-				(cur) =>
-					cur && {
-						...cur,
-						running: false,
-						endedAt: Date.now(),
-						error: errorMessage(e),
-					},
-			);
-		} finally {
-			off();
-			void loadWizard(true); // refresh the installed state, keep the choices
-		}
+		await startRun(
+			{ root, profile: wizard.profile, selection, sudoPassword: password },
+			() => void loadWizard(true), // refresh the installed state, keep the choices
+		);
 	};
+
 
 	const saveDirs = async (step: string, option: string, dirs: string[]) => {
 		if (!root || !wizard) return;
@@ -304,7 +261,7 @@ export default function App() {
 	};
 
 	const goStep = (i: number) => {
-		setRun(null);
+		closeRun();
 		setStepIndex(i);
 		setTab("setup");
 	};
@@ -313,76 +270,127 @@ export default function App() {
 
 	if (!root) {
 		return (
-			<main className="center">
-				<img src="/icon.svg" alt="" className="brand-icon big-icon" />
-        <h1 className="brand">envsetup</h1>
-				<p className="muted">
-					Selecione a pasta que contém <code>config/</code> e{" "}
-					<code>dotfiles/</code>.
-				</p>
-				{error && <p className="banner bad">{error}</p>}
-				<button className="primary" onClick={chooseRoot}>
-					Escolher pasta…
-				</button>
-			</main>
+			<RootPicker
+				error={error}
+				onChoose={chooseRoot}
+				onRoot={(r) => {
+					setRoot(r);
+					setProfileId(null);
+					setError(null);
+				}}
+			/>
 		);
 	}
 
 	const busy = !!run?.running;
 	const ready = wizard && selection && wizard.steps.length > 0;
+	const current = TABS.find((t) => t.id === tab);
+	const pending = (plan?.steps ?? []).filter((s) => s.pending).length;
+
+	const go = (t: Tab) => {
+		closeRun();
+		setTab(t);
+	};
+	const commands: Command[] = busy
+		? []
+		: [
+				...tabs.map((t) => ({
+					id: `tab-${t.id}`,
+					label: t.label,
+					group: "Abas",
+					hint: t.hint,
+					icon: <t.icon size={16} />,
+					run: () => go(t.id),
+				})),
+				...(ready
+					? (wizard?.steps ?? []).map((s, i) => ({
+							id: `step-${s.id}`,
+							label: `Etapa ${i + 1}: ${s.title}`,
+							group: "Etapas",
+							icon: <span className="palette-n">{i + 1}</span>,
+							run: () => goStep(i),
+						}))
+					: []),
+				...(pending
+					? [{ id: "apply", label: "Aplicar pendências", group: "Ações", hint: `${pending} itens`, icon: <Rocket size={16} />, run: requestApply }]
+					: []),
+				{ id: "root", label: "Trocar pasta de dados…", group: "Ações", icon: <FolderOpen size={16} />, run: () => void chooseRoot() },
+				{ id: "help", label: "Como funciona", group: "Ações", icon: <Info size={16} />, run: () => setHelpOpen(true) },
+				...profiles
+					.filter((p) => p.id !== profileId)
+					.map((p) => ({
+						id: `profile-${p.id}`,
+						label: `Usar o perfil ${p.name}`,
+						group: "Perfis",
+						hint: p.matches ? "desta máquina" : undefined,
+						icon: <UserRound size={16} />,
+						run: () => setProfileId(p.id),
+					})),
+			];
 
 	return (
 		<div className="shell" data-env={env || "none"}>
+			<Aurora />
 			<aside>
 				<h1 className="brand">
-          <img src="/icon.svg" alt="" className="brand-icon" />
-          envsetup
-        </h1>
+					<img src="/icon.svg" alt="" className="brand-icon" />
+					<span className="brand-text">envsetup</span>
+				</h1>
 				<div className="env-badge">
 					<span className="dot" />
 					<span>
-						<strong>
-							{env === "dev" ? "DEV" : env === "gaming" ? "GAMING" : "—"}
-						</strong>
-						<small>
-							{info?.os === "windows" ? "Windows" : info?.name || "Linux"}
-						</small>
+						<strong>{env === "dev" ? "DEV" : env === "gaming" ? "GAMING" : "—"}</strong>
+						<small>{info?.os === "windows" ? "Windows" : info?.name || "Linux"}</small>
 					</span>
 				</div>
 
+				<button className="palette-trigger" onClick={() => setPaletteOpen(true)} disabled={busy}>
+					<CommandIcon size={14} aria-hidden="true" />
+					<span className="grow">Buscar…</span>
+					<kbd>Ctrl K</kbd>
+				</button>
+
 				<nav>
-					{tabs.map((t) => (
-						<button
-							key={t.id}
-							className={tab === t.id && !run ? "side active" : "side"}
-							disabled={busy}
-							onClick={() => {
-								setRun(null);
-								setTab(t.id);
-							}}
-						>
-							<span className="icon" aria-hidden="true">
-								{t.icon}
-							</span>
-							{t.label}
-						</button>
-					))}
+					{tabs.map((t, i) => {
+						const active = tab === t.id && !run;
+						return (
+							<motion.button
+								key={t.id}
+								className={active ? "side active" : "side"}
+								disabled={busy}
+								onClick={() => go(t.id)}
+								initial={{ opacity: 0, x: -10 }}
+								animate={{ opacity: 1, x: 0 }}
+								transition={{ delay: 0.03 * i, type: "spring", stiffness: 380, damping: 30 }}
+								whileTap={{ scale: 0.97 }}
+							>
+								{active && (
+									<motion.span
+										layoutId="nav-pill"
+										className="side-pill"
+										transition={{ type: "spring", stiffness: 500, damping: 38 }}
+									/>
+								)}
+								<span className="icon" aria-hidden="true">
+									<t.icon size={17} strokeWidth={active ? 2.4 : 2} />
+								</span>
+								<span className="side-text">{t.label}</span>
+								{t.id === "home" && pending > 0 && <span className="side-count">{pending}</span>}
+							</motion.button>
+						);
+					})}
 				</nav>
 
 				<span className="spacer" />
 				<button className="side" onClick={() => setHelpOpen(true)}>
 					<span className="icon" aria-hidden="true">
-						?
+						<Info size={17} />
 					</span>
-					Como funciona
+					<span className="side-text">Como funciona</span>
 				</button>
 				<label className="side-label">
 					Perfil
-					<select
-						value={profileId ?? ""}
-						disabled={busy}
-						onChange={(e) => setProfileId(e.target.value)}
-					>
+					<select value={profileId ?? ""} disabled={busy} onChange={(e) => setProfileId(e.target.value)}>
 						{!profileId && <option value="">(nenhum)</option>}
 						{profiles.map((p) => (
 							<option key={p.id} value={p.id}>
@@ -392,35 +400,57 @@ export default function App() {
 						))}
 					</select>
 				</label>
-				<button
-					className="ghost small-btn"
-					onClick={chooseRoot}
-					title={root}
-					disabled={busy}
-				>
-					Trocar repositório…
-				</button>
+				<DataFolder root={root} disabled={busy} onChoose={chooseRoot} />
 			</aside>
 
 			<main>
-				<header>
-					<h2>{run ? "Aplicando" : TABS.find((t) => t.id === tab)?.label}</h2>
+				<header className="page-head">
+					<AnimatePresence mode="popLayout" initial={false}>
+						<motion.h2
+							key={run ? "run" : tab}
+							className="page-title"
+							initial={{ opacity: 0, y: 12 }}
+							animate={{ opacity: 1, y: 0 }}
+							exit={{ opacity: 0, y: -12 }}
+							transition={{ type: "spring", stiffness: 420, damping: 34 }}
+						>
+							{current && !run && <current.icon size={20} aria-hidden="true" />}
+							{run ? "Aplicando" : current?.label}
+						</motion.h2>
+					</AnimatePresence>
 					<span className="muted">{ENV_LABEL[env]}</span>
 				</header>
 
-				{error && <p className="banner bad">{error}</p>}
+				<AnimatePresence>
+					{error && (
+						<motion.p
+							className="banner bad"
+							initial={{ opacity: 0, height: 0 }}
+							animate={{ opacity: 1, height: "auto" }}
+							exit={{ opacity: 0, height: 0 }}
+						>
+							{error}
+						</motion.p>
+					)}
+				</AnimatePresence>
 
+				<AnimatePresence mode="wait" initial={false}>
+				<motion.div
+					key={run ? "run" : tab}
+					className="page"
+					initial={{ opacity: 0, y: 14 }}
+					animate={{ opacity: 1, y: 0 }}
+					exit={{ opacity: 0, y: -8 }}
+					transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+				>
 				{run ? (
 					<ApplyView
 						{...run}
 						stepTitles={Object.fromEntries(
 							(wizard?.steps ?? []).map((s) => [s.id, s.title]),
 						)}
-						onCancel={() => {
-							setRun((cur) => cur && { ...cur, cancelled: true });
-							void api.cancelApply();
-						}}
-						onClose={() => setRun(null)}
+						onCancel={cancelRun}
+						onClose={closeRun}
 					/>
 				) : tab === "home" ? (
 					<HomeTab
@@ -433,34 +463,34 @@ export default function App() {
 						onStep={goStep}
 						onApplyPending={requestApply}
 					/>
-				) : tab === "media" && media?.available ? (
-					<MediaTab
+				) : tab === "install" && installMedia?.available ? (
+					<InstallTab
 						root={root}
-						profile={media.profile}
-						media={media}
+						profile={installMedia.profile}
+						media={installMedia}
 						onChanged={async () => {
-							await loadMedia();
+							await loadInstallMedia();
 							void loadWizard(true); // the Ninite item follows the list
 						}}
 						onOpenFile={setOpenFile}
 					/>
-				) : tab === "policies" && media?.available ? (
+				) : tab === "policies" && installMedia?.available ? (
 					<PoliciesTab
 						root={root}
-						profile={media.profile}
+						profile={installMedia.profile}
 						windows={info?.os === "windows"}
 						onApplied={() => void loadWizard(true)}
 					/>
-				) : tab === "windhawk" && media?.available ? (
+				) : tab === "windhawk" && installMedia?.available ? (
 					<WindhawkTab root={root} onChanged={() => void loadWizard(true)} />
-				) : tab === "playnite" && media?.available ? (
+				) : tab === "playnite" && installMedia?.available ? (
 					<PlayniteTab root={root} onChanged={() => void loadWizard(true)} />
 				) : !ready ? (
-					<p className="banner">
-						{wizard && wizard.steps.length === 0
-							? "Este perfil ainda não tem etapas."
-							: "Carregando as etapas deste perfil…"}
-					</p>
+					wizard && wizard.steps.length === 0 ? (
+						<p className="banner">Este perfil ainda não tem etapas.</p>
+					) : (
+						<Skeleton label="Carregando as etapas deste perfil…" />
+					)
 				) : tab === "setup" ? (
 					<SetupWizard
 						wizard={wizard}
@@ -476,10 +506,10 @@ export default function App() {
 						onAddApp={addApp}
 						onRemoveApp={removeApp}
 					/>
-				) : tab === "preview" && media?.available ? (
-					<LayoutTab root={root} profile={media.profile} apps={selection?.apps ?? []} windows={info?.os === "windows"} />
+				) : tab === "preview" && installMedia?.available ? (
+					<WindowsPreviewTab root={root} profile={installMedia.profile} apps={selection?.apps ?? []} windows={info?.os === "windows"} />
 				) : tab === "preview" ? (
-					<DesktopTab root={root} profile={wizard.profile} info={info} plan={plan} onSaved={() => void loadPlan()} />
+					<LinuxPreviewTab root={root} profile={wizard.profile} info={info} plan={plan} onSaved={() => void loadPlan()} />
 					) : plan ? (
 					<DotfilesTab
 						root={root}
@@ -490,8 +520,11 @@ export default function App() {
 						onOpenFile={setOpenFile}
 					/>
 				) : (
-					<p className="banner">Calculando o plano…</p>
+					<Skeleton label="Calculando o plano…" rows={4} />
 				)}
+
+				</motion.div>
+				</AnimatePresence>
 
 				{openFile && (
 					<FileDrawer
@@ -509,10 +542,16 @@ export default function App() {
 						<div className="guide">
 							<h3>A ideia</h3>
 							<p>
-								O repositório guarda a descrição do seu ambiente: quais apps
+								A pasta de dados guarda a descrição do seu ambiente: quais apps
 								instalar, quais arquivos de configuração usar e quais pastas
 								criar. O envsetup lê isso, compara com a máquina e aplica só o
 								que falta.
+							</p>
+							<p>
+								Ela pode ser um clone do repositório git (as mudanças vão para o
+								git) ou a cópia dos dados que vêm com o app, em Documentos\envsetup
+								(Windows) ou ~/envsetup (Linux). Os arquivos dela são editados aqui
+								ou à mão; docs/configuracao.md explica cada um.
 							</p>
 							<h3>Perfis</h3>
 							<p>
@@ -569,6 +608,7 @@ export default function App() {
 						</div>
 					</Drawer>
 				)}
+				<CommandPalette open={paletteOpen} commands={commands} onClose={() => setPaletteOpen(false)} />
 				{askPassword && (
 					<PasswordDialog
 						onSubmit={startApply}

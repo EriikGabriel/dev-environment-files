@@ -26,4 +26,4 @@ skip:
     - Windows Software Development Kit
     - Windows PowerShell
 overrides:
-    Steam: C:\Users\Erik Gabriel\Downloads\dev-environment-files\windows\icons\mactahoe\steam.png
+    Steam: windows/icons/mactahoe/steam.png

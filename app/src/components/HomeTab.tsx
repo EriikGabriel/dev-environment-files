@@ -1,5 +1,8 @@
+import { ArrowRight, Box, CircleCheck, Cpu, FileCode, FolderOpen, HardDrive, MemoryStick, Monitor, Package, Rocket, Terminal, UserRound, CircleSlash } from "lucide-react";
+import { motion } from "motion/react";
 import type { Plan, Profile, SystemInfo, Wizard } from "../types";
 import { Help } from "./Help";
+import { CountUp } from "./ui/CountUp";
 
 interface Props {
   info: SystemInfo | null;
@@ -29,14 +32,14 @@ export function HomeTab({ info, profile, wizard, plan, root, onStep, onApplyPend
   const facts = info
     ? (
         [
-          ["Kernel", info.kernel],
-          ["Desktop", [info.desktop, info.session].filter(Boolean).join(" · ")],
-          ["Shell", info.shell],
-          ["Pacotes", [info.package_manager, info.aur_helper, info.flatpak ? "flatpak" : ""].filter(Boolean).join(" · ")],
-          ["CPU", info.cpu ? `${info.cpu}${info.cores ? ` (${info.cores} threads)` : ""}` : ""],
-          ["Memória", info.memory_gb ? `${info.memory_gb.toFixed(1)} GB` : ""],
-          ["Máquina", [info.user, info.hostname].filter(Boolean).join("@")],
-        ] as [string, string][]
+          ["Kernel", info.kernel, HardDrive],
+          ["Desktop", [info.desktop, info.session].filter(Boolean).join(" · "), Monitor],
+          ["Shell", info.shell, Terminal],
+          ["Pacotes", [info.package_manager, info.aur_helper, info.flatpak ? "flatpak" : ""].filter(Boolean).join(" · "), Package],
+          ["CPU", info.cpu ? `${info.cpu}${info.cores ? ` (${info.cores} threads)` : ""}` : "", Cpu],
+          ["Memória", info.memory_gb ? `${info.memory_gb.toFixed(1)} GB` : "", MemoryStick],
+          ["Máquina", [info.user, info.hostname].filter(Boolean).join("@"), UserRound],
+        ] as [string, string, typeof Cpu][]
       ).filter(([, v]) => v)
     : [];
 
@@ -52,9 +55,16 @@ export function HomeTab({ info, profile, wizard, plan, root, onStep, onApplyPend
   return (
     <section className="home">
       <div className={`hero ${env || "none"}`}>
-        <div className="logo" style={{ background: color }} aria-hidden="true">
+        <motion.div
+          className="logo"
+          style={{ background: color, "--logo": color } as React.CSSProperties}
+          aria-hidden="true"
+          initial={{ scale: 0.6, rotate: -12, opacity: 0 }}
+          animate={{ scale: 1, rotate: 0, opacity: 1 }}
+          transition={{ type: "spring", stiffness: 260, damping: 16 }}
+        >
           {name.slice(0, 1).toUpperCase()}
-        </div>
+        </motion.div>
         <div className="grow-col">
           <span className="env-tag">{ENV_LABEL[env]}</span>
           <div className="row">
@@ -73,18 +83,25 @@ export function HomeTab({ info, profile, wizard, plan, root, onStep, onApplyPend
           </span>
         </div>
         {wizard && (
-          <div className="ring" style={{ "--pct": pct } as React.CSSProperties} title={`${done} de ${total} itens aplicados`}>
-            <span>{pct}%</span>
+          <div className={pct === 100 ? "ring full" : "ring"} style={{ "--pct": pct } as React.CSSProperties} title={`${done} de ${total} itens aplicados`}>
+            <span>
+              <CountUp value={pct} suffix="%" />
+            </span>
           </div>
         )}
       </div>
 
       <div className="card">
         <dl className="facts">
-          {facts.map(([k, v]) => (
-            <div key={k}>
-              <dt>{k}</dt>
-              <dd title={v}>{v}</dd>
+          {facts.map(([k, v, Icon]) => (
+            <div key={k} className="fact">
+              <span className="fact-icon" aria-hidden="true">
+                <Icon size={16} />
+              </span>
+              <span className="grow-col">
+                <dt>{k}</dt>
+                <dd title={v}>{v}</dd>
+              </span>
             </div>
           ))}
         </dl>
@@ -93,18 +110,15 @@ export function HomeTab({ info, profile, wizard, plan, root, onStep, onApplyPend
       {wizard && plan && (
         <>
           <div className="stats">
-            <div className="card stat">
-              <span className="num">{apps.length - appsPending}<small>/{apps.length}</small></span>
-              <span className="muted">apps e ajustes aplicados</span>
-              <span className={appsPending ? "badge warn" : "badge ok"}>{appsPending ? `${appsPending} pendentes` : "em dia"}</span>
-            </div>
-            <div className="card stat">
-              <span className="num">{files.length - filesPending}<small>/{files.length}</small></span>
-              <span className="muted">configs em sincronia</span>
-              <span className={filesPending ? "badge warn" : "badge ok"}>{filesPending ? `${filesPending} pendentes` : "em dia"}</span>
-            </div>
-            <div className="card stat">
-              <span className="num">{plan.skipped.length}</span>
+            <Stat icon={<Box size={18} />} tone="a" done={apps.length - appsPending} total={apps.length} label="apps e ajustes aplicados" pending={appsPending} />
+            <Stat icon={<FileCode size={18} />} tone="b" done={files.length - filesPending} total={files.length} label="configs em sincronia" pending={filesPending} />
+            <div className="card stat tone-c">
+              <span className="stat-icon" aria-hidden="true">
+                <CircleSlash size={18} />
+              </span>
+              <span className="num">
+                <CountUp value={plan.skipped.length} />
+              </span>
               <span className="muted">indisponíveis nesta distro</span>
               <span className="muted small" title={plan.skipped.map((s) => s.id).join(", ")}>
                 {plan.skipped.map((s) => s.id).join(", ") || "nenhum"}
@@ -123,6 +137,7 @@ export function HomeTab({ info, profile, wizard, plan, root, onStep, onApplyPend
             {wizard.steps.map((s, i) => {
               const mine = lines.filter((l) => l.step === s.id);
               const todo = mine.filter((l) => l.pending).length;
+              const stepPct = mine.length ? ((mine.length - todo) / mine.length) * 100 : 100;
               const choice = plan.choices[s.id];
               const opt = s.options.find((o) => o.id === choice);
               return (
@@ -132,24 +147,51 @@ export function HomeTab({ info, profile, wizard, plan, root, onStep, onApplyPend
                     <strong>{s.title}</strong>
                     <span className="muted">{opt ? opt.title : choice === "none" ? "nenhum" : `${mine.filter((l) => l.kind === "app").length} itens`}</span>
                   </span>
-                  <span className={todo ? "badge warn" : "badge ok"}>{todo ? `${todo} pendentes` : "em dia"}</span>
+                  <span className={todo ? "badge warn" : "badge ok"}>{todo ? `${todo} pendentes` : <><CircleCheck size={12} /> em dia</>}</span>
+                  <ArrowRight size={16} className="step-go" aria-hidden="true" />
+                  <span className="step-bar" aria-hidden="true">
+                    <motion.span initial={{ width: 0 }} animate={{ width: `${stepPct}%` }} transition={{ duration: 0.9, delay: 0.15 + i * 0.05, ease: [0.16, 1, 0.3, 1] }} />
+                  </span>
                 </button>
               );
             })}
           </div>
 
           <div className="card row cta">
+            <span className="cta-icon" aria-hidden="true">
+              <FolderOpen size={20} />
+            </span>
             <div className="grow-col">
-              <strong>Repositório</strong>
+              <strong>Pasta de dados</strong>
               <span className="muted mono">{root}</span>
             </div>
             <button onClick={() => onStep(0)}>Personalizar</button>
-            <button className="primary" disabled={appsPending + filesPending === 0} onClick={onApplyPending}>
-              Aplicar pendências
+            <button className="primary shine" disabled={appsPending + filesPending === 0} onClick={onApplyPending}>
+              <Rocket size={16} aria-hidden="true" />
+              {appsPending + filesPending ? `Aplicar ${appsPending + filesPending} pendências` : "Tudo em dia"}
             </button>
           </div>
         </>
       )}
     </section>
+  );
+}
+
+function Stat({ icon, tone, done, total, label, pending }: { icon: React.ReactNode; tone: string; done: number; total: number; label: string; pending: number }) {
+  return (
+    <div className={`card stat tone-${tone}`}>
+      <span className="stat-icon" aria-hidden="true">
+        {icon}
+      </span>
+      <span className="num">
+        <CountUp value={done} />
+        <small>/{total}</small>
+      </span>
+      <span className="muted">{label}</span>
+      <span className={pending ? "badge warn" : "badge ok"}>{pending ? `${pending} pendentes` : "em dia"}</span>
+      <span className="stat-bar" aria-hidden="true">
+        <motion.span initial={{ width: 0 }} animate={{ width: `${total ? (done / total) * 100 : 100}%` }} transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }} />
+      </span>
+    </div>
   );
 }

@@ -1,5 +1,3 @@
-// Package engine turns a profile plus the detected platform into an ordered
-// list of idempotent steps, and executes them.
 package engine
 
 import (
@@ -8,7 +6,7 @@ import (
 
 	"github.com/EriikGabriel/dev-environment-files/internal/config"
 	"github.com/EriikGabriel/dev-environment-files/internal/platform"
-	"github.com/EriikGabriel/dev-environment-files/internal/winsetup"
+	"github.com/EriikGabriel/dev-environment-files/internal/windows/ninite"
 )
 
 // Unavailable means an app has no definition for the current distro.
@@ -69,7 +67,7 @@ func Resolve(id string, app config.App, info platform.Info) (Resolved, error) {
 			return Resolved{}, Unavailable{"steam needs the numeric AppID in names"}
 		}
 	case config.MethodNinite:
-		slugs, err := winsetup.ParseNinite([]string{r.Name})
+		slugs, err := ninite.Parse([]string{r.Name})
 		if err != nil {
 			return Resolved{}, Unavailable{err.Error()}
 		}

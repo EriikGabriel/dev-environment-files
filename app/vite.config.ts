@@ -7,6 +7,8 @@ const host = process.env.TAURI_DEV_HOST;
 // https://vite.dev/config/
 export default defineConfig(() => ({
   plugins: [react()],
+  // a desktop app loads its bundle from disk: one ~550 kB chunk is fine
+  build: { chunkSizeWarningLimit: 800 },
 
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
   //

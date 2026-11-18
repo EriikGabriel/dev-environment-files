@@ -1,3 +1,4 @@
+import { Check } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { InstallMethod, NewApp, Plan, Selection, Wizard, WizardApp, WizardFile, WizardStep } from "../types";
 import { DirTree } from "./DirTree";
@@ -62,7 +63,7 @@ export function SetupWizard({ wizard, selection, plan, index, onIndex, onChange,
               onClick={() => onIndex(i)}
               aria-current={i === index ? "step" : undefined}
             >
-              <span className="pill-n">{i < index ? "✓" : i + 1}</span>
+              <span className="pill-n">{i < index ? <Check size={13} strokeWidth={3} /> : i + 1}</span>
               {title}
             </button>
           </li>

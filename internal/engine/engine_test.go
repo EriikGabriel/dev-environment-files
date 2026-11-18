@@ -12,6 +12,7 @@ import (
 
 	"github.com/EriikGabriel/dev-environment-files/internal/config"
 	"github.com/EriikGabriel/dev-environment-files/internal/platform"
+	"github.com/EriikGabriel/dev-environment-files/internal/testutil"
 )
 
 var (
@@ -23,7 +24,7 @@ var (
 // realConfig loads the repository's own config so tests catch YAML mistakes.
 func realConfig(t *testing.T) *config.Config {
 	t.Helper()
-	cfg, err := config.Load(filepath.Join("..", ".."))
+	cfg, err := config.Load(testutil.RepoRoot(t))
 	if err != nil {
 		t.Fatal(err)
 	}

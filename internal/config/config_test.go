@@ -4,10 +4,12 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/EriikGabriel/dev-environment-files/internal/testutil"
 )
 
 func TestLoadRepoConfig(t *testing.T) {
-	cfg, err := Load(filepath.Join("..", ".."))
+	cfg, err := Load(testutil.RepoRoot(t))
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -1,3 +1,5 @@
+> **Situação:** a TUI foi substituída pelo app desktop ([0002](0002-tauri-react.md)) e removida em [0008](0008-sem-tui-e-dados-no-instalador.md). O motor em Go continua.
+
 ## Contexto
 
 Os scripts bash em `legacy/` só servem Ubuntu/GNOME: `apt` embutido em tudo, nomes de

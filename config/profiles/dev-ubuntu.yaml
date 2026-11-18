@@ -20,7 +20,7 @@ desktop:
     center: [clock]
     end: [tray, network, volume, power]
 
-# Same model as dev-cachyos.yaml. The end result follows legacy/setup*.sh.
+# Same model as dev-cachyos.yaml. The end result is the one of the old bash setup scripts it replaced.
 steps:
   - id: base
     title: Essenciais

@@ -1,11 +1,20 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
-import type { AddResult, ApplyEvent, DesktopPreview, FileView, IconPackPage, Icons, IconsConfig, Layout, LayoutChoice, Media, NewApp, Plan, Playnite, PlayniteConfig, PlayniteManifest, Policies, Windhawk, Profile, Selection, SystemInfo, VentoyDrive, Wizard, Written } from "./types";
+import type { AddResult, ApplyEvent, CopyReport, DataInfo, DesktopPreview, FileView, IconPackPage, Icons, IconsConfig, Layout, LayoutChoice, InstallMedia, NewApp, Plan, Playnite, PlayniteConfig, PlayniteManifest, Policies, Windhawk, Profile, Selection, SystemInfo, VentoyDrive, Wizard, Written } from "./types";
 
 const run = <T>(root: string, args: string[]) => invoke<T>("envsetup", { root, args });
 
 export const getRoot = () => invoke<string | null>("get_root");
 export const setRoot = (root: string) => invoke<string>("set_root", { root });
+
+/** Whether this build carries the data, and what the data folder is. */
+export const dataInfo = (root: string | null) => invoke<DataInfo>("data_info", { root });
+
+/** Copies the installer's data to Documents\envsetup (or ~/envsetup) and makes it the data folder. */
+export const seedData = () => invoke<string>("seed_data");
+
+/** Adds the installer's files the data folder does not have; never changes a file that exists. */
+export const updateData = (root: string) => invoke<CopyReport>("update_data", { root });
 
 export const info = (root: string) => run<SystemInfo>(root, ["info"]);
 export const profiles = (root: string) => run<Profile[]>(root, ["profiles"]);
@@ -97,10 +106,10 @@ export const onApplyEvent = (fn: (e: ApplyEvent) => void): Promise<UnlistenFn> =
 
 export const errorMessage = (e: unknown): string => (typeof e === "string" ? e : e instanceof Error ? e.message : String(e));
 
-// ---- Windows installation media and group policies ----
+// ---- the unattended Windows installation and the group policies ----
 
 /** The answer file, the Ninite list and the Ventoy drives of the profile. */
-export const media = (root: string, profile: string) => run<Media>(root, ["media", "-p", profile]);
+export const installMedia = (root: string, profile: string) => run<InstallMedia>(root, ["media", "-p", profile]);
 
 /** Saves the Ninite list: app names, or a ninite.com link. */
 export const setNinite = (root: string, profile: string, apps: string[]) =>

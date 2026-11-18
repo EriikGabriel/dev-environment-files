@@ -35,6 +35,11 @@
     ],
     "externalBin": [
       "binaries/envsetup"
-    ]
+    ],
+    "resources": {
+      "../../config/": "data/config/",
+      "../../dotfiles/": "data/dotfiles/",
+      "../../windows/": "data/windows/"
+    }
   }
 }
