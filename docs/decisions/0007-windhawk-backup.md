@@ -23,8 +23,16 @@ inspeciona e importa esse arquivo.
   o mod antes se faltar, no mesmo script elevado; o modo anterior fica no diretório de estado do
   envsetup para `--restore`. O estado vem de `mod settings get`, sem elevação.
 - **Método `windhawk` no catálogo.** `windhawk-mods` conta como feito quando nenhum mod do export
-  falta ou está diferente; aplicar é importar. Ele vem depois do item `windhawk` (winget
-  `RamenSoftware.Windhawk`) na etapa Aparência.
+  falta ou está diferente; aplicar é importar. Ele vem depois do item `windhawk` na etapa
+  Aparência.
+- **O `windhawk` vem do GitHub, não do winget.** O winget só publica o Windhawk 1.x (estável),
+  que não tem o `windhawk-cli.exe`: instalar por ele fazia o `windhawk-mods` falhar numa máquina
+  nova. O Windhawk 2 é, por enquanto, uma pré-release, e `releases/latest` do GitHub as ignora.
+  `windows/install-windhawk.ps1` lista as releases, pega a mais recente de versão 2 ou maior
+  (pré-release ou não), baixa o `windhawk_setup.exe`, confere o SHA-256 que o GitHub informa e a
+  assinatura, e roda `/S /STANDARD` (as mesmas opções do winget no 1.x). Se isso não deixar o
+  CLI em `Program Files\Windhawk`, abre o instalador para terminar à mão. Se a API do GitHub
+  recusar (limite de requisições), lê o feed `releases.atom`, que não tem hash.
 
 ## Consequências
 

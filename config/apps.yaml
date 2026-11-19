@@ -640,9 +640,16 @@ apps:
     description: Wallpaper Engine, bought on Steam (AppID 431960). Steam opens its install dialog
     method: { windows: steam }
     names: { windows: "431960" }
+  # Not winget: it only has Windhawk 1.x, which has no windhawk-cli.exe. Windhawk 2
+  # is a GitHub pre-release for now, so the script takes the newest release of
+  # version 2 or later (pre-release or not) and verifies it before running it.
   windhawk:
-    description: "Windhawk 2, the customization platform for Windows programs (mods for the taskbar, Start menu, Explorer, windows...)"
-    names: { windows: RamenSoftware.Windhawk }
+    description: "Windhawk 2 (newest release from GitHub, pre-release included), the customization platform for Windows programs (mods for the taskbar, Start menu, Explorer, windows...). Asks for elevation"
+    method: { windows: script }
+    check:
+      windows: if (-not ((Test-Path (Join-Path $env:ProgramFiles 'Windhawk\windhawk-cli.exe')) -or (Test-Path (Join-Path $env:ProgramW6432 'Windhawk\windhawk-cli.exe')))) { exit 1 }
+    source:
+      windows: '& "$env:ENVSETUP_ROOT\windows\install-windhawk.ps1"'
   windhawk-mods:
     description: "The Windhawk mods of windows/windhawk/backup.json, installed with their settings (dock, Start menu, Explorer, corners, animations...). See the Windhawk tab"
     method: { windows: windhawk }

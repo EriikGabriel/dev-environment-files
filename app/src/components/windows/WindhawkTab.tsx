@@ -65,8 +65,8 @@ export function WindhawkTab({ root, onChanged }: Props) {
       {note && <p className="banner">{note}</p>}
       {data.windows && !data.cli && (
         <p className="banner bad">
-          O windhawk-cli.exe não foi encontrado: ele só existe no Windhawk 2. Instale o item Windhawk da etapa Aparência (winget
-          RamenSoftware.Windhawk) e volte aqui.
+          O windhawk-cli.exe não foi encontrado: ele só existe no Windhawk 2. Instale o item Windhawk da etapa Aparência (ele baixa
+          a versão 2 mais recente do GitHub, pré-release inclusa) e volte aqui.
         </p>
       )}
       {data.error && data.cli && <p className="banner bad">{data.error}</p>}

@@ -241,7 +241,12 @@ os jogos" na aba RetroArch, ou mova a pasta com "Trocar". Formatando também o H
   atualizar (Discord, Steam) voltam ao ícone deles até você aplicar de novo. O pack MacTahoe vem
   do [MacTahoe-icon-theme](https://github.com/vinceliuice/MacTahoe-icon-theme) (GPL-3.0);
   `go run ./cmd/iconpack` o refaz.
-- **Windhawk.** Precisa do Windhawk 2 (o 1.x não tem o `windhawk-cli`). Aplicar baixa os mods do
+- **Windhawk.** Precisa do Windhawk 2 (o 1.x não tem o `windhawk-cli`). O item `windhawk` não usa
+  o winget, que só tem o 1.x: `windows/install-windhawk.ps1` pega a release mais recente de versão 2
+  ou maior no GitHub (hoje uma pré-release, a 2.0 alpha 8; quando sair a final, ela passa a ser
+  a escolhida), confere o SHA-256 e a assinatura e instala sem perguntas, com um pedido de
+  elevação. Se a versão já estiver instalada, não faz nada; rodar o script à mão também atualiza
+  uma versão 2 mais antiga. Aplicar baixa os mods do
   repositório do Windhawk, então precisa de internet. Mods que só existem na máquina ficam como
   estão. A dock é a do mod "Ilha e Dock estilo Mac"; ligar instala o mod se faltar e lembra o modo
   anterior da barra para desligar.

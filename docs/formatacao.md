@@ -61,7 +61,7 @@ registrada e as seguintes **continuam**.
 | **Drivers e hardware** | o software da sua placa de vídeo (NVIDIA App ou AMD Adrenalin, escolhido pela placa detectada) / MSI Afterburner, HWiNFO | site da NVIDIA ou da AMD, winget | não |
 | **Periféricos** | MCHOSE HUB, Attack Shark Driver, SignalRGB, 8BitDo Ultimate Software V2 | site do fabricante, winget | não |
 | **Lojas e launchers** | Steam, Epic Games, Hydra Launcher / GOG Galaxy, EA app, Ubisoft Connect, Battle.net | winget | não |
-| **Aparência** | Windhawk e os mods de `windows/windhawk/backup.json`, com as configurações (dock, ilha, menu Iniciar, Explorer…) | winget e o repositório de mods do Windhawk | não |
+| **Aparência** | Windhawk e os mods de `windows/windhawk/backup.json`, com as configurações (dock, ilha, menu Iniciar, Explorer…) | o instalador do Windhawk 2 no GitHub (a versão mais recente, pré-release inclusa) e o repositório de mods dele | não |
 | **Playnite** | o Playnite portable em `C:\Playnite`: biblioteca, capas, trailers, temas, extensões e configurações | HD (`D:\envsetup\Playnite`) e GitHub (`windows/playnite`); sem o HD, o programa e os add-ons vêm da internet | só a biblioteca de jogos e as mídias |
 | **Emuladores** | o RetroArch portable em `C:\Emuladores\RetroArch`: programa, 7 cores, configurações, saves, estados, playlists e BIOS | buildbot.libretro.com, GitHub (`windows/retroarch`) e HD (BIOS) | só a BIOS e as senhas |
 | **Comunicação e navegador** | Discord, Opera GX / Brave, Spotify, OBS Studio | winget | não |

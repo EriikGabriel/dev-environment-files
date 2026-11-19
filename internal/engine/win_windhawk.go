@@ -20,7 +20,10 @@ func (e *Env) windhawkCLI() (string, error) {
 	if p := windhawk.CLI(); p != "" {
 		return p, nil
 	}
-	return "", fmt.Errorf("windhawk-cli.exe was not found: install Windhawk 2 (winget install RamenSoftware.Windhawk)")
+	// winget only has Windhawk 1.x, which has no CLI: the catalogue item
+	// "windhawk" installs the newest Windhawk 2 from GitHub instead.
+	return "", fmt.Errorf("windhawk-cli.exe was not found: it only exists from Windhawk 2 on. Install the item Windhawk (step Aparência) or run %s",
+		filepath.Join(e.Root, "windows", "install-windhawk.ps1"))
 }
 
 // exportWindhawk exports what Windhawk has on this machine, without

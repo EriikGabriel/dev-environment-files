@@ -41,6 +41,45 @@ func TestWindhawkImportRunsElevated(t *testing.T) {
 	}
 }
 
+// winget only has Windhawk 1.x, which has no windhawk-cli.exe (the mods are
+// installed with it), and Windhawk 2 is a GitHub pre-release: the item must
+// come from the script that takes the newest release of version 2 or later.
+func TestWindhawkComesFromGitHubNotWinget(t *testing.T) {
+	root := testutil.RepoRoot(t)
+	fr := &fakeRunner{}
+	env := &Env{Info: win, Root: root, Runner: fr}
+	p, err := BuildPlan(realConfig(t), "gaming-windows", env, Options{Apps: []string{"windhawk"}, NoFiles: true})
+	must(t, err)
+	p.Execute(context.Background(), io.Discard, func(Event) {})
+	ran := ranLines(fr)
+	if strings.Contains(ran, "winget") || strings.Contains(ran, "RamenSoftware.Windhawk") {
+		t.Errorf("Windhawk must not come from winget:\n%s", ran)
+	}
+	if !strings.Contains(ran, `windows\install-windhawk.ps1`) {
+		t.Errorf("Windhawk must be installed by its script:\n%s", ran)
+	}
+
+	raw, err := os.ReadFile(filepath.Join(root, "windows", "install-windhawk.ps1"))
+	must(t, err)
+	for _, want := range []string{"ramensoftware/windhawk", "windhawk_setup.exe", "-ge 2", "Get-FileHash"} {
+		if !strings.Contains(string(raw), want) {
+			t.Errorf("install-windhawk.ps1 lost %q", want)
+		}
+	}
+	// the stable 1.x line must not be the only thing it can pick
+	if strings.Contains(string(raw), "-not $_.prerelease") || strings.Contains(string(raw), "releases/latest") {
+		t.Error("install-windhawk.ps1 must take pre-releases: /releases/latest skips them")
+	}
+
+	// and the step that needs the CLI says what to do when it is missing
+	env.WindhawkCLI = ""
+	t.Setenv("ProgramFiles", t.TempDir())
+	t.Setenv("ProgramW6432", t.TempDir())
+	if _, err := env.windhawkCLI(); err == nil || !strings.Contains(err.Error(), "install-windhawk.ps1") {
+		t.Errorf("missing CLI: %v", err)
+	}
+}
+
 func TestTaskbarDockUsesTheIslandMod(t *testing.T) {
 	cli := `C:\WH\windhawk-cli.exe`
 	fr := &fakeRunner{answers: map[string]string{
