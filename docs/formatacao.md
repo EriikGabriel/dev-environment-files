@@ -46,7 +46,7 @@ registrada e as seguintes **continuam**.
 | **Playnite** | o Playnite portable em `C:\Playnite`: biblioteca, capas, trailers, temas, extensões e configurações | HD (`D:\envsetup\Playnite`) e GitHub (`windows/playnite`); sem o HD, o programa e os add-ons vêm da internet | só a biblioteca de jogos e as mídias |
 | **Emuladores** | o RetroArch portable em `C:\Emuladores\RetroArch`: programa, 7 cores, configurações, saves, estados, playlists e BIOS | buildbot.libretro.com, GitHub (`windows/retroarch`) e HD (BIOS) | só a BIOS e as senhas |
 | **Comunicação e navegador** | Discord, Opera GX / Brave, Spotify, OBS Studio | winget | não |
-| **Otimizações** | — / políticas de grupo (`config/policies.yaml`) | registro do Windows | não |
+| **Otimizações** | compressão de memória desligada (`Disable-MMAgent -MemoryCompression`; pede elevação e vale depois de reiniciar) / políticas de grupo (`config/policies.yaml`) | o próprio Windows | não |
 | **Apps da Steam** | Wallpaper Engine | a Steam (você precisa estar logado) | não |
 
 ### Detalhes do que cada etapa restaura
@@ -125,8 +125,9 @@ Isto **não** é guardado nem refeito pelo envsetup. Confira antes de formatar.
 - **Barra de tarefas, menu Iniciar e ícones** (`config/layout.yaml` e `config/icons.yaml`) não
   são etapas do perfil. Aplique pela aba **Preview** depois que os programas estiverem
   instalados.
-- **Políticas de grupo**: a etapa Otimizações vem **desmarcada**. Marque, ou aplique pela aba
-  Políticas.
+- **Políticas de grupo**: na etapa Otimizações, só a compressão de memória vem marcada; as
+  políticas vêm **desmarcadas**. Marque, ou aplique pela aba Políticas.
+- **Reiniciar** depois de aplicar o perfil: a compressão de memória só desliga após o reinício.
 - **Outros drivers**: chipset AMD, áudio da placa-mãe, Wi-Fi e Bluetooth. O Windows Update
   instala a maior parte; o chipset AMD vale baixar do site da AMD.
 - **Ativação do Windows**: volta sozinha pela licença digital ligada à placa-mãe e à sua conta

@@ -530,6 +530,23 @@ apps:
         Write-Output 'installing Windows Media Player from Windows Update: accept the elevation prompt'
         $p = Start-Process powershell.exe -Verb RunAs -Wait -PassThru -WindowStyle Hidden -ArgumentList '-NoProfile', '-EncodedCommand', $enc
         if ($p.ExitCode) { throw "Add-WindowsCapability failed (code $($p.ExitCode))" }
+  disable-memory-compression:
+    description: "Turns off memory compression (Disable-MMAgent -MemoryCompression): less CPU spent compressing RAM, for machines with RAM to spare. Asks for elevation; takes effect after a restart"
+    method: { windows: script }
+    # Get-MMAgent needs elevation; the "Memory Compression" process can be
+    # seen without it, and is gone after the restart. The marker covers the
+    # time between the change and the restart.
+    check:
+      windows: |
+        $marker = Join-Path $env:ProgramData 'envsetup\memory-compression-off'
+        if ((Get-Process -Name 'Memory Compression' -ErrorAction SilentlyContinue) -and -not (Test-Path $marker)) { exit 1 }
+    source:
+      windows: |
+        $cmd = '$ErrorActionPreference = ''Stop''; Disable-MMAgent -MemoryCompression; $d = Join-Path $env:ProgramData ''envsetup''; New-Item -ItemType Directory -Force $d | Out-Null; Set-Content -Path (Join-Path $d ''memory-compression-off'') -Value (Get-Date -Format o)'
+        $enc = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($cmd))
+        Write-Output 'turning off memory compression: accept the elevation prompt (it takes effect after a restart)'
+        $p = Start-Process powershell.exe -Verb RunAs -Wait -PassThru -WindowStyle Hidden -ArgumentList '-NoProfile', '-EncodedCommand', $enc
+        if ($p.ExitCode) { throw "Disable-MMAgent failed (code $($p.ExitCode))" }
   powertoys: { description: Microsoft PowerToys, names: { windows: Microsoft.PowerToys } }
   # Microsoft Store package (Raycast Technologies): not in the winget community source.
   raycast: { description: "Raycast (command bar: launch apps, search files, clipboard history, extensions)", names: { windows: 9PFXXSHC64H3 } }

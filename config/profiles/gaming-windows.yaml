@@ -67,8 +67,8 @@ steps:
 
   - id: tuning
     title: Otimizações
-    description: Políticas de grupo que cortam telemetria, sugestões e tarefas em segundo plano. Veja e ajuste cada uma na aba Políticas.
-    apps: []
+    description: Desliga a compressão de memória (vale depois de reiniciar) e, se marcar, as políticas de grupo que cortam telemetria, sugestões e tarefas em segundo plano (aba Políticas).
+    apps: [disable-memory-compression]
     optional: [group-policies]
 
   # After the launchers on purpose: these are installed through Steam itself.
