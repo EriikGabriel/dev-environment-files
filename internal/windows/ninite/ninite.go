@@ -13,10 +13,16 @@ import (
 // Home is the site where a selection can be reviewed and changed.
 const Home = "https://ninite.com/"
 
-// File is the installer's name on the USB drive. It sits at the root
-// because that is where the answer file's first-logon script looks for it
-// (`Ninite*Installer.exe` on every drive root).
+// File is the installer's name. On the USB drive it goes in the Dir folder;
+// the answer file's first-logon script looks for `Ninite*Installer.exe` in
+// <drive>\Ninite first and then at the root of every drive.
 const File = "NiniteInstaller.exe"
+
+// Dir is the folder of the USB drive that holds the installer.
+const Dir = "Ninite"
+
+// OnDrive is where the installer goes, relative to the drive root.
+const OnDrive = Dir + `\` + File
 
 // niniteSlug is what one program looks like in a Ninite URL (chrome,
 // paint.net, .net8, operaChromium). Slugs never contain "-", which is the

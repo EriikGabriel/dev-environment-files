@@ -155,8 +155,11 @@ func TestWriteDrive(t *testing.T) {
 	if merged["theme"] == nil || !strings.Contains(string(merged["auto_install"]), "/Windows11.iso") {
 		t.Errorf("ventoy.json must keep the drive's keys and take the repo's: %s", b)
 	}
-	if _, err := os.Stat(filepath.Join(drive, ninite.File)); err != nil {
-		t.Error("Ninite installer must be at the drive root")
+	if _, err := os.Stat(filepath.Join(drive, ninite.Dir, ninite.File)); err != nil {
+		t.Error("Ninite installer must be in the Ninite folder")
+	}
+	if _, err := os.Stat(filepath.Join(drive, ninite.File)); !os.IsNotExist(err) {
+		t.Error("Ninite installer must not remain at the drive root")
 	}
 
 	st, err = Inspect(drive, unattend, ventoy)

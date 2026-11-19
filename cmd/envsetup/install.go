@@ -138,7 +138,7 @@ func (md *media) describe() mediaJSON {
 		}
 		out.Ninite = &niniteJSON{App: md.m.Ninite, Selected: sel, Unknown: ninite.Unknown(sel),
 			Page: ninite.Page(sel), Installer: ninite.Installer(sel),
-			OnDrive: ninite.File, Catalog: ninite.Catalog}
+			OnDrive: ninite.OnDrive, Catalog: ninite.Catalog}
 	}
 	if md.unattend != nil && md.ventoy != nil {
 		for _, d := range install.FindDrives() {

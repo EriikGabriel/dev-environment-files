@@ -52,7 +52,7 @@ type Drive struct {
 	// Config is the same for ventoy.json: its auto_install entries are
 	// missing, current or different from the repo's.
 	Config string `json:"config"`
-	// Ninite tells whether an installer is at the root of the drive.
+	// Ninite tells whether an installer is in the drive's Ninite folder.
 	Ninite bool `json:"ninite"`
 }
 
@@ -142,7 +142,7 @@ func Inspect(drive string, unattend, ventoy []byte) (Drive, error) {
 			d.Config = "current"
 		}
 	}
-	_, err = os.Stat(filepath.Join(drive, ninite.File))
+	_, err = os.Stat(filepath.Join(drive, ninite.Dir, ninite.File))
 	d.Ninite = err == nil
 	return d, nil
 }
@@ -178,7 +178,7 @@ func sameJSON(a, b []byte) bool {
 // Written is one file WriteDrive handled.
 type Written struct {
 	Path string `json:"path"`
-	// Action is written, unchanged or downloaded.
+	// Action is written, unchanged, downloaded or removed.
 	Action string `json:"action"`
 	// Backup is where the previous content went, when it was replaced.
 	Backup string `json:"backup,omitempty"`
@@ -189,7 +189,7 @@ type Fetch func(ctx context.Context, url, dest string) error
 
 // WriteDrive copies the answer file to where ventoy.json expects it, merges
 // ventoy.json into the drive's and, when slugs is not empty, downloads the
-// Ninite installer to the drive root. A file that would change is backed up
+// Ninite installer to the drive's Ninite folder. A file that would change is backed up
 // next to itself first.
 func WriteDrive(ctx context.Context, drive string, unattend, ventoy []byte, slugs []string, fetch Fetch) ([]Written, error) {
 	if !IsVentoy(drive) {
@@ -237,7 +237,10 @@ func WriteDrive(ctx context.Context, drive string, unattend, ventoy []byte, slug
 	}
 
 	if len(slugs) > 0 {
-		dest := filepath.Join(drive, ninite.File)
+		if err := os.MkdirAll(filepath.Join(drive, ninite.Dir), 0o755); err != nil {
+			return out, err
+		}
+		dest := filepath.Join(drive, ninite.Dir, ninite.File)
 		part := dest + ".part"
 		if err := fetch(ctx, ninite.Installer(slugs), part); err != nil {
 			os.Remove(part)
@@ -248,6 +251,15 @@ func WriteDrive(ctx context.Context, drive string, unattend, ventoy []byte, slug
 			return out, err
 		}
 		out = append(out, Written{Path: dest, Action: "downloaded"})
+		// An older installer at the root, where it used to go, is a stale
+		// list: the script prefers the folder, but drop it anyway.
+		old := filepath.Join(drive, ninite.File)
+		if _, err := os.Stat(old); err == nil {
+			if err := os.Remove(old); err != nil {
+				return out, err
+			}
+			out = append(out, Written{Path: old, Action: "removed"})
+		}
 	}
 	return out, nil
 }
