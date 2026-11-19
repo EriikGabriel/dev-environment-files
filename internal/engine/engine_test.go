@@ -458,12 +458,13 @@ func TestGamingProfileOnWindows(t *testing.T) {
 
 	// Steam is not there yet, so the Steam app fails and the rest goes on.
 	// The items that restore data kept outside the catalogue (the Windhawk
-	// export, the Playnite snapshot) have none under the fake root and may
-	// fail too, depending on what this machine has.
+	// export, the Playnite and RetroArch snapshots) have none under the fake
+	// root and may fail too, depending on what this machine has (a clean CI
+	// runner has none of them).
 	res := p.Execute(context.Background(), io.Discard, func(Event) {})
 	var failed []string
 	for _, f := range res.Failures {
-		if f.Title != "windhawk-mods" && f.Title != "playnite" {
+		if f.Title != "windhawk-mods" && f.Title != "playnite" && f.Title != "retroarch" {
 			failed = append(failed, f.Title)
 		}
 	}
