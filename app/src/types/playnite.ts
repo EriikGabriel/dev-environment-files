@@ -9,6 +9,8 @@ export interface PlayniteConfig {
   exclude: string[];
   /** Register Playnite in the Start menu after a restore. */
   start_menu: boolean;
+  /** Settings files kept in the repo (windows/playnite); * matches one folder. */
+  git: string[];
 }
 
 export interface PlayniteTheme {
@@ -47,6 +49,17 @@ export interface PlayniteManifest {
   desktop_theme: string;
   fullscreen_theme: string;
   extensions: string[];
+  /** API keys and tokens left out of git and kept in the store. */
+  secrets: number;
+}
+
+/** The personal part of a program kept in the repo. */
+export interface GitPart {
+  dir: string;
+  files: number;
+  bytes: number;
+  /** Files of the program folder that differ from git: a save copies them, then they need a commit. */
+  pending: number;
 }
 
 export interface PlayniteRequirement {
@@ -77,4 +90,6 @@ export interface Playnite {
   /** Playnite programs that are open. */
   running: string[];
   requirements: PlayniteRequirement[];
+  /** The settings kept in the repo. */
+  git: GitPart;
 }

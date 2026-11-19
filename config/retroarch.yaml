@@ -1,0 +1,61 @@
+# The portable RetroArch and its games, split by where each part can live:
+#   git       the personal part (settings, saves, playlists...) in windows/retroarch,
+#             with passwords and tokens left out (they stay in the store)
+#   download  the program, its assets and the cores, from buildbot.libretro.com
+#   store     the games and the BIOS (system folder): copyrighted and too
+#             large for GitHub, they never go to git
+# Edited in the app's RetroArch tab or with `envsetup set-retroarch`;
+# `retroarch-save` updates git and the store, `retroarch-restore` puts everything back.
+#
+# path          the RetroArch folder on this machine (the one with retroarch.exe)
+# games         the folder of the games, one subfolder per system; empty leaves
+#               the games out
+# store         folder for the rest (second drive, external drive, NAS): it gets
+#               <store>\RetroArch (BIOS and what is not downloaded nor in git),
+#               <store>\Games, a manifest and the secrets left out of git
+# exclude       never copied: names with * or a dot are file patterns, the
+#               rest are folders relative to path
+# start_menu    after a restore, add RetroArch to the Start menu and to
+#               Settings > Apps (windows/register-portable-app.ps1)
+# version       the RetroArch release a restore downloads (written by a save)
+# cores         the cores a restore downloads (written by a save)
+# bundles       the asset packs downloaded with the program
+# git           files and folders of path kept in the repo
+# copy_program  also keep the whole program in the store (no download)
+
+path: C:\Emuladores\RetroArch
+games: C:\Emuladores\Games
+store: D:\envsetup
+exclude:
+  - logs
+  - downloads
+  - '*.log'
+start_menu: true
+version: 1.22.2
+cores:
+  - bsnes_mercury_balanced
+  - gambatte
+  - genesis_plus_gx
+  - mednafen_psx_hw
+  - mesen
+  - mgba
+  - snes9x
+bundles:
+  - assets
+  - autoconfig
+  - cheats
+  - database-rdb
+  - info
+  - overlays
+  - shaders_slang
+  - shaders_glsl
+git:
+  - retroarch.cfg
+  - retroarch-core-options.cfg
+  - config
+  - remaps
+  - playlists
+  - saves
+  - states
+  - thumbnails
+copy_program: false

@@ -1,0 +1,4 @@
+# Settings and saves of the portable programs are copied back byte for byte:
+# no line ending conversion (a save file is binary even when git guesses text).
+windows/retroarch/** -text
+windows/playnite/** -text

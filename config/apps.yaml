@@ -25,6 +25,8 @@
 #            the registry; no `names`
 #   playnite the portable Playnite of config/playnite.yaml (Windows), copied
 #            back from its snapshot; no `names`
+#   retroarch the portable RetroArch and the games of config/retroarch.yaml
+#            (Windows), copied back from their snapshot; no `names`
 #   windhawk the Windhawk 2 export windows/windhawk/backup.json (mods, their
 #            settings and Windhawk's), imported with windhawk-cli; no `names`
 #
@@ -577,6 +579,9 @@ apps:
   playnite:
     description: "Playnite portable, copied back from the snapshot of config/playnite.yaml: library, covers, trailers, theme music, themes and extensions, configured. See the Playnite tab"
     method: { windows: playnite }
+  retroarch:
+    description: "RetroArch portable and the games, copied back from the snapshot of config/retroarch.yaml: cores, BIOS, saves, states, playlists and settings, with the playlists pointed at the games. See the RetroArch tab"
+    method: { windows: retroarch }
   ninite:
     description: "Ninite: one installer for the apps picked in the Instalação tab (it installs and updates them, with no questions)"
     method: { windows: ninite }

@@ -9,3 +9,32 @@ app/dist
 app/src-tauri/target
 app/src-tauri/binaries
 app/src-tauri/gen
+
+# ROMs, disc images and BIOS never go to git: they are copyrighted and too
+# large for GitHub. They live in the store of config/retroarch.yaml; only the
+# settings and saves of RetroArch go to git (windows/retroarch).
+*.nes
+*.sfc
+*.smc
+*.gb
+*.gbc
+*.gba
+*.nds
+*.3ds
+*.cia
+*.n64
+*.z64
+*.v64
+*.gen
+*.sms
+*.gg
+*.iso
+*.bin
+*.cue
+*.chd
+*.pbp
+*.cso
+*.rvz
+*.wbfs
+*.xci
+*.nsp

@@ -105,7 +105,7 @@ func policyCommands(f *flags) []*cobra.Command {
 				}
 			}
 			path := engine.PoliciesPath(root)
-			undo, err := snapshot(path)
+			undo, err := backupFiles(path)
 			if err != nil {
 				return err
 			}

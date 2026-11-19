@@ -5,11 +5,15 @@
 //
 // A portable Playnite keeps everything in its own folder, so a copy of it is
 // the whole setup: covers, trailers, theme music, the configured add-ons.
-// The folder is tens of gigabytes, so the snapshot does not go into git: it
-// is a mirror in a folder chosen in config/playnite.yaml (an external drive,
-// a NAS, a synced folder), with a manifest next to it. What the folder does
-// not carry (Windows Media Player for the trailers, the Start menu entry,
-// programs some extensions point to) is listed as requirements.
+// The settings (config.json, fullscreenConfig.json and the settings of each
+// extension) go into git, in windows/playnite, with API keys and tokens
+// blanked (see snapshot.Export). The rest is tens of gigabytes (the library,
+// its covers and the trailers, slow to download again), so it is a mirror in
+// a folder chosen in config/playnite.yaml (a second drive, an external drive,
+// a NAS), with a manifest and the secrets next to it; the caches Playnite
+// rebuilds stay out. What the folder does not carry (Windows Media Player for
+// the trailers, the Start menu entry, programs some extensions point to) is
+// listed as requirements.
 package playnite
 
 import (
@@ -26,6 +30,8 @@ import (
 	"time"
 
 	"gopkg.in/yaml.v3"
+
+	"github.com/EriikGabriel/dev-environment-files/internal/windows/snapshot"
 )
 
 // Config is config/playnite.yaml.
@@ -41,15 +47,35 @@ type Config struct {
 	// StartMenu registers the portable Playnite as an app of the user (Start
 	// menu shortcut and an entry in Installed apps) after a restore.
 	StartMenu bool `yaml:"start_menu" json:"start_menu"`
+	// Git are the settings files (relative to Path, * matches one folder)
+	// kept in the repo, in windows/playnite.
+	Git []string `yaml:"git" json:"git"`
 }
 
 // Default is what a missing file means.
 func Default() Config {
 	return Config{
 		Path:      `C:\Playnite`,
-		Exclude:   []string{"JITProfiles", "*.log"},
+		Exclude:   append([]string(nil), DefaultExclude...),
 		StartMenu: true,
+		Git:       append([]string(nil), DefaultGit...),
 	}
+}
+
+// DefaultExclude are what Playnite rebuilds by itself: image and browser
+// caches, the JIT profiles and the logs.
+var DefaultExclude = []string{"cache", "browsercache", "JITProfiles", "*.log"}
+
+// DefaultGit are the settings of Playnite and of its extensions.
+var DefaultGit = []string{"config.json", "fullscreenConfig.json", "ExtensionsData/*/config.json"}
+
+// GitDir is where the settings live in the repo.
+func GitDir(root string) string { return filepath.Join(root, "windows", "playnite") }
+
+// StoreExclude is what the copy in the store leaves out: the exclusions and
+// what git carries whole.
+func (c Config) StoreExclude() []string {
+	return append(append([]string{}, c.Exclude...), snapshot.TopLevel(c.Git)...)
 }
 
 // Path is where the config lives in the repo.
@@ -59,15 +85,19 @@ const header = `# The portable Playnite (Desktop and Fullscreen), kept as a snap
 # the repo: covers, trailers, theme music, themes, extensions and their
 # settings are all inside its folder, so a copy of the folder is the setup.
 # Edited in the app's Playnite tab or with ` + "`envsetup set-playnite`" + `;
-# ` + "`playnite-save`" + ` copies the folder to the store, ` + "`playnite-restore`" + ` copies it back.
+# ` + "`playnite-save`" + ` updates git and the store, ` + "`playnite-restore`" + ` puts everything back.
+# The settings go to git (windows/playnite) without API keys and tokens; the
+# library, covers, trailers, themes and extensions go to the store.
 #
 # path        the Playnite folder on this machine
-# store       folder for the snapshot (external drive, NAS...): the copy goes to
-#             <store>\Playnite and a manifest to <store>\envsetup-playnite.json
+# store       folder for the snapshot (second drive, external drive, NAS): the
+#             copy goes to <store>\Playnite, with a manifest and the secrets
+#             left out of git next to it
 # exclude     left out of the snapshot: names with * or a dot are file
 #             patterns, the rest are folders relative to path
 # start_menu  after a restore, add Playnite to the Start menu and to
 #             Settings > Apps (windows/register-portable-app.ps1)
+# git         settings files of path kept in the repo (* matches one folder)
 
 `
 
@@ -95,9 +125,9 @@ func (c Config) Validate() error {
 	if strings.TrimSpace(c.Path) == "" {
 		return errors.New("playnite: path is empty")
 	}
-	for _, x := range c.Exclude {
+	for _, x := range append(append([]string{}, c.Exclude...), c.Git...) {
 		if strings.Contains(x, "..") {
-			return fmt.Errorf("playnite: exclude %q leaves the folder", x)
+			return fmt.Errorf("playnite: %q leaves the folder", x)
 		}
 	}
 	if c.Store == "" {
@@ -116,11 +146,7 @@ func (c Config) Validate() error {
 	return nil
 }
 
-// clean folds a Windows path for comparison.
-func clean(p string) string {
-	p = strings.ReplaceAll(strings.TrimSpace(p), "/", `\`)
-	return strings.ToLower(strings.TrimRight(p, `\`))
-}
+func clean(p string) string { return snapshot.Clean(p) }
 
 // Save writes the config with its explanatory header.
 func Save(path string, c Config) error {
@@ -146,6 +172,8 @@ const (
 	ManifestFile = "envsetup-playnite.json"
 	// Exe is the program that tells a Playnite folder apart.
 	Exe = "Playnite.DesktopApp.exe"
+	// Program names the secrets file of the store.
+	Program = "playnite"
 )
 
 // Snapshot is where the copy lives in the store.
@@ -162,6 +190,8 @@ type Manifest struct {
 	DesktopTheme    string   `json:"desktop_theme"`
 	FullscreenTheme string   `json:"fullscreen_theme"`
 	Extensions      []string `json:"extensions"`
+	// Secrets is how many values were left out of git and kept in the store.
+	Secrets int `json:"secrets"`
 }
 
 // ReadManifest reads the manifest of the store; nil when there is none.
@@ -212,12 +242,7 @@ type Extension struct {
 }
 
 // Folder is a top-level entry of the Playnite folder with its size.
-type Folder struct {
-	Name     string `json:"name"`
-	Bytes    int64  `json:"bytes"`
-	Files    int    `json:"files"`
-	Excluded bool   `json:"excluded"`
-}
+type Folder = snapshot.Folder
 
 // Install is what is in a Playnite folder.
 type Install struct {
@@ -336,7 +361,7 @@ func Read(c Config, sizes bool) Install {
 	})
 
 	if sizes {
-		in.Folders, in.Bytes, in.Files = measure(c)
+		in.Folders, in.Bytes, in.Files = snapshot.Measure(c.Path, c.StoreExclude())
 	}
 	return in
 }
@@ -429,105 +454,9 @@ func matchModules(exts []Extension, modules map[int]string, data []os.DirEntry) 
 	}
 }
 
-// excluded tells whether rel (relative to the Playnite folder, with
-// backslashes) is left out by the patterns.
-func excluded(patterns []string, rel string, dir bool) bool {
-	name := rel[strings.LastIndex(rel, `\`)+1:]
-	for _, p := range patterns {
-		if isFilePattern(p) {
-			if !dir {
-				if ok, _ := filepath.Match(strings.ToLower(p), strings.ToLower(name)); ok {
-					return true
-				}
-			}
-			continue
-		}
-		if dir && strings.EqualFold(strings.Trim(strings.ReplaceAll(p, "/", `\`), `\`), rel) {
-			return true
-		}
-	}
-	return false
-}
-
-func isFilePattern(p string) bool { return strings.ContainsAny(p, "*?.") }
-
-// measure sizes every top-level entry, and the total that a snapshot copies.
-func measure(c Config) ([]Folder, int64, int) {
-	out := []Folder{}
-	var total int64
-	var files int
-	var loose Folder
-	loose.Name = "(arquivos do programa)"
-	entries, _ := os.ReadDir(c.Path)
-	for _, e := range entries {
-		if !e.IsDir() {
-			if info, err := e.Info(); err == nil && !excluded(c.Exclude, e.Name(), false) {
-				loose.Bytes += info.Size()
-				loose.Files++
-			}
-			continue
-		}
-		f := Folder{Name: e.Name(), Excluded: excluded(c.Exclude, e.Name(), true)}
-		base := filepath.Join(c.Path, e.Name())
-		filepath.WalkDir(base, func(p string, d fs.DirEntry, err error) error {
-			if err != nil {
-				return nil
-			}
-			rel, _ := filepath.Rel(c.Path, p)
-			rel = strings.ReplaceAll(rel, "/", `\`)
-			if d.IsDir() {
-				if p != base && excluded(c.Exclude, rel, true) {
-					return filepath.SkipDir
-				}
-				return nil
-			}
-			if excluded(c.Exclude, rel, false) {
-				return nil
-			}
-			if info, err := d.Info(); err == nil {
-				f.Bytes += info.Size()
-				f.Files++
-			}
-			return nil
-		})
-		if !f.Excluded {
-			total += f.Bytes
-			files += f.Files
-		}
-		out = append(out, f)
-	}
-	total += loose.Bytes
-	files += loose.Files
-	out = append(out, loose)
-	sort.Slice(out, func(i, j int) bool { return out[i].Bytes > out[j].Bytes })
-	return out, total, files
-}
-
-// RobocopyArgs are the arguments to copy src to dst. mirror deletes what is
-// in dst and not in src; the excluded items are never deleted from dst.
+// RobocopyArgs are the arguments to copy src to dst (see snapshot.RobocopyArgs).
 func RobocopyArgs(src, dst string, exclude []string, mirror bool) []string {
-	args := []string{src, dst}
-	if mirror {
-		args = append(args, "/MIR")
-	} else {
-		args = append(args, "/E")
-	}
-	args = append(args, "/COPY:DAT", "/DCOPY:DAT", "/R:1", "/W:1", "/MT:16", "/NP", "/NFL", "/NDL", "/NJH", "/XJ")
-	var dirs, files []string
-	for _, x := range exclude {
-		if isFilePattern(x) {
-			files = append(files, x)
-		} else {
-			dirs = append(dirs, filepath.Join(src, strings.ReplaceAll(x, "/", `\`)))
-		}
-	}
-	if len(dirs) > 0 {
-		args = append(append(args, "/XD"), dirs...)
-	}
-	if len(files) > 0 {
-		args = append(append(args, "/XF"), files...)
-	}
-	return args
+	return snapshot.RobocopyArgs(src, dst, exclude, mirror)
 }
 
 // RewritePaths replaces the folder a snapshot was taken from (from) with the

@@ -49,10 +49,48 @@ func TestPlayniteStepRestoresTheSnapshot(t *testing.T) {
 	}
 }
 
-func TestPlayniteSaveRefusesWithoutStore(t *testing.T) {
-	root := t.TempDir()
-	env := &Env{Info: win, Root: root, Runner: &fakeRunner{}}
-	if _, err := env.SavePlaynite(context.Background(), io.Discard); err == nil || !strings.Contains(err.Error(), "store") {
-		t.Errorf("err = %v", err)
+func TestPlayniteSaveSplitsGitAndStore(t *testing.T) {
+	root, dir, store := t.TempDir(), filepath.Join(t.TempDir(), "Playnite"), t.TempDir()
+	cfg := playnite.Default()
+	cfg.Path, cfg.Store = dir, store
+	must(t, playnite.Save(playnite.Path(root), cfg))
+	for rel, body := range map[string]string{
+		playnite.Exe:                     "MZ",
+		"config.json":                    `{"Theme": "Default"}`,
+		"ExtensionsData/abc/config.json": `{"SgdbApiKey": "k3y", "Width": 3}`,
+		"ExtensionsData/abc/games.json":  `{}`,
+		"library/games.db":               "db",
+		"cache/images/x.png":             "png",
+	} {
+		p := filepath.Join(dir, filepath.FromSlash(rel))
+		must(t, os.MkdirAll(filepath.Dir(p), 0o755))
+		must(t, os.WriteFile(p, []byte(body), 0o644))
+	}
+	// a cache copied by an older save
+	must(t, os.MkdirAll(filepath.Join(store, playnite.SnapshotDir, "cache"), 0o755))
+
+	fr := &fakeRunner{}
+	env := &Env{Info: win, Root: root, Runner: fr}
+	m, err := env.SavePlaynite(context.Background(), io.Discard)
+	must(t, err)
+	git := playnite.GitDir(root)
+	raw, err := os.ReadFile(filepath.Join(git, "ExtensionsData", "abc", "config.json"))
+	must(t, err)
+	if string(raw) != `{"SgdbApiKey": "", "Width": 3}` {
+		t.Errorf("git settings: %s", raw)
+	}
+	for _, rel := range []string{"library", "ExtensionsData/abc/games.json", playnite.Exe} {
+		if _, err := os.Stat(filepath.Join(git, filepath.FromSlash(rel))); err == nil {
+			t.Errorf("%s went to git", rel)
+		}
+	}
+	if m.Secrets != 1 {
+		t.Errorf("manifest: %+v", m)
+	}
+	if _, err := os.Stat(filepath.Join(store, playnite.SnapshotDir, "cache")); err == nil {
+		t.Error("the old cache is still in the store")
+	}
+	if !strings.Contains(ranLines(fr), "'"+filepath.Join(dir, "browsercache")+"'") {
+		t.Errorf("the caches are not left out:\n%s", ranLines(fr))
 	}
 }

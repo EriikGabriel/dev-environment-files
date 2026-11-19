@@ -219,7 +219,7 @@ func installCommands(f *flags) []*cobra.Command {
 				return err
 			}
 			appsPath := filepath.Join(md.root, "config", "apps.yaml")
-			undo, err := snapshot(appsPath)
+			undo, err := backupFiles(appsPath)
 			if err != nil {
 				return err
 			}

@@ -7,6 +7,7 @@ import {
 	HardDriveDownload,
 	House,
 	Info,
+	Joystick,
 	type LucideIcon,
 	MonitorSmartphone,
 	Rocket,
@@ -30,6 +31,7 @@ import { PasswordDialog } from "./components/PasswordDialog";
 import { RootPicker } from "./components/RootPicker";
 import { InstallTab } from "./components/windows/InstallTab";
 import { PlayniteTab } from "./components/windows/PlayniteTab";
+import { RetroArchTab } from "./components/windows/RetroArchTab";
 import { PoliciesTab } from "./components/windows/PoliciesTab";
 import { WindhawkTab } from "./components/windows/WindhawkTab";
 import { WindowsPreviewTab } from "./components/windows/WindowsPreviewTab";
@@ -50,11 +52,11 @@ import type {
 import "./styles.css";
 import { useApplyRun } from "./useApplyRun";
 
-type Tab = "home" | "setup" | "preview" | "dotfiles" | "install" | "policies" | "windhawk" | "playnite";
+type Tab = "home" | "setup" | "preview" | "dotfiles" | "install" | "policies" | "windhawk" | "playnite" | "retroarch";
 
 // Tabs that only exist for a profile with a Windows installation (`media:`
 // in the profile).
-const WINDOWS_TABS: Tab[] = ["install", "policies", "windhawk", "playnite"];
+const WINDOWS_TABS: Tab[] = ["install", "policies", "windhawk", "playnite", "retroarch"];
 
 const TABS: { id: Tab; label: string; icon: LucideIcon; hint: string }[] = [
 	{ id: "home", label: "Início", icon: House, hint: "resumo da máquina e do perfil" },
@@ -65,6 +67,7 @@ const TABS: { id: Tab; label: string; icon: LucideIcon; hint: string }[] = [
 	{ id: "policies", label: "Políticas", icon: ShieldCheck, hint: "políticas de grupo do Windows" },
 	{ id: "windhawk", label: "Windhawk", icon: Sparkles, hint: "mods e a dock" },
 	{ id: "playnite", label: "Playnite", icon: Gamepad2, hint: "snapshot do Playnite portable" },
+	{ id: "retroarch", label: "RetroArch", icon: Joystick, hint: "emuladores, jogos e playlists" },
 ];
 
 export default function App() {
@@ -485,6 +488,8 @@ export default function App() {
 					<WindhawkTab root={root} onChanged={() => void loadWizard(true)} />
 				) : tab === "playnite" && installMedia?.available ? (
 					<PlayniteTab root={root} onChanged={() => void loadWizard(true)} />
+				) : tab === "retroarch" && installMedia?.available ? (
+					<RetroArchTab root={root} onChanged={() => void loadWizard(true)} />
 				) : !ready ? (
 					wizard && wizard.steps.length === 0 ? (
 						<p className="banner">Este perfil ainda não tem etapas.</p>

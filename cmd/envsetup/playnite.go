@@ -11,6 +11,7 @@ import (
 
 	"github.com/EriikGabriel/dev-environment-files/internal/engine"
 	"github.com/EriikGabriel/dev-environment-files/internal/windows/playnite"
+	"github.com/EriikGabriel/dev-environment-files/internal/windows/snapshot"
 )
 
 // The JSON shapes below are part of the contract with the desktop app; see
@@ -34,6 +35,8 @@ type playniteJSON struct {
 	Snapshot     *playniteSnapshotJSON  `json:"snapshot"`
 	Running      []string               `json:"running"`
 	Requirements []playnite.Requirement `json:"requirements"`
+	// Git is the settings kept in the repo (windows/playnite).
+	Git snapshot.Git `json:"git"`
 }
 
 func describePlaynite(cmd *cobra.Command, f flags, sizes bool) (playniteJSON, error) {
@@ -47,6 +50,7 @@ func describePlaynite(cmd *cobra.Command, f flags, sizes bool) (playniteJSON, er
 	}
 	out := playniteJSON{Config: cfg, Saved: exists, Windows: env.Info.OS == "windows", Running: []string{}, Requirements: []playnite.Requirement{}}
 	out.Install = playnite.Read(cfg, sizes)
+	out.Git = snapshot.DescribeGit(env.Root, filepath.Join("windows", "playnite"), cfg.Path, cfg.Git)
 	if cfg.Store != "" {
 		s := &playniteSnapshotJSON{Path: cfg.Snapshot()}
 		if s.Manifest, err = playnite.ReadManifest(cfg.Store); err != nil {

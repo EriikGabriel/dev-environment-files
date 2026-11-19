@@ -45,6 +45,7 @@ botão não aparece: atualize com `git pull`.
 | **Políticas** (Windows) | as políticas de grupo, a escolha de cada uma e "Aplicar" |
 | **Windhawk** (Windows) | os mods do backup comparados com os instalados; aplicar e salvar |
 | **Playnite** (Windows) | o snapshot do Playnite portable e o que ele precisa fora da pasta |
+| **RetroArch** (Windows) | cores, sistemas e jogos, playlists, o snapshot do RetroArch e dos jogos e o que precisa de correção |
 
 **Aplicar** é idempotente: o que já está em dia é pulado e cada passo mostra o log ao vivo. No
 Linux o app pede a senha do sudo uma vez; no Windows cada instalador pede a própria elevação
@@ -101,7 +102,38 @@ envsetup windhawk | windhawk-export | windhawk-import
 envsetup taskbar-dock [--restore]
 envsetup playnite --sizes | set-playnite --store=E:\Backups | playnite-save | playnite-restore
 envsetup playnite-fix media-player
+envsetup retroarch --sizes | set-retroarch --store=D:\envsetup [--copy-program] | retroarch-save | retroarch-restore
+envsetup retroarch-fix playlists                # aponta as playlists para os jogos de novo
+envsetup retroarch-open app                     # abre o RetroArch (ou folder, games, store)
 ```
+
+## Formatar o PC
+
+Playnite e RetroArch ficam em três lugares: o **git** (configurações e saves, sem senhas), a
+**internet** (o programa RetroArch e os cores) e o **HD** (jogos, BIOS, a biblioteca e as mídias
+do Playnite e as senhas). Detalhes em
+[configuracao.md](configuracao.md#onde-fica-cada-parte-dos-programas-portáteis).
+
+**Antes de formatar**
+
+1. Escolha o HD nas abas Playnite e RetroArch: uma pasta num disco que **não** vai ser formatado
+   (um segundo disco, como `D:\envsetup`, ou um HD externo). Os dois podem usar a mesma pasta.
+2. Feche o Playnite e o RetroArch e clique em **Salvar** nas duas abas. A primeira vez copia
+   tudo; depois, só o que mudou.
+3. Faça commit e push (`windows/playnite`, `windows/retroarch`, `config/`).
+4. Se for reinstalar o Windows pelo pendrive, grave-o na aba Instalação.
+
+**Depois de formatar**
+
+1. Instale o app ou clone o repositório (o clone traz os saves mais recentes; o instalador traz
+   os da época em que foi gerado).
+2. Se o HD for externo, conecte-o (a letra pode mudar, o envsetup acha a pasta).
+3. Aplique o perfil de jogos. As etapas Playnite e Emuladores restauram tudo, ou use o botão
+   Restaurar de cada aba.
+
+Formatando também o HD, copie a pasta dele (`D:\envsetup`) para outro disco antes e aponte o
+`store` para lá. Sem ela, o RetroArch volta com configurações e saves e sem jogos e BIOS; o
+Playnite precisa dela.
 
 ## Windows em detalhe
 
@@ -133,9 +165,16 @@ envsetup playnite-fix media-player
   repositório do Windhawk, então precisa de internet. Mods que só existem na máquina ficam como
   estão. A dock é a do mod "Ilha e Dock estilo Mac"; ligar instala o mod se faltar e lembra o modo
   anterior da barra para desligar.
-- **Playnite.** Salvar e restaurar recusam rodar com o Playnite aberto. Restaurar não apaga o
-  que já está na pasta, a não ser com `--mirror`. O Windows Media Player, que toca os trailers,
+- **Playnite.** Salvar e restaurar recusam rodar com o Playnite aberto. Salvar atualiza
+  `windows/playnite` (configurações, sem chaves de API) e o HD (o resto, sem os caches).
+  Restaurar não apaga o que já está na pasta, a não ser com `--mirror`. O Windows Media Player, que toca os trailers,
   vem no item `windows-media-player` da etapa Essenciais (o `autounattend.xml` não o remove mais).
+
+- **RetroArch.** Salvar, restaurar e corrigir as playlists recusam rodar com o RetroArch aberto
+  (ele grava saves e o `retroarch.cfg` enquanto roda). Salvar atualiza `windows/retroarch`
+  (configurações, playlists, saves, estados) e o HD (BIOS e jogos). Restaurar baixa o RetroArch e
+  os cores quando faltam. Os jogos nunca vão para o git:
+  veja [configuracao.md](configuracao.md#configretroarchyaml-retroarch-portable-e-jogos-windows).
 
 ## Notas do Linux
 

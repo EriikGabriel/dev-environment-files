@@ -31,6 +31,9 @@ const (
 	// MethodPlaynite restores the Playnite snapshot of config/playnite.yaml
 	// (Windows).
 	MethodPlaynite = "playnite"
+	// MethodRetroArch restores the RetroArch and games snapshot of
+	// config/retroarch.yaml (Windows).
+	MethodRetroArch = "retroarch"
 	// MethodWindhawk imports windows/windhawk/backup.json into Windhawk 2
 	// (Windows).
 	MethodWindhawk = "windhawk"
@@ -39,7 +42,7 @@ const (
 var validMethods = map[string]bool{
 	MethodNative: true, MethodAUR: true, MethodDebURL: true,
 	MethodFlatpak: true, MethodScript: true,
-	MethodWinget: true, MethodScoop: true, MethodSteam: true, MethodNinite: true, MethodPolicies: true, MethodPlaynite: true, MethodWindhawk: true,
+	MethodWinget: true, MethodScoop: true, MethodSteam: true, MethodNinite: true, MethodPolicies: true, MethodPlaynite: true, MethodRetroArch: true, MethodWindhawk: true,
 }
 
 // Repo is a third-party apt repository an app needs before it can be

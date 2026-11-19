@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/EriikGabriel/dev-environment-files/internal/windows/ninite"
 	"github.com/EriikGabriel/dev-environment-files/internal/windows/install"
+	"github.com/EriikGabriel/dev-environment-files/internal/windows/ninite"
 )
 
 func (e *Env) niniteMarker() string {

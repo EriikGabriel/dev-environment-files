@@ -6,4 +6,5 @@ export * from "./policies";
 export * from "./layout";
 export * from "./icons";
 export * from "./playnite";
+export * from "./retroarch";
 export * from "./windhawk";

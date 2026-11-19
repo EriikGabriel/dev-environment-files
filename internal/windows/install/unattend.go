@@ -75,8 +75,8 @@ type Overview struct {
 	NiniteHook bool `json:"ninite_hook"`
 	// HasPassword is set when an account has a password: it is readable in
 	// the file and in the link, so the file must not go to a public repo.
-	HasPassword bool      `json:"has_password"`
-	Shell       Shell     `json:"shell"`
+	HasPassword bool  `json:"has_password"`
+	Shell       Shell `json:"shell"`
 	Installs    []App `json:"installs"`
 	// Warnings are choices of the file that break something else of the
 	// setup, in the words shown to the user.

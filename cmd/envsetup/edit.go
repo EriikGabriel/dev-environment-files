@@ -201,7 +201,7 @@ func editCommands(f *flags) []*cobra.Command {
 			}
 			profPath := filepath.Join(env.Root, "config", "profiles", prof+".yaml")
 			appsPath := filepath.Join(env.Root, "config", "apps.yaml")
-			undo, err := snapshot(profPath, appsPath)
+			undo, err := backupFiles(profPath, appsPath)
 			if err != nil {
 				return err
 			}
@@ -266,7 +266,7 @@ func editCommands(f *flags) []*cobra.Command {
 				return err
 			}
 			profPath := filepath.Join(env.Root, "config", "profiles", prof+".yaml")
-			undo, err := snapshot(profPath)
+			undo, err := backupFiles(profPath)
 			if err != nil {
 				return err
 			}
@@ -291,9 +291,9 @@ func editCommands(f *flags) []*cobra.Command {
 	return []*cobra.Command{add, show, setDirs, desktop, setDock, addApp, removeApp}
 }
 
-// snapshot remembers the content of files about to be edited; the returned
+// backupFiles remembers the content of files about to be edited; the returned
 // function puts it back.
-func snapshot(paths ...string) (undo func(), err error) {
+func backupFiles(paths ...string) (undo func(), err error) {
 	saved := make([][]byte, len(paths))
 	for i, p := range paths {
 		if saved[i], err = os.ReadFile(p); err != nil {

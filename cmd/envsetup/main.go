@@ -32,15 +32,16 @@ func newRoot() *cobra.Command {
 	root.PersistentFlags().StringVarP(&f.profile, "profile", "p", "", "profile to use (default: the one matching this machine)")
 
 	for _, group := range [][]*cobra.Command{
-		machineCommands(f),  // machine.go: detect, info, profiles, steps
-		applyCommands(f),    // apply.go: plan, apply
-		editCommands(f),     // edit.go: add, show, set-dirs, desktop, set-dock, add-app, remove-app
-		installCommands(f),  // install.go: the Windows installation USB
-		policyCommands(f),   // policies.go
-		layoutCommands(f),   // layout.go
-		iconCommands(f),     // icons.go
-		windhawkCommands(f), // windhawk.go: mods and the taskbar dock
-		playniteCommands(f), // playnite.go
+		machineCommands(f),   // machine.go: detect, info, profiles, steps
+		applyCommands(f),     // apply.go: plan, apply
+		editCommands(f),      // edit.go: add, show, set-dirs, desktop, set-dock, add-app, remove-app
+		installCommands(f),   // install.go: the Windows installation USB
+		policyCommands(f),    // policies.go
+		layoutCommands(f),    // layout.go
+		iconCommands(f),      // icons.go
+		windhawkCommands(f),  // windhawk.go: mods and the taskbar dock
+		playniteCommands(f),  // playnite.go
+		retroarchCommands(f), // retroarch.go
 	} {
 		root.AddCommand(group...)
 	}

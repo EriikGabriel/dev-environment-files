@@ -4,6 +4,7 @@ import * as api from "../../api";
 import { errorMessage } from "../../api";
 import type { Playnite, PlayniteConfig, PlayniteTheme } from "../../types";
 import { Help } from "../Help";
+import { WhereItLives, diskIcon, gitPlace } from "./WhereItLives";
 
 interface Props {
   root: string;
@@ -16,7 +17,7 @@ const size = (b: number) =>
 
 const when = (iso: string) => new Date(iso).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" });
 
-/** The portable Playnite: a snapshot of its folder outside the repo, and what the folder does not carry. */
+/** The portable Playnite: its settings in git, the library and media in the store, and what the folder does not carry. */
 export function PlayniteTab({ root, onChanged }: Props) {
   const [data, setData] = useState<Playnite | null>(null);
   const [sized, setSized] = useState(false);
@@ -94,15 +95,15 @@ export function PlayniteTab({ root, onChanged }: Props) {
           <strong>
             Playnite portable
             <Help title="Como funciona">
-              No modo portable o Playnite guarda tudo na própria pasta: biblioteca, capas, trailers, músicas de tema, temas, extensões e as
-              configurações de cada uma. Uma cópia da pasta é o setup inteiro, sem refazer downloads nem configurar plugins de novo. A pasta tem
-              dezenas de GB, então ela não vai para o git: o snapshot fica numa pasta que você escolhe (HD externo, NAS, pasta sincronizada), e
-              o repo só guarda onde ele está em config/playnite.yaml. Na aplicação do perfil, o item Playnite copia o snapshot de volta.
+              No modo portable o Playnite guarda tudo na própria pasta. As configurações (config.json, fullscreenConfig.json e as de cada
+              extensão) vão para o git, em windows/playnite, sem chaves de API nem tokens. A biblioteca, as capas, os trailers, os temas e as
+              extensões são dezenas de GB e demoram a baixar de novo: ficam no HD que você escolhe, junto com as chaves tiradas do git. Os caches
+              que o Playnite refaz sozinho (cache, browsercache) ficam de fora. Na aplicação do perfil, o item Playnite põe tudo de volta.
             </Help>
           </strong>
           <span className="muted">
             {inst.found
-              ? `${cfg.path} · ${inst.extensions.length} extensões · ${inst.themes.filter((t) => t.id !== "Default" && !t.id.startsWith("Playnite_builtin")).length} temas${sized ? ` · ${size(inst.bytes)} no snapshot` : ""}`
+              ? `${cfg.path} · ${inst.extensions.length} extensões · ${inst.themes.filter((t) => t.id !== "Default" && !t.id.startsWith("Playnite_builtin")).length} temas${sized ? ` · ${size(inst.bytes)} vão para o HD` : ""}`
               : `Nenhum Playnite em ${cfg.path}. Restaure um snapshot ou aponte para a pasta certa abaixo.`}
           </span>
         </div>
@@ -111,12 +112,26 @@ export function PlayniteTab({ root, onChanged }: Props) {
         </button>
       </div>
 
+      <WhereItLives
+        places={[
+          gitPlace(data.git, "configurações do Playnite e de cada extensão"),
+          {
+            title: "HD",
+            icon: diskIcon,
+            tone: "disk",
+            head: snap ? (m ? `${size(m.bytes)} · ${m.files.toLocaleString("pt-BR")} arquivos` : "nada salvo ainda") : "nenhum escolhido",
+            lines: [snap ? cfg.store : "escolha uma pasta fora do disco do Windows", "programa, biblioteca, capas, trailers, temas, extensões e as chaves tiradas do git"],
+            badge: m ? { text: `salvo ${when(m.saved_at)}` } : undefined,
+          },
+        ]}
+      />
+
       <div className="card">
         <div className="row">
           <div className="grow-col">
-            <strong>Snapshot</strong>
+            <strong>HD (store)</strong>
             <span className="muted small-note">
-              {snap ? `${snap.path}` : "Escolha onde guardar a cópia da pasta, fora do repo."}
+              {snap ? `${snap.path}` : "Escolha onde guardar a biblioteca e as mídias, num disco que não vai ser formatado."}
             </span>
           </div>
           {snap && (
@@ -158,6 +173,10 @@ export function PlayniteTab({ root, onChanged }: Props) {
                 {m.desktop_theme || "Default"} / {m.fullscreen_theme || "Default"}
               </dd>
             </div>
+            <div>
+              <dt>Chaves guardadas</dt>
+              <dd>{m.secrets ?? 0}</dd>
+            </div>
           </dl>
         ) : (
           snap && <p className="muted">Ainda não há snapshot nessa pasta.</p>
@@ -166,16 +185,18 @@ export function PlayniteTab({ root, onChanged }: Props) {
         <div className="row">
           <button
             className="primary"
-            disabled={!!busy || !snap || !inst.found || running || !data.windows}
-            title="Copia só o que mudou desde o último snapshot"
+            disabled={!!busy || !inst.found || running || !data.windows}
+            title="Atualiza o git e copia para o HD só o que mudou"
             onClick={() =>
               act("save", async () => {
                 const r = await api.savePlaynite(root);
-                return `Snapshot salvo: ${size(r.bytes)} em ${r.files.toLocaleString("pt-BR")} arquivos.`;
+                return snap
+                  ? `Salvo: ${size(r.bytes)} em ${r.files.toLocaleString("pt-BR")} arquivos no HD. Faça commit de windows/playnite.`
+                  : "Configurações copiadas para windows/playnite. Sem HD escolhido, a biblioteca e as mídias não foram guardadas.";
               })
             }
           >
-            {busy === "save" ? "Copiando… (pode levar alguns minutos)" : m ? "Atualizar snapshot" : "Salvar snapshot"}
+            {busy === "save" ? "Salvando… (pode levar alguns minutos)" : "Salvar"}
           </button>
           <button
             disabled={!!busy || !m || running || !data.windows}
@@ -251,7 +272,7 @@ export function PlayniteTab({ root, onChanged }: Props) {
           </div>
         </label>
         <label className="field">
-          <span className="muted">Fora do snapshot (pastas relativas à do Playnite e padrões de arquivo, separados por vírgula)</span>
+          <span className="muted">Nunca copiados para o HD (pastas relativas à do Playnite e padrões de arquivo, separados por vírgula)</span>
           <div className="row">
             <input type="text" className="grow" value={exclude} onChange={(e) => setExclude(e.target.value)} />
             <button
@@ -271,7 +292,7 @@ export function PlayniteTab({ root, onChanged }: Props) {
       {inst.found && (
         <>
           <h3>
-            O que vai no snapshot <span className="muted">{sized ? `(${size(inst.bytes)})` : "(medindo…)"}</span>
+            Pastas do Playnite <span className="muted">{sized ? `(${size(inst.bytes)} vão para o HD)` : "(medindo…)"}</span>
           </h3>
           {sized && (
             <ul className="list folder-sizes">
@@ -283,8 +304,8 @@ export function PlayniteTab({ root, onChanged }: Props) {
                     <span className="muted small-note">{f.files.toLocaleString("pt-BR")} arquivos</span>
                     <span className="size">{size(f.bytes)}</span>
                     {top ? (
-                      <button className="small-btn ghost" disabled={!!busy} onClick={() => toggleFolder(f.name)} title={f.excluded ? "Incluir no snapshot" : "Deixar fora do snapshot"}>
-                        {f.excluded ? "fora" : "incluída"}
+                      <button className="small-btn ghost" disabled={!!busy} onClick={() => toggleFolder(f.name)} title={f.excluded ? "Copiar para o HD" : "Nunca copiar"}>
+                        {f.excluded ? "fora" : "HD"}
                       </button>
                     ) : (
                       <span className="small-btn" />

@@ -8,7 +8,7 @@ que falta. Tem um app desktop (Tauri + React) e uma linha de comando sobre o mes
 | --------------- | --------------- | ----------- |
 | Desenvolvimento | CachyOS e Arch  | niri + Noctalia, fish + starship, kitty, Zed |
 | Desenvolvimento | Ubuntu e Debian | GNOME + WhiteSur, zsh + powerlevel10k, WezTerm, VS Code |
-| Jogos           | Windows         | instalação automática (Ventoy), winget e Ninite, políticas de grupo, barra de tarefas e ícones, mods do Windhawk, Playnite |
+| Jogos           | Windows         | instalação automática (Ventoy), winget e Ninite, políticas de grupo, barra de tarefas e ícones, mods do Windhawk, Playnite, RetroArch e jogos |
 
 ## Começar
 
@@ -18,7 +18,7 @@ que falta. Tem um app desktop (Tauri + React) e uma linha de comando sobre o mes
    `Documentos\envsetup` ou `~/envsetup`) ou "Escolher pasta…" para usar um clone deste repo.
 3. **Configurar**: revise as etapas do perfil, marque o que quer e clique em Aplicar.
 
-Detalhes em **[docs/uso.md](docs/uso.md)**: as abas do app, a linha de comando e como cada
+Detalhes em **[docs/uso.md](docs/uso.md)**: as abas do app, a linha de comando, [como formatar o PC](docs/uso.md#formatar-o-pc) e como cada
 recurso do Windows funciona.
 
 ## Mudar o ambiente
@@ -31,8 +31,10 @@ config/profiles/*.yaml     um perfil por máquina, dividido em etapas
 config/policies.yaml       políticas de grupo do Windows
 config/layout.yaml         barra de tarefas e menu Iniciar do Windows
 config/icons.yaml          ícones dos atalhos do Windows
-config/playnite.yaml       Playnite portable e onde fica o snapshot
-windows/                   instalação automática, backup do Windhawk, pack de ícones
+config/playnite.yaml       Playnite portable e o HD com a biblioteca e as mídias
+config/retroarch.yaml      RetroArch portable: versão, cores e o HD com BIOS e jogos
+windows/                   instalação automática, backup do Windhawk, pack de ícones,
+                           configurações e saves do Playnite e do RetroArch (sem senhas)
 dotfiles/                  os arquivos de configuração que vão para a home
 ```
 
@@ -63,8 +65,9 @@ Mapa do código, testes, o contrato entre o app e o motor e como os dados entram
 - [x] Repositórios de terceiros declarativos (docker-ce, NodeSource)
 - [x] Identidade git, chave SSH e `gh auth login`
 - [x] `webkit2gtk` e FUSE 2 no catálogo
-- [ ] Configurar Playnite (o snapshot já está pronto: falta escolher o `store` e salvar)
-- [ ] Emulador (?)
+- [x] Emulador: RetroArch portable e jogos (configurações e saves no git, programa baixado, BIOS e jogos no HD)
+- [x] Salvar o RetroArch (`D:\envsetup`)
+- [ ] Salvar o Playnite (`store` já é `D:\envsetup`: fechar o Playnite e clicar em Salvar)
 - [ ] Terminar de configurar video do ET
 - [ ] Configurar aparencia geral com alguns tweaks temas e icones (pra dps jogar pro app)
 - [ ] Testar os scripts do GNOME numa sessão real

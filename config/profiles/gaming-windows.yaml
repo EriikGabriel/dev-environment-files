@@ -47,6 +47,11 @@ steps:
     description: O Playnite portable copiado do snapshot, já com biblioteca, capas, trailers, temas e extensões. Salve e confira o snapshot na aba Playnite.
     apps: [playnite]
 
+  - id: retro
+    title: Emuladores
+    description: O RetroArch portable e os jogos copiados do snapshot, com cores, BIOS, saves e playlists apontando para os jogos. Salve e confira o snapshot na aba RetroArch.
+    apps: [retroarch]
+
   - id: social
     title: Comunicação e navegador
     description: Voz, navegador e o que roda junto com os jogos.

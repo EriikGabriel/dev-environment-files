@@ -16,8 +16,8 @@ import (
 
 	"gopkg.in/yaml.v3"
 
-	"github.com/EriikGabriel/dev-environment-files/internal/windows/ninite"
 	"github.com/EriikGabriel/dev-environment-files/internal/windows/install"
+	"github.com/EriikGabriel/dev-environment-files/internal/windows/ninite"
 )
 
 // Config is config/layout.yaml.
@@ -198,8 +198,8 @@ func (k known) item(sources []string) Item {
 
 // Inputs are what decides which apps the machine will have.
 type Inputs struct {
-	Ninite   []string           // slugs of the Ninite list
-	Apps     []string           // ids of the profile's apps that are ticked
+	Ninite   []string      // slugs of the Ninite list
+	Apps     []string      // ids of the profile's apps that are ticked
 	Installs []install.App // what the answer file installs
 }
 

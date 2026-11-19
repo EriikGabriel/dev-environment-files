@@ -38,7 +38,7 @@ cmd/envsetup/          a CLI, um arquivo por assunto
   machine.go           detect, info, profiles, steps
   apply.go             plan, apply (e o modo --json que o app usa)
   edit.go              add, show, set-dirs, desktop, set-dock, add-app, remove-app
-  install.go policies.go layout.go icons.go windhawk.go playnite.go   (Windows)
+  install.go policies.go layout.go icons.go windhawk.go playnite.go retroarch.go   (Windows)
   json.go              formatos JSON comuns
 cmd/iconpack/          ferramenta que refaz windows/icons/mactahoe a partir do tema MacTahoe
 
@@ -51,7 +51,9 @@ internal/
   windows/             recursos do Windows, um pacote cada:
     install/           autounattend.xml e o pendrive Ventoy
     ninite/            lista e links do Ninite
-    policy/ layout/ icons/ playnite/ windhawk/
+    policy/ layout/ icons/ playnite/ retroarch/ windhawk/
+    snapshot/          o que Playnite e RetroArch compartilham: robocopy, exclusões, tamanhos,
+                       a parte que vai para o git (profile.go: Export/Import, senhas tiradas)
   testutil/            ajudas dos testes
 
 app/
@@ -70,7 +72,7 @@ build e ignora o arquivo ao compilar para o outro sistema (e o app compila os do
 **Por que os recursos do Windows ainda têm arquivos no `engine`.** As partes que rodam algo na
 máquina (`ApplyPolicies`, `SavePlaynite`, `ImportWindhawk`…) são métodos de `engine.Env` porque
 usam o runner, o PowerShell e a elevação compartilhados, e porque os itens de catálogo (`policies`,
-`playnite`, `windhawk`) os chamam. Os pacotes de `internal/windows/` têm o resto: formatos,
+`playnite`, `retroarch`, `windhawk`) os chamam. Os pacotes de `internal/windows/` têm o resto: formatos,
 validação, scripts gerados e leitura de arquivos, sem rodar nada.
 
 ## O contrato entre o app e o motor
@@ -92,7 +94,17 @@ na pasta do executável, e sem ele o app acharia `config/apps.yaml` ali, numa pa
 leitura, e a usaria como pasta de dados. Na primeira execução, `seed_data` (em `lib.rs`) copia
 para `Documentos\envsetup` / `~/envsetup` e grava `.envsetup-data` com a versão; `update_data`
 acrescenta o que faltar, sem sobrescrever. Tudo o que estiver nessas três pastas vai para o
-instalador, então não guarde lá nada que não deva ser distribuído.
+instalador, então não guarde lá nada que não deva ser distribuído. `windows/playnite` e
+`windows/retroarch` (configurações e saves) vão junto, sem senhas: `snapshot.Scrub` as tira antes
+de copiar, e os testes de `internal/windows/snapshot` cobrem os nomes de chave aceitos.
+
+## Partes que baixam da internet
+
+`retroarch-restore` baixa de `buildbot.libretro.com` (variável `retroarch.Buildbot`, trocada nos
+testes por um `httptest.Server`): `stable/<versão>/windows/x86_64/RetroArch.7z`, extraído com o
+`tar.exe` do Windows (o bsdtar lê 7z; o tar do Git não), os pacotes de `assets/frontend/*.zip` e
+cada core de `nightly/windows/x86_64/latest/<core>_libretro.dll.zip`, extraídos com
+`archive/zip`.
 
 ## Decisões
 

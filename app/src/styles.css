@@ -675,3 +675,42 @@ button.card:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 14
   .palette-trigger { width: auto; }
   .palette-trigger .grow, .palette-trigger kbd { display: none; }
 }
+
+/* retroarch */
+.retro { display: flex; flex-direction: column; gap: 14px; }
+.retro h3 { margin: 6px 0 0; display: flex; align-items: center; gap: 6px; }
+.retro-hero { display: flex; align-items: center; gap: 16px; padding: 20px; background:
+    radial-gradient(420px circle at 0% 0%, color-mix(in srgb, #f472b6 20%, transparent), transparent 60%),
+    radial-gradient(420px circle at 100% 100%, color-mix(in srgb, #38bdf8 16%, transparent), transparent 60%), var(--panel); }
+.retro-logo { width: 64px; height: 64px; flex: none; border-radius: 18px; display: grid; place-items: center; color: #fff; background: linear-gradient(135deg, #f472b6, #a78bfa 55%, #38bdf8); box-shadow: 0 10px 30px color-mix(in srgb, #a78bfa 45%, transparent); }
+.retro-logo svg { animation: wiggle 4s ease-in-out infinite; }
+@keyframes wiggle { 0%, 80%, 100% { transform: rotate(0); } 85% { transform: rotate(-10deg); } 90% { transform: rotate(8deg); } 95% { transform: rotate(-4deg); } }
+.stat.tone-a strong, .stat.tone-b strong, .stat.tone-c strong { font-size: 13px; }
+.systems { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 12px; }
+.system { display: flex; flex-direction: column; gap: 6px; padding: 14px; border-top: 3px solid var(--sys); }
+.system:hover { transform: translateY(-3px); box-shadow: 0 14px 30px rgb(0 0 0 / .3), 0 0 24px color-mix(in srgb, var(--sys) 22%, transparent); }
+.system-cart { width: 54px; height: 40px; border-radius: 8px 8px 4px 4px; display: grid; place-items: center; font: 800 13px/1 ui-monospace, monospace; letter-spacing: .06em; color: #111; background: linear-gradient(180deg, var(--sys), color-mix(in srgb, var(--sys) 65%, #000)); box-shadow: inset 0 -6px 0 rgb(0 0 0 / .18), 0 6px 16px color-mix(in srgb, var(--sys) 30%, transparent); transition: transform .35s var(--spring); }
+.system:hover .system-cart { transform: rotate(-6deg) scale(1.08); }
+.req-dot { width: 10px; height: 10px; border-radius: 50%; flex: none; align-self: flex-start; margin-top: 5px; }
+.req-dot.ok { background: var(--ok); box-shadow: 0 0 10px var(--ok); }
+.req-dot.warn { background: var(--warn); box-shadow: 0 0 10px var(--warn); animation: pulse-dot 1.8s ease-in-out infinite; }
+@keyframes pulse-dot { 50% { opacity: .45; } }
+.retro-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+.retro-cols .card { display: flex; flex-direction: column; gap: 10px; }
+.core-list li { display: flex; align-items: center; gap: 8px; padding: 3px 0; }
+.settings-kv dd { color: var(--accent); }
+
+/* where each part of a portable program lives (WhereItLives) */
+.places { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.place { display: flex; flex-direction: column; gap: 6px; position: relative; overflow: hidden; }
+.place::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 3px; background: var(--place, var(--accent)); }
+.place-git { --place: #a78bfa; }
+.place-net { --place: #38bdf8; }
+.place-disk { --place: #fbbf24; }
+.place-icon { display: inline-grid; place-items: center; width: 32px; height: 32px; border-radius: 10px; color: var(--place); background: color-mix(in srgb, var(--place) 16%, transparent); }
+.place-head { font-size: 1.15rem; font-weight: 650; font-variant-numeric: tabular-nums; }
+.dest { text-align: center; font-size: .78rem; border-radius: 999px; padding: 2px 8px; }
+.dest-GitHub { color: #a78bfa; }
+.dest-download { color: #38bdf8; }
+.dest-HD { color: #fbbf24; }
+.dest-fora { color: var(--muted, #888); }

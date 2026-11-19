@@ -92,7 +92,7 @@ func Resolve(id string, app config.App, info platform.Info) (Resolved, error) {
 		return Resolved{}, Unavailable{"deb-url method only works on Debian-based distros"}
 	case r.Method == config.MethodFlatpak && windows:
 		return Resolved{}, Unavailable{"flatpak does not exist on Windows"}
-	case (r.Method == config.MethodWinget || r.Method == config.MethodScoop || r.Method == config.MethodSteam || r.Method == config.MethodNinite || r.Method == config.MethodPolicies || r.Method == config.MethodPlaynite || r.Method == config.MethodWindhawk) && !windows:
+	case (r.Method == config.MethodWinget || r.Method == config.MethodScoop || r.Method == config.MethodSteam || r.Method == config.MethodNinite || r.Method == config.MethodPolicies || r.Method == config.MethodPlaynite || r.Method == config.MethodRetroArch || r.Method == config.MethodWindhawk) && !windows:
 		return Resolved{}, Unavailable{r.Method + " method only works on Windows"}
 	}
 	return r, nil

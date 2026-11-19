@@ -11,11 +11,17 @@ import (
 
 	"github.com/EriikGabriel/dev-environment-files/internal/windows/playnite"
 	"github.com/EriikGabriel/dev-environment-files/internal/windows/policy"
+	"github.com/EriikGabriel/dev-environment-files/internal/windows/snapshot"
 )
 
-// PlayniteConfig reads config/playnite.yaml.
+// PlayniteConfig reads config/playnite.yaml; a store on a drive whose letter
+// changed is found (see snapshot.FindStore).
 func (e *Env) PlayniteConfig() (playnite.Config, bool, error) {
-	return playnite.Load(playnite.Path(e.Root))
+	cfg, exists, err := playnite.Load(playnite.Path(e.Root))
+	if err == nil {
+		cfg.Store = snapshot.FindStore(cfg.Store, playnite.ManifestFile)
+	}
+	return cfg, exists, err
 }
 
 // PlayniteRunning lists the Playnite programs that are open: their database
@@ -45,32 +51,57 @@ func (e *Env) robocopy(ctx context.Context, out io.Writer, args []string) error 
 	return e.Runner.Run(ctx, out, e.script(cmd)...)
 }
 
-// SavePlaynite mirrors the Playnite folder to the store and writes the
-// manifest next to it.
+// SavePlaynite copies the settings to git (windows/playnite, secrets
+// blanked) and, when a store is set, mirrors the rest of the folder to it
+// with the secrets and the manifest.
 func (e *Env) SavePlaynite(ctx context.Context, out io.Writer) (playnite.Manifest, error) {
 	cfg, _, err := e.PlayniteConfig()
 	if err != nil {
 		return playnite.Manifest{}, err
 	}
-	if cfg.Store == "" {
-		return playnite.Manifest{}, fmt.Errorf("choose the folder for the snapshot first (store in config/playnite.yaml)")
-	}
-	in := playnite.Read(cfg, true)
+	in := playnite.Read(cfg, false)
 	if !in.Found {
 		return playnite.Manifest{}, fmt.Errorf("%s has no %s", cfg.Path, playnite.Exe)
 	}
 	if err := e.playniteClosed(ctx); err != nil {
 		return playnite.Manifest{}, err
 	}
-	if err := os.MkdirAll(cfg.Snapshot(), 0o755); err != nil {
-		return playnite.Manifest{}, err
+	git, err := snapshot.Export(cfg.Path, playnite.GitDir(e.Root), cfg.Git)
+	if err != nil {
+		return playnite.Manifest{}, fmt.Errorf("copy the settings to %s: %w", playnite.GitDir(e.Root), err)
 	}
-	fmt.Fprintf(out, "copying %s to %s (%.1f GB, %d files); only what changed is copied again\n", cfg.Path, cfg.Snapshot(), float64(in.Bytes)/(1<<30), in.Files)
-	if err := e.robocopy(ctx, out, playnite.RobocopyArgs(cfg.Path, cfg.Snapshot(), cfg.Exclude, true)); err != nil {
-		return playnite.Manifest{}, err
-	}
+	reportExport(out, "windows/playnite", git)
 	host, _ := os.Hostname()
-	m := playnite.Manifest{SavedAt: time.Now().UTC().Truncate(time.Second), Source: cfg.Path, Computer: host, Bytes: in.Bytes, Files: in.Files, Extensions: []string{}}
+	m := playnite.Manifest{SavedAt: time.Now().UTC().Truncate(time.Second), Source: cfg.Path, Computer: host, Extensions: []string{}, Secrets: len(git.Secrets)}
+	if cfg.Store == "" {
+		fmt.Fprintln(out, "no store is set: the library, the media and the secrets are only on this machine")
+		return m, nil
+	}
+	exclude := cfg.StoreExclude()
+	_, m.Bytes, m.Files = snapshot.Measure(cfg.Path, exclude)
+	if err := os.MkdirAll(cfg.Snapshot(), 0o755); err != nil {
+		return m, err
+	}
+	fmt.Fprintf(out, "copying %s to %s (%.1f GB, %d files); only what changed is copied again\n", cfg.Path, cfg.Snapshot(), float64(m.Bytes)/(1<<30), m.Files)
+	if err := e.robocopy(ctx, out, playnite.RobocopyArgs(cfg.Path, cfg.Snapshot(), exclude, true)); err != nil {
+		return m, err
+	}
+	// robocopy does not delete what is excluded now (the caches)
+	for _, x := range exclude {
+		if snapshot.IsFilePattern(x) {
+			continue
+		}
+		p := filepath.Join(cfg.Snapshot(), filepath.FromSlash(x))
+		if exists(p) && snapshot.Inside(p, cfg.Snapshot()) && snapshot.Clean(p) != snapshot.Clean(cfg.Snapshot()) {
+			if err := os.RemoveAll(p); err != nil {
+				return m, err
+			}
+			fmt.Fprintf(out, "removed %s from the store (excluded)\n", x)
+		}
+	}
+	if err := snapshot.WriteJSON(snapshot.SecretsFile(cfg.Store, playnite.Program), git.Secrets); err != nil {
+		return m, err
+	}
 	for _, t := range in.Themes {
 		if t.Active && t.Mode == "desktop" {
 			m.DesktopTheme = t.Name
@@ -109,8 +140,19 @@ func (e *Env) RestorePlaynite(ctx context.Context, out io.Writer, mirror bool) e
 		return err
 	}
 	fmt.Fprintf(out, "copying the snapshot of %s (%s) to %s\n", m.SavedAt.Local().Format("2006-01-02 15:04"), m.Computer, cfg.Path)
-	if err := e.robocopy(ctx, out, playnite.RobocopyArgs(cfg.Snapshot(), cfg.Path, cfg.Exclude, mirror)); err != nil {
+	if err := e.robocopy(ctx, out, playnite.RobocopyArgs(cfg.Snapshot(), cfg.Path, cfg.StoreExclude(), mirror)); err != nil {
 		return err
+	}
+	if gitDir := playnite.GitDir(e.Root); len(snapshot.ProfileFiles(gitDir, cfg.Git)) > 0 {
+		secrets, err := snapshot.ReadSecrets(snapshot.SecretsFile(cfg.Store, playnite.Program))
+		if err != nil {
+			return err
+		}
+		res, err := snapshot.Import(gitDir, cfg.Path, cfg.Git, secrets)
+		if err != nil {
+			return fmt.Errorf("copy the settings from %s: %w", gitDir, err)
+		}
+		fmt.Fprintf(out, "settings from git: %d files, %d updated, %d keys or tokens put back\n", res.Files, res.Changed, res.Secrets)
 	}
 	changed, err := playnite.RewritePaths(cfg.Path, m.Source, cfg.Path)
 	if err != nil {

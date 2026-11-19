@@ -11,7 +11,10 @@ config/profiles/*.yaml     um perfil por máquina: as etapas e o que cada uma in
 config/policies.yaml       políticas de grupo do Windows
 config/layout.yaml         barra de tarefas, menu Iniciar e ícones da área de trabalho (Windows)
 config/icons.yaml          estilo dos ícones dos atalhos (Windows)
-config/playnite.yaml       onde fica o Playnite portable e o snapshot dele
+config/playnite.yaml       onde fica o Playnite portable e o HD com a biblioteca e as mídias dele
+config/retroarch.yaml      RetroArch portable: versão, cores, pastas e o HD com a BIOS e os jogos
+windows/playnite/          as configurações do Playnite e das extensões (sem chaves de API)
+windows/retroarch/         retroarch.cfg, opções dos cores, playlists, saves e estados (sem senhas)
 windows/autounattend.xml   instalação automática do Windows (com windows/ventoy.json)
 windows/windhawk/backup.json   mods do Windhawk e as configurações deles
 windows/icons/mactahoe/    pack de ícones (PNG por nome de app)
@@ -22,7 +25,7 @@ dotfiles/                  os arquivos de configuração que vão para a home
 (`envsetup set-…`) ou editando o arquivo. Os arquivos da `config/` começam com um comentário que
 explica cada campo, e esse comentário é a referência; este guia é o mapa. O app e os comandos
 `set-…` reescrevem só o que mudou, então comentários seus nos arquivos editados à mão continuam
-lá, exceto em `layout.yaml`, `icons.yaml` e `playnite.yaml`, que o envsetup regrava inteiros (com o
+lá, exceto em `layout.yaml`, `icons.yaml`, `playnite.yaml` e `retroarch.yaml`, que o envsetup regrava inteiros (com o
 cabeçalho padrão). Depois de editar à mão, abra o app ou rode `envsetup plan`: um arquivo que não
 carrega mostra o erro com a linha.
 
@@ -179,21 +182,86 @@ Imagens escolhidas dentro da pasta de dados são guardadas com caminho relativo,
 valendo em outra máquina. Para trocar o ícone de um app sem override, ponha um arquivo com o
 nome dele no pack (`discord.png`); `envsetup icon-pack --query nome` mostra o nome que o pack usa.
 
+## Onde fica cada parte dos programas portáteis
+
+Playnite e RetroArch são portáteis: tudo deles mora na própria pasta. Cada parte vai para onde
+pode ir:
+
+| Parte | Onde | Por quê |
+|---|---|---|
+| configurações, saves, playlists (poucos MB) | **git**, em `windows/playnite/` e `windows/retroarch/` | pequenas, mudam à mão, ganham histórico |
+| senhas, chaves de API, tokens | **HD**, em `<store>\envsetup-<programa>-secrets.json` | o repositório é público |
+| programa RetroArch, assets e cores | **download** de buildbot.libretro.com | são públicos, na versão gravada no yaml |
+| jogos e BIOS | **HD** | direitos autorais e passam do limite do GitHub |
+| biblioteca, capas, trailers, temas e extensões do Playnite | **HD** | dezenas de GB, demoram a baixar de novo |
+| caches (`cache`, `browsercache`, logs) | **em lugar nenhum** | o programa refaz sozinho |
+
+**Salvar** (o botão das abas, ou `playnite-save` / `retroarch-save`) faz as duas coisas: copia a
+parte pessoal para `windows/…` e o resto para o HD (só o que mudou). Depois, faça commit e push.
+Sem HD escolhido, só o git é atualizado.
+
+**Senhas fora do git.** Antes de copiar para o git, o envsetup apaga o valor das configurações
+cujo nome indica segredo (`password`, `api_key`, `access_token`, `refresh_token`, `token`,
+`secret`, `cookies`) nos arquivos `.json`, `.cfg` e `.opt`. Os valores vão para o arquivo de
+segredos do HD, e a restauração os devolve. Sem o HD, a restauração funciona e o programa pede
+os logins de novo. Datas de expiração, tipos e atalhos (`TokenExpiryUtc`, `TokenType`,
+`…Hotkey`) não são segredos e ficam.
+
+**A letra do HD mudou?** Se o `store` não existe mas o mesmo caminho existe em outra letra com o
+manifesto dentro (`E:\envsetup` virou `F:\envsetup`), o envsetup usa esse.
+
 ## `config/playnite.yaml`: Playnite portable (Windows)
 
 | Campo | O que faz |
 |---|---|
 | `path` | a pasta do Playnite (padrão `C:\Playnite`) |
-| `store` | onde fica o snapshot: a cópia vai para `<store>\Playnite` e um manifesto para `<store>\envsetup-playnite.json` |
-| `exclude` | o que fica de fora: nomes com `*` ou ponto são padrões de arquivo; o resto, pastas relativas a `path` |
+| `store` | o HD: a cópia vai para `<store>\Playnite`, com o manifesto `<store>\envsetup-playnite.json` e as chaves tiradas do git |
+| `exclude` | o que nunca é copiado (padrão: `cache`, `browsercache`, `JITProfiles`, `*.log`): nomes com `*` ou ponto são padrões de arquivo; o resto, pastas relativas a `path` |
 | `start_menu` | depois de restaurar, põe o Playnite no menu Iniciar e em Configurações › Apps |
+| `git` | o que vai para `windows/playnite` (padrão: `config.json`, `fullscreenConfig.json`, `ExtensionsData/*/config.json`; `*` vale uma pasta) |
 
-A pasta tem dezenas de GB (capas, trailers, músicas), por isso o snapshot fica fora da pasta de
-dados, num disco ou pasta sincronizada. Escolha o `store` e salve pela aba Playnite
-(`envsetup playnite-save`); numa máquina nova, a etapa Playnite do perfil (ou
-`playnite-restore`) copia de volta e corrige os caminhos das extensões se a pasta mudou. A aba
-também mostra o que a pasta não leva (Windows Media Player para os trailers, programas
-externos) e corrige.
+O HD guarda o programa, a biblioteca, as capas, os trailers, os temas e as extensões (~26 GB).
+Numa máquina nova, a etapa Playnite do perfil (ou `playnite-restore`) copia o HD de volta, põe
+as configurações do git por cima com as chaves de volta e corrige os caminhos das extensões se a
+pasta mudou. Restaurar o Playnite precisa do HD. A aba também mostra o que a pasta não leva
+(Windows Media Player para os trailers, programas externos) e corrige.
+
+## `config/retroarch.yaml`: RetroArch portable e jogos (Windows)
+
+| Campo | O que faz |
+|---|---|
+| `path` | a pasta do RetroArch, a que tem `retroarch.exe` (padrão `C:\Emuladores\RetroArch`) |
+| `games` | a pasta dos jogos, uma subpasta por sistema (padrão `C:\Emuladores\Games`); vazio deixa os jogos fora |
+| `store` | o HD: `<store>\RetroArch` (a BIOS e o que não é baixado nem vai pro git), `<store>\Games`, o manifesto e as senhas tiradas do git |
+| `exclude` | o que nunca é copiado (padrão: `logs`, `downloads`, `*.log`) |
+| `start_menu` | depois de restaurar, põe o RetroArch no menu Iniciar e em Configurações › Apps |
+| `version` | a versão que a restauração baixa; gravada ao salvar (`retroarch.exe --version`) |
+| `cores` | os cores que a restauração baixa (nome do arquivo sem `_libretro.dll`); gravados ao salvar |
+| `bundles` | os pacotes de assets baixados com o programa (`assets`, `autoconfig`, `cheats`, `database-rdb`, `info`, `overlays`, `shaders_slang`, `shaders_glsl`; também `database-cursors`, `shaders_cg`) |
+| `git` | o que vai para `windows/retroarch` (padrão: `retroarch.cfg`, `retroarch-core-options.cfg`, `config`, `remaps`, `playlists`, `saves`, `states`, `thumbnails`) |
+| `copy_program` | guarda também o programa inteiro no HD, para restaurar sem internet (~1 GB a mais) |
+
+**Por que os jogos não vão para o GitHub.** ROMs e BIOS têm direitos autorais, o repositório é
+público e uma imagem de disco sozinha (o `.bin` de PlayStation) passa do limite de 100 MB do
+GitHub. O `.gitignore` recusa as extensões comuns de ROM para evitar um commit por engano. Eles
+ficam no HD (pode ser a mesma pasta de `store` do Playnite; cada um usa subpastas próprias).
+
+**O que vai para cada lugar.** O RetroArch portable grava os caminhos relativos à pasta dele
+(`libretro_directory = ":\cores"`). O git leva a parte pessoal; o programa (exe, DLLs, `assets`,
+`autoconfig`, `cheats`, `database`, `filters`, `info`, `overlays`, `shaders`, `cores`) é
+baixado; o HD fica com a `system/` (BIOS), screenshots e o que mais não for nenhum dos dois. Mude
+as configurações pelo menu do próprio RetroArch e depois clique em Salvar.
+
+**Restaurar** (etapa Emuladores do perfil, botão da aba ou `retroarch-restore`): se falta o
+`retroarch.exe`, baixa o RetroArch de `version` e os `bundles`; copia o HD (BIOS e jogos); baixa
+os `cores` que faltarem; põe os arquivos do git com as senhas do HD; e aponta as playlists para
+os jogos. Leva uns 3 minutos, ~500 MB de download. Sem o HD, tudo menos jogos e BIOS volta.
+
+**Playlists.** Os arquivos `.lpl` guardam o caminho completo de cada jogo e core. Quando as pastas
+mudam de lugar, o RetroArch lista o jogo mas não o abre. A restauração (e o botão "Corrigir" da
+aba, ou `envsetup retroarch-fix playlists`) procura cada jogo pelo nome do arquivo na pasta de
+jogos, e cada core na pasta `cores`, e troca só os caminhos que não existem. Um nome que aparece
+duas vezes na pasta de jogos fica como está.
 
 ## `windows/autounattend.xml` e `windows/ventoy.json`: instalação automática
 

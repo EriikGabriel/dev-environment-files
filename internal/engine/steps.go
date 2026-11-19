@@ -45,7 +45,7 @@ func (s *appStep) backend() (backend.Backend, error) {
 		return backend.Winget{}, nil
 	case config.MethodScoop:
 		return backend.Scoop{}, nil
-	case config.MethodScript, config.MethodSteam, config.MethodNinite, config.MethodPolicies, config.MethodPlaynite, config.MethodWindhawk:
+	case config.MethodScript, config.MethodSteam, config.MethodNinite, config.MethodPolicies, config.MethodPlaynite, config.MethodRetroArch, config.MethodWindhawk:
 		return nil, nil
 	default: // native and deb-url both end up in the distro manager
 		return backend.Native(s.env.Info)
@@ -68,6 +68,8 @@ func (s *appStep) installed(ctx context.Context) bool {
 		return s.env.policiesApplied(ctx)
 	case config.MethodPlaynite:
 		return s.env.playniteInstalled()
+	case config.MethodRetroArch:
+		return s.env.retroarchInstalled()
 	case config.MethodWindhawk:
 		return s.env.windhawkApplied(ctx)
 	}
@@ -100,6 +102,8 @@ func (s *appStep) describeInstall() string {
 		return "write the group policies of config/policies.yaml to the registry (asks for elevation)"
 	case config.MethodPlaynite:
 		return "copy the Playnite snapshot of config/playnite.yaml back and register it in the Start menu"
+	case config.MethodRetroArch:
+		return "copy the RetroArch and games snapshot of config/retroarch.yaml back, fix the playlists and register it in the Start menu"
 	case config.MethodWindhawk:
 		return "install the Windhawk mods of windows/windhawk/backup.json with their settings (asks for elevation)"
 	case config.MethodNinite:
@@ -145,6 +149,8 @@ func (s *appStep) install(ctx context.Context, out io.Writer) error {
 		return s.env.ApplyPolicies(ctx, out)
 	case config.MethodPlaynite:
 		return s.env.playniteInstall(ctx, out)
+	case config.MethodRetroArch:
+		return s.env.retroarchInstall(ctx, out)
 	case config.MethodWindhawk:
 		return s.env.ImportWindhawk(ctx, out)
 	}

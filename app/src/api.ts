@@ -1,6 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
-import type { AddResult, ApplyEvent, CopyReport, DataInfo, DesktopPreview, FileView, IconPackPage, Icons, IconsConfig, Layout, LayoutChoice, InstallMedia, NewApp, Plan, Playnite, PlayniteConfig, PlayniteManifest, Policies, Windhawk, Profile, Selection, SystemInfo, VentoyDrive, Wizard, Written } from "./types";
+import type { AddResult, ApplyEvent, CopyReport, DataInfo, DesktopPreview, FileView, IconPackPage, Icons, IconsConfig, Layout, LayoutChoice, InstallMedia, NewApp, Plan, Playnite, PlayniteConfig, PlayniteManifest, RetroArch, RetroArchConfig, RetroArchManifest, Policies, Windhawk, Profile, Selection, SystemInfo, VentoyDrive, Wizard, Written } from "./types";
 
 const run = <T>(root: string, args: string[]) => invoke<T>("envsetup", { root, args });
 
@@ -205,6 +205,37 @@ export const fixPlaynite = (root: string, id: string) => run<{ fixed: string }>(
 
 /** Opens the Playnite folder or the store in Explorer. */
 export const openPlaynite = (root: string, what: "folder" | "store") => run<{ opened: string }>(root, ["playnite-open", what]);
+
+// ---- RetroArch ----
+
+/** The portable RetroArch, the games, the snapshot and what needs fixing; `sizes` walks every file. */
+export const retroarch = (root: string, sizes: boolean) => run<RetroArch>(root, ["retroarch", ...(sizes ? ["--sizes"] : [])]);
+
+/** Saves config/retroarch.yaml; only the fields given change. */
+export const setRetroArch = (root: string, c: Partial<RetroArchConfig>) =>
+  run<RetroArchConfig>(root, [
+    "set-retroarch",
+    ...(c.path !== undefined ? [`--path=${c.path}`] : []),
+    ...(c.games !== undefined ? [`--games=${c.games}`] : []),
+    ...(c.store !== undefined ? [`--store=${c.store}`] : []),
+    ...(c.exclude !== undefined ? [`--exclude=${c.exclude.join(",")}`] : []),
+    ...(c.start_menu !== undefined ? [`--start-menu=${c.start_menu}`] : []),
+    ...(c.copy_program !== undefined ? [`--copy-program=${c.copy_program}`] : []),
+  ]);
+
+/** Copies the settings and saves to git (windows/retroarch) and the BIOS and games to the store (only what changed). */
+export const saveRetroArch = (root: string) => run<RetroArchManifest>(root, ["retroarch-save"]);
+
+/** Puts RetroArch back (downloaded or from the store), with the BIOS, games and settings; `mirror` also deletes what a full copy does not have. */
+export const restoreRetroArch = (root: string, mirror: boolean) =>
+  run<{ restored: boolean }>(root, ["retroarch-restore", ...(mirror ? ["--mirror"] : [])]);
+
+/** Takes care of one requirement (playlists, start-menu). */
+export const fixRetroArch = (root: string, id: string) => run<{ fixed: string }>(root, ["retroarch-fix", id]);
+
+/** Opens a RetroArch folder in Explorer, or starts RetroArch ("app"). */
+export const openRetroArch = (root: string, what: "folder" | "games" | "store" | "app") =>
+  run<{ opened: string }>(root, ["retroarch-open", what]);
 
 // ---- Windhawk ----
 
