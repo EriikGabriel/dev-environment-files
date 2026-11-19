@@ -58,7 +58,11 @@ if (-not $admin) {
 }
 
 $log = New-Object System.Collections.Generic.List[string]
-function Say([string]$s) { $log.Add($s) }
+# every step also goes to a log file, to see where the navigation stopped
+$logFile = Join-Path $env:TEMP 'envsetup-open-policy.log'
+"---- $(Get-Date -Format s) path='$Path' title='$Title'" | Out-File -LiteralPath $logFile -Encoding UTF8
+function Trace([string]$s) { $s | Out-File -LiteralPath $logFile -Append -Encoding UTF8 }
+function Say([string]$s) { $log.Add($s); Trace "SAY $s" }
 function Finish([int]$code) {
   if ($Result) { $log | Set-Content -LiteralPath $Result -Encoding UTF8 } else { $log }
   exit $code
@@ -69,59 +73,165 @@ try {
   $A = [Windows.Automation.AutomationElement]
   $scope = [Windows.Automation.TreeScope]
   $ctl = [Windows.Automation.ControlType]
+  $keys = [System.Windows.Forms.SendKeys]
+  # EnvsetupTyper types text as Unicode characters (SendInput), so letters
+  # with accents work whatever the keyboard layout
+  if (-not ('EnvsetupTyper' -as [type])) {
+    Add-Type -TypeDefinition @"
+using System;
+using System.Runtime.InteropServices;
+public static class EnvsetupTyper {
+  [StructLayout(LayoutKind.Sequential)] struct KEYBDINPUT { public ushort wVk; public ushort wScan; public uint dwFlags; public uint time; public IntPtr dwExtraInfo; }
+  [StructLayout(LayoutKind.Sequential)] struct MOUSEINPUT { public int dx; public int dy; public uint mouseData; public uint dwFlags; public uint time; public IntPtr dwExtraInfo; }
+  [StructLayout(LayoutKind.Explicit)] struct UNION { [FieldOffset(0)] public KEYBDINPUT ki; [FieldOffset(0)] public MOUSEINPUT mi; }
+  [StructLayout(LayoutKind.Sequential)] struct INPUT { public uint type; public UNION u; }
+  [DllImport("user32.dll", SetLastError = true)] static extern uint SendInput(uint n, INPUT[] inputs, int size);
+  public static void Type(string text) {
+    foreach (char c in text) {
+      INPUT[] io = new INPUT[2];
+      io[0].type = 1; io[0].u.ki.wScan = c; io[0].u.ki.dwFlags = 4;
+      io[1].type = 1; io[1].u.ki.wScan = c; io[1].u.ki.dwFlags = 4 | 2;
+      SendInput(2, io, Marshal.SizeOf(typeof(INPUT)));
+    }
+  }
+}
+"@
+  }
 
   $isTree = New-Object Windows.Automation.PropertyCondition($A::ClassNameProperty, 'SysTreeView32')
+  $isMain = New-Object Windows.Automation.PropertyCondition($A::ClassNameProperty, 'MMCMainFrame')
   $mmc = Start-Process mmc.exe -ArgumentList 'gpedit.msc' -PassThru
-  # the editor window: the mmc started now, with a tree
+  Trace "started mmc pid $($mmc.Id)"
+  # the editor window: an MMC main window with a tree, of the mmc started
+  # now or (mmc may hand over to another process) any new one
   $win = $null
   for ($i = 0; $i -lt 60 -and -not $win; $i++) {
     Start-Sleep -Milliseconds 500
-    $cond = New-Object Windows.Automation.PropertyCondition($A::ProcessIdProperty, $mmc.Id)
-    $w = [Windows.Automation.AutomationElement]::RootElement.FindFirst($scope::Children, $cond)
-    # the tree of an MMC window is a SysTreeView32 (its items are only
-    # readable from an elevated process, like mmc itself)
-    if ($w -and $w.FindFirst($scope::Descendants, $isTree)) { $win = $w }
+    foreach ($w in [Windows.Automation.AutomationElement]::RootElement.FindAll($scope::Children, $isMain)) {
+      if ($w.FindFirst($scope::Descendants, $isTree) -and ($w.Current.ProcessId -eq $mmc.Id -or $w.Current.Name -match 'Pol[ií]tica de Grupo|Group Policy')) { $win = $w; break }
+    }
   }
   if (-not $win) { Say 'the Group Policy editor did not open'; Finish 1 }
+  Trace "window '$($win.Current.Name)' pid $($win.Current.ProcessId)"
   $tree = $win.FindFirst($scope::Descendants, $isTree)
   $isItem = New-Object Windows.Automation.PropertyCondition($A::ControlTypeProperty, $ctl::TreeItem)
+  try { $win.SetFocus() } catch {}
 
   function Norm([string]$s) { ($s -replace '\s+', ' ').Trim().ToLowerInvariant() }
-  # Child finds the tree item under $parent named one of $names (exact,
-  # then the start of the name), expanding $parent first.
-  function Child($parent, [string[]]$names) {
-    if ($parent.Current.ControlType -eq $ctl::TreeItem) {
-      try { $parent.GetCurrentPattern([Windows.Automation.ExpandCollapsePattern]::Pattern).Expand() } catch {}
-    }
-    for ($try = 0; $try -lt 10; $try++) {
-      $kids = $parent.FindAll($scope::Children, $isItem)
-      foreach ($n in $names) { foreach ($k in $kids) { if ((Norm $k.Current.Name) -eq (Norm $n)) { return $k } } }
-      foreach ($n in $names) { foreach ($k in $kids) { if ((Norm $k.Current.Name).StartsWith((Norm $n))) { return $k } } }
-      Start-Sleep -Milliseconds 300
-    }
-    return $null
-  }
+  function Kids($parent) { @($parent.FindAll($scope::Children, $isItem)) }
   function Pick($item) {
-    try { $item.GetCurrentPattern([Windows.Automation.SelectionItemPattern]::Pattern).Select() } catch { $item.SetFocus() }
+    try { $item.GetCurrentPattern([Windows.Automation.SelectionItemPattern]::Pattern).Select() } catch {}
+    try { $item.SetFocus() } catch {}
     Start-Sleep -Milliseconds 400
   }
+  # Open shows the children of a tree item: the Expand of UI Automation,
+  # then, if MMC did not fill them in, the right arrow on the selected item
+  function Open($item) {
+    try { $item.GetCurrentPattern([Windows.Automation.ExpandCollapsePattern]::Pattern).Expand() } catch { Trace "expand failed: $($_.Exception.Message)" }
+    for ($t = 0; $t -lt 8; $t++) { if ((Kids $item).Count) { return }; Start-Sleep -Milliseconds 250 }
+    Pick $item
+    $keys::SendWait('{RIGHT}')
+    for ($t = 0; $t -lt 12; $t++) { if ((Kids $item).Count) { return }; Start-Sleep -Milliseconds 250 }
+  }
+  # Child finds the item under $parent named one of $names (exact, then the
+  # start of the name)
+  function Child($parent, [string[]]$names) {
+    if ($parent.Current.ControlType -eq $ctl::TreeItem) { Open $parent }
+    $kids = Kids $parent
+    Trace ("under '{0}': {1}" -f $parent.Current.Name, (($kids | ForEach-Object { $_.Current.Name }) -join ' | '))
+    foreach ($n in $names) { foreach ($k in $kids) { if ((Norm $k.Current.Name) -eq (Norm $n)) { return $k } } }
+    foreach ($n in $names) { foreach ($k in $kids) { if ((Norm $k.Current.Name).StartsWith((Norm $n))) { return $k } } }
+    return $null
+  }
 
-  $node = Child $tree @('Política Computador Local', 'Local Computer Policy')
-  $steps = @(@('Configuração do Computador', 'Computer Configuration'), @('Modelos Administrativos', 'Administrative Templates'))
+  $steps = @(, @('Configuração do Computador', 'Computer Configuration'))
+  $steps += , @('Modelos Administrativos', 'Administrative Templates')
   foreach ($seg in ($Path -split '\s*>\s*')) { if ($seg) { $steps += , @($seg) } }
-  $where = @()
+
+  $roots = Kids $tree
+  Trace ("tree items at the top: {0}" -f $roots.Count)
+  if ($roots.Count -eq 0) {
+    # UI Automation cannot see the items: walk the tree with the keyboard.
+    # Typing the start of a name selects the next item that begins with it.
+    Trace 'keyboard mode'
+    $tree.SetFocus(); Start-Sleep -Milliseconds 300
+    $keys::SendWait('{HOME}'); Start-Sleep -Milliseconds 300
+    foreach ($names in $steps) {
+      $keys::SendWait('{RIGHT}'); Start-Sleep -Milliseconds 800
+      # only the part before the first accented letter: SendKeys cannot type
+      # every letter on every keyboard, and a prefix is enough to find it
+      $typed = ($names[0] -replace '[^\x20-\x7E].*$', '')
+      if ($typed.Length -gt 24) { $typed = $typed.Substring(0, 24) }
+      $keys::SendWait(($typed -replace '([+^%~(){}\[\]])', '{$1}')); Start-Sleep -Milliseconds 900
+      Trace "typed '$typed'"
+    }
+    # the list of policies on the right: Tab does not reach it (it goes to
+    # the Extended/Standard tabs), so it gets the focus directly
+    Start-Sleep -Milliseconds 800
+    $isList = New-Object Windows.Automation.PropertyCondition($A::ClassNameProperty, 'SysListView32')
+    $list = $null; $best = 0
+    foreach ($l in $win.FindAll($scope::Descendants, $isList)) {
+      $r = $l.Current.BoundingRectangle
+      if (-not $l.Current.IsOffscreen -and $r.Width * $r.Height -gt $best) { $best = $r.Width * $r.Height; $list = $l }
+    }
+    if (-not $list) {
+      [System.Windows.Forms.Clipboard]::SetText($Title)
+      Say ("the folder is open, but its list of policies was not found: look for '{0}' there (the name was copied to the clipboard)" -f $Title)
+      Finish 2
+    }
+    $isRow = New-Object Windows.Automation.OrCondition(
+      (New-Object Windows.Automation.PropertyCondition($A::ControlTypeProperty, $ctl::ListItem)),
+      (New-Object Windows.Automation.PropertyCondition($A::ControlTypeProperty, $ctl::DataItem)))
+    $rows = @($list.FindAll($scope::Descendants, $isRow))
+    Trace ("list rows seen: {0}" -f $rows.Count)
+    $row = $null
+    foreach ($r in $rows) { if ((Norm $r.Current.Name) -eq (Norm $Title)) { $row = $r; break } }
+    if ($row) {
+      Pick $row
+    } else {
+      # the rows cannot be read either: type the whole name, which selects
+      # the row that begins with it. Typed as Unicode characters, so accents
+      # work on any keyboard layout.
+      $list.SetFocus(); Start-Sleep -Milliseconds 300
+      $keys::SendWait('{HOME}'); Start-Sleep -Milliseconds 1200
+      [EnvsetupTyper]::Type($Title); Start-Sleep -Milliseconds 600
+      Trace "typed the title in the list"
+    }
+    $keys::SendWait('{ENTER}')
+    # the policy window has the policy's name as its title; it can take a few
+    # seconds to show up, and may not be a direct child of the desktop
+    $isTitled = New-Object Windows.Automation.PropertyCondition($A::NameProperty, $Title)
+    $dialog = $null
+    for ($i = 0; $i -lt 30 -and -not $dialog; $i++) {
+      Start-Sleep -Milliseconds 300
+      $dialog = [Windows.Automation.AutomationElement]::RootElement.FindFirst($scope::Children, $isTitled)
+      if (-not $dialog) { $dialog = $win.FindFirst($scope::Descendants, (New-Object Windows.Automation.AndCondition($isTitled, (New-Object Windows.Automation.PropertyCondition($A::ControlTypeProperty, $ctl::Window))))) }
+    }
+    if (-not $dialog) {
+      [System.Windows.Forms.Clipboard]::SetText($Title)
+      Say ("selected '{0}' in its folder; if its window did not open, press Enter (the name was copied to the clipboard)" -f $Title)
+      Finish 0
+    }
+    Trace "dialog '$($dialog.Current.Name)'"
+    Say ("opened: {0}" -f $Title)
+    Finish 0
+  }
+
+  $node = $null
+  foreach ($r in $roots) { if ((Norm $r.Current.Name) -match 'pol[ií]tica|policy') { $node = $r } }
+  if (-not $node) { $node = $roots[0] }
+  $where = @($node.Current.Name)
   foreach ($names in $steps) {
-    if (-not $node) { break }
     $next = Child $node $names
     if (-not $next) {
       Pick $node
-      Say ("stopped at '{0}': '{1}' was not found there. Open it by hand: {2}" -f ($where -join ' > '), $names[0], $Path)
+      $there = (Kids $node | ForEach-Object { $_.Current.Name }) -join ', '
+      Say ("stopped at '{0}': '{1}' is not there (it has: {2})" -f ($where -join ' > '), $names[0], $there)
       Finish 2
     }
     $node = $next
     $where += $node.Current.Name
   }
-  if (-not $node) { Say 'the tree of the editor could not be read'; Finish 1 }
   Pick $node
   Say ("folder: {0}" -f ($where -join ' > '))
 
@@ -132,22 +242,21 @@ try {
     (New-Object Windows.Automation.PropertyCondition($A::ControlTypeProperty, $ctl::DataItem)))
   $row = $null
   for ($i = 0; $i -lt 20 -and -not $row; $i++) {
-    foreach ($r in $win.FindAll($scope::Descendants, $isRow)) {
-      if ((Norm $r.Current.Name) -eq (Norm $Title)) { $row = $r; break }
-    }
+    $rows = @($win.FindAll($scope::Descendants, $isRow))
+    foreach ($r in $rows) { if ((Norm $r.Current.Name) -eq (Norm $Title)) { $row = $r; break } }
     if (-not $row) { Start-Sleep -Milliseconds 300 }
   }
   if (-not $row) {
+    Trace ("rows: {0}" -f (($rows | ForEach-Object { $_.Current.Name }) -join ' | '))
     [System.Windows.Forms.Clipboard]::SetText($Title)
     Say ("the folder is open, but '{0}' is not in its list: look for it there (the name was copied to the clipboard)" -f $Title)
     Finish 2
   }
   Pick $row
-  $row.SetFocus()
-  [System.Windows.Forms.SendKeys]::SendWait('{ENTER}')
+  $keys::SendWait('{ENTER}')
   Say ("opened: {0}" -f $Title)
   Finish 0
 } catch {
-  Say ("error: {0}" -f $_.Exception.Message)
+  Say ("error: {0} (line {1})" -f $_.Exception.Message, $_.InvocationInfo.ScriptLineNumber)
   Finish 1
 }
