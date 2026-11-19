@@ -113,6 +113,9 @@ envsetup backup-clone --dir=... --url=... --branch=...  # máquina nova: instala
 
 ## Perfil de jogos: drivers e periféricos
 
+- **Essenciais.** Runtimes dos jogos (Visual C++, DirectX), o 7-Zip, o Windows Media Player e o
+  Raycast. O Raycast vem da Microsoft Store (ID `9PFXXSHC64H3` no winget), porque não está no
+  repositório comum do winget.
 - **Placa de vídeo.** A etapa Drivers traz o NVIDIA App e o AMD Software (Adrenalin). Vem
   marcado só o da placa desta máquina, e o assistente mostra o motivo ("placa NVIDIA detectada").
 - **Periféricos.** A etapa Periféricos instala, já marcados, o MCHOSE HUB (headset V9 Pro), o

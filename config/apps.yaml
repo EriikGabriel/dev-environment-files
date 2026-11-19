@@ -527,6 +527,8 @@ apps:
         $p = Start-Process powershell.exe -Verb RunAs -Wait -PassThru -WindowStyle Hidden -ArgumentList '-NoProfile', '-EncodedCommand', $enc
         if ($p.ExitCode) { throw "Add-WindowsCapability failed (code $($p.ExitCode))" }
   powertoys: { description: Microsoft PowerToys, names: { windows: Microsoft.PowerToys } }
+  # Microsoft Store package (Raycast Technologies): not in the winget community source.
+  raycast: { description: "Raycast (command bar: launch apps, search files, clipboard history, extensions)", names: { windows: 9PFXXSHC64H3 } }
   scoop:
     description: scoop, a command-line installer (needed by items that use the scoop method)
     method: { windows: script }

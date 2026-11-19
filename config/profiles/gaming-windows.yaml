@@ -20,8 +20,8 @@ media:
 steps:
   - id: base
     title: Essenciais
-    description: Runtimes que os jogos pedem e utilitários básicos.
-    apps: [7zip, vcredist, directx, windows-media-player]
+    description: Runtimes que os jogos pedem e utilitários básicos, como o Raycast.
+    apps: [7zip, vcredist, directx, windows-media-player, raycast]
     optional: [scoop, powertoys, ninite]
 
   # Both GPU apps are listed: the one for the card of the machine starts
