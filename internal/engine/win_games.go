@@ -104,7 +104,9 @@ func (e *Env) MoveRetroArchGames(ctx context.Context, out io.Writer, dest string
 			return err
 		}
 	}
-	if moved {
+	// also when nothing was moved: the folder may be the same one under
+	// another drive letter, and the library still names the old path
+	if src != "" {
 		return e.RelocatePlaynite(ctx, out, src, dest)
 	}
 	return nil

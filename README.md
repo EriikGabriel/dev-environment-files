@@ -18,7 +18,7 @@ que falta. Tem um app desktop (Tauri + React) e uma linha de comando sobre o mes
    `Documentos\envsetup` ou `~/envsetup`) ou "Escolher pasta…" para usar um clone deste repo.
 3. **Configurar**: revise as etapas do perfil, marque o que quer e clique em Aplicar.
 
-Detalhes em **[docs/uso.md](docs/uso.md)**: as abas do app, a linha de comando, [como formatar o PC](docs/uso.md#formatar-o-pc) e como cada
+Detalhes em **[docs/uso.md](docs/uso.md)**: as abas do app, a linha de comando, [como formatar o PC](docs/formatacao.md) (o que volta e o que não volta) e como cada
 recurso do Windows funciona.
 
 ## Mudar o ambiente

@@ -434,6 +434,16 @@ export function RetroArchTab({ root, onChanged }: Props) {
                       return;
                     }
                   }
+                  if (key === "games" && value && inst.game_count === 0) {
+                    // the old folder is gone (another drive letter, a new HD): nothing to move,
+                    // but the playlists and the Playnite library still name the old path
+                    await act("move", async () => {
+                      await api.moveRetroArchGames(root, dir);
+                      onChanged();
+                      return `Pasta de jogos trocada para ${dir}; playlists e biblioteca do Playnite apontam para lá.`;
+                    });
+                    return;
+                  }
                   await save({ [key]: dir });
                 }}
               >

@@ -602,6 +602,9 @@ apps:
   ea-app: { description: EA app, names: { windows: ElectronicArts.EADesktop } }
   ubisoft-connect: { description: Ubisoft Connect, names: { windows: Ubisoft.Connect } }
   battle-net: { description: Battle.net, names: { windows: Blizzard.BattleNet } }
+  hydra-launcher:
+    description: 'Hydra Launcher (open-source game launcher with its own download manager; github.com/hydralauncher/hydra). Set its download folder to D:\Games\Hydra'
+    names: { windows: HydraLauncher.Hydra }
   opera-gx: { description: Opera GX browser, names: { windows: Opera.OperaGX } }
   brave: { description: Brave browser, names: { windows: Brave.Brave } }
   obs-studio: { description: OBS Studio (recording and streaming), names: { windows: OBSProject.OBSStudio } }

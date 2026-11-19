@@ -116,6 +116,8 @@ envsetup backup-clone --dir=... --url=... --branch=...  # máquina nova: instala
 - **Essenciais.** Runtimes dos jogos (Visual C++, DirectX), o 7-Zip, o Windows Media Player e o
   Raycast. O Raycast vem da Microsoft Store (ID `9PFXXSHC64H3` no winget), porque não está no
   repositório comum do winget.
+- **Lojas e launchers.** Steam, Epic Games e Hydra Launcher marcados; GOG, EA, Ubisoft e Battle.net
+  opcionais. Configure a pasta de instalação de cada um para `D:\Games\<loja>`.
 - **Placa de vídeo.** A etapa Drivers traz o NVIDIA App e o AMD Software (Adrenalin). Vem
   marcado só o da placa desta máquina, e o assistente mostra o motivo ("placa NVIDIA detectada").
 - **Periféricos.** A etapa Periféricos instala, já marcados, o MCHOSE HUB (headset V9 Pro), o
@@ -124,6 +126,9 @@ envsetup backup-clone --dir=... --url=... --branch=...  # máquina nova: instala
   mouse e do controle ficam gravadas nos próprios aparelhos.
 
 ## Formatar o PC
+
+**O que volta e o que não volta** numa instalação limpa, e o que acontece sem o HD, sem o GitHub
+atualizado ou sem internet: **[formatacao.md](formatacao.md)**.
 
 **Use a aba Backup.** Ela é um passo a passo com duas telas, "Antes de formatar" e "Depois de
 formatar". Cada passo mostra se está pronto, o que falta e um botão para resolver, e o próximo
