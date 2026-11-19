@@ -4,6 +4,28 @@ mode = "dark"
 source = "custom"
 custom_palette = "Vesper"
 
+[plugins]
+enabled = [
+  "noctalia/screen_recorder",
+  "alexander/screen-toolkit",
+  "yuuto/arch-updater",
+  "kenn/keybind-cheatsheet",
+  "cleboost/zed-provider",
+]
+auto_update = "all"
+
+[[plugins.source]]
+name = "official"
+kind = "git"
+location = "https://github.com/noctalia-dev/official-plugins"
+enabled = true
+
+[[plugins.source]]
+name = "community"
+kind = "git"
+location = "https://github.com/noctalia-dev/community-plugins"
+enabled = true
+
 [bar.default]
 position = "top"
 background_opacity = 0.93
@@ -34,7 +56,7 @@ pinned = ["org.gnome.Nautilus", "spotify", "discord", "kitty", "obsidian", "zen"
 
 [wallpaper]
 enabled = true
-directory = "/home/erik/Imagens/Wallpapers"
+directory = "~/Imagens/Wallpapers"
 fill_mode = "crop"
 
 [weather]

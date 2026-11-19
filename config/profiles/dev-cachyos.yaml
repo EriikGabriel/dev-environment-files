@@ -29,7 +29,7 @@ steps:
   - id: base
     title: Essenciais
     description: Ferramentas básicas de linha de comando e de compilação.
-    apps: [curl, wget, git, vim, unzip, build-tools, ripgrep, btop, tree, webkit2gtk]
+    apps: [curl, wget, git, vim, neovim, unzip, build-tools, ripgrep, btop, tree, webkit2gtk]
     optional: [htop, tmux, micro, helix]
 
   - id: shell
@@ -45,6 +45,7 @@ steps:
         files:
           - { src: dotfiles/fish/config.fish, dest: ~/.config/fish/config.fish }
           - { src: dotfiles/fish/fish_plugins, dest: ~/.config/fish/fish_plugins }
+          - { src: dotfiles/fish/themes, dest: ~/.config/fish/themes }
           - { src: dotfiles/starship/starship.toml, dest: ~/.config/starship.toml }
       - id: zsh
         title: zsh + powerlevel10k
@@ -147,13 +148,14 @@ steps:
   - id: desktop
     title: Desktop
     description: niri + Noctalia, com os atalhos, regras e o tema Vesper atuais, e os ícones estilo macOS.
-    apps: [niri-noctalia, vicinae, mactahoe-icons]
+    apps: [niri-noctalia, vicinae, mactahoe-icons, nautilus, wl-clipboard, cliphist]
     files:
       # monitors.kdl inside dotfiles/niri is specific to this machine's outputs.
       - { src: dotfiles/niri, dest: ~/.config/niri, app: niri-noctalia }
       # niri starts the launcher itself (spawn-at-startup "vicinae" "server").
       - { src: dotfiles/vicinae/settings.json, dest: ~/.config/vicinae/settings.json, app: vicinae }
       - { src: dotfiles/noctalia/config.toml, dest: ~/.config/noctalia/config.toml, app: niri-noctalia }
+      - { src: dotfiles/noctalia/plugins.json, dest: ~/.config/noctalia/plugins.json, app: niri-noctalia }
       - { src: dotfiles/wallpapers, dest: ~/Imagens/Wallpapers, app: niri-noctalia }
       - { src: dotfiles/noctalia/palettes, dest: ~/.config/noctalia/palettes, app: niri-noctalia }
       - { src: dotfiles/noctalia/colorschemes, dest: ~/.config/noctalia/colorschemes, app: niri-noctalia }

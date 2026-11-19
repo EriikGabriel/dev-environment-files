@@ -64,7 +64,7 @@ end
 set -gx FZF_CTRL_T_OPTS "--preview='__fzf_preview {}'"
 set -gx FZF_ALT_C_OPTS "--preview 'eza --tree --color=always {} | head -200'"
 
-source /home/erik/.config/fish/themes/vesper.sh
+source "$__fish_config_dir/themes/vesper.sh"
 
 # -----------------------
 # Bat

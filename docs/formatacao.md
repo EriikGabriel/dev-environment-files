@@ -18,6 +18,25 @@ Termos usados:
 
 ---
 
+## Desenvolvimento no CachyOS
+
+Para reinstalar o ambiente de desenvolvimento, salve ou envie este repositório antes de formatar.
+Depois da instalação limpa:
+
+1. Instale o envsetup com `curl -fsSL https://github.com/EriikGabriel/dev-environment-files/releases/latest/download/install.sh | bash`.
+2. Escolha os dados incluídos ou o clone atualizado do repositório.
+3. Use o perfil **Dev · CachyOS (niri + Noctalia)** e aplique as etapas marcadas.
+4. Reinicie a sessão do Niri para carregar Noctalia, Vicinae, o tema de ícones e os atalhos.
+
+O perfil reinstala os apps essenciais, runtimes, Docker/PostgreSQL, Fish + Starship, Kitty, Zed,
+Vicinae, Niri + Noctalia, plugins, ícones MacTahoe, wallpaper, fontes e as configurações de
+workspace. Identidade Git, chave SSH e autenticação do GitHub são reaplicadas quando preenchidas;
+as contas dos aplicativos e credenciais locais precisam ser conectadas novamente.
+
+O que não é guardado: bancos de dados e volumes do Docker/PostgreSQL, projetos fora de `~/www`,
+segredos, sessões de aplicativos, configurações geradas pelo Noctalia que não estejam em
+`config.toml`/`plugins.json` e arquivos específicos de hardware em `monitors.kdl`.
+
 ## Resumo
 
 | Situação | O que acontece |

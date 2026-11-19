@@ -55,6 +55,7 @@ apps:
   wget: { names: { "*": wget } }
   git: { names: { "*": git } }
   vim: { names: { "*": vim } }
+  neovim: { description: Neovim (editor usado pelo Fish e pelos projetos), names: { "*": neovim } }
   unzip: { names: { "*": unzip } }
   tmux: { names: { "*": tmux } }
   htop: { names: { "*": htop } }
@@ -282,6 +283,9 @@ apps:
     source:
       "*": $SUDO chsh -s "$(command -v zsh)" "$(id -un)"
   kitty: { description: GPU terminal, names: { "*": kitty } }
+  nautilus: { description: GNOME file manager used by the Niri dock, names: { arch: nautilus } }
+  wl-clipboard: { description: Wayland clipboard commands used by Noctalia, names: { arch: wl-clipboard } }
+  cliphist: { description: Clipboard history backend used by Noctalia, names: { arch: cliphist } }
 
   # ---- desktop: niri + Noctalia (CachyOS) ----
   niri-noctalia:

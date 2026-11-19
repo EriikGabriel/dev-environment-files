@@ -18,6 +18,8 @@ windows/retroarch/         retroarch.cfg, opções dos cores, playlists, saves e
 windows/autounattend.xml   instalação automática do Windows (com windows/ventoy.json)
 windows/windhawk/backup.json   mods do Windhawk e as configurações deles
 windows/icons/mactahoe/    pack de ícones (PNG por nome de app)
+dotfiles/fish/themes/      tema Vesper do fzf usado pelo shell atual
+dotfiles/noctalia/plugins.json   fontes e plugins habilitados do Noctalia
 dotfiles/                  os arquivos de configuração que vão para a home
 ```
 
@@ -159,7 +161,10 @@ opções se mudam no arquivo.
 **`desktop:` (Linux).** `kind` (`niri-noctalia` ou `gnome`), `wallpaper`, `icon_theme`, `colors`,
 `bar` e `dock` (`position`, `autohide`, `pinned`). A aba Preview desenha isso; `dock.pinned` é
 gravado no desktop de verdade ao aplicar (Noctalia: `config.toml`; GNOME: favoritos). A ordem da
-dock se muda arrastando na Preview (`envsetup set-dock`).
+dock se muda arrastando na Preview (`envsetup set-dock`). No perfil CachyOS, o wallpaper é
+implantado em `~/Imagens/Wallpapers`, os plugins ficam declarados em `dotfiles/noctalia/plugins.json`
+e o pacote inclui os comandos auxiliares `nautilus`, `wl-clipboard` e `cliphist` usados pelo Niri e
+pelos widgets do Noctalia.
 
 ## `config/policies.yaml`: políticas de grupo (Windows)
 
