@@ -1,0 +1,14 @@
+{
+  "CloseRiotClient": true,
+  "RiotClientPath": "Not Installed",
+  "LeaguePath": "Not Installed",
+  "LeaguePBE": false,
+  "ValorantPath": "Not Installed",
+  "LORPath": "Not Installed",
+  "TwoXKOPath": "Not Installed",
+  "LeagueCompanions": [],
+  "ValorantCompanions": [],
+  "LeagueUseShortCompName": true,
+  "ValUseShortCompName": true,
+  "VersionNum": 4
+}

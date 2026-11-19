@@ -8,3 +8,4 @@ export * from "./icons";
 export * from "./playnite";
 export * from "./retroarch";
 export * from "./windhawk";
+export * from "./backup";

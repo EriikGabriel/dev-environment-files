@@ -8,8 +8,8 @@
 # `retroarch-save` updates git and the store, `retroarch-restore` puts everything back.
 #
 # path          the RetroArch folder on this machine (the one with retroarch.exe)
-# games         the folder of the games, one subfolder per system; empty leaves
-#               the games out
+# games         the folder of the games, one subfolder per system (on the drive
+#               that is not formatted: D:\Games\Retro); empty leaves them out
 # store         folder for the rest (second drive, external drive, NAS): it gets
 #               <store>\RetroArch (BIOS and what is not downloaded nor in git),
 #               <store>\Games, a manifest and the secrets left out of git
@@ -22,9 +22,11 @@
 # bundles       the asset packs downloaded with the program
 # git           files and folders of path kept in the repo
 # copy_program  also keep the whole program in the store (no download)
+# copy_games    also copy the games to the store on each save (when they live
+#               on the drive that is formatted, or to carry them elsewhere)
 
 path: C:\Emuladores\RetroArch
-games: C:\Emuladores\Games
+games: D:\Games\Retro
 store: D:\envsetup
 exclude:
   - logs
@@ -59,3 +61,4 @@ git:
   - states
   - thumbnails
 copy_program: false
+copy_games: false

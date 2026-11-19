@@ -30,6 +30,10 @@
 #   windhawk the Windhawk 2 export windows/windhawk/backup.json (mods, their
 #            settings and Windhawk's), imported with windhawk-cli; no `names`
 #
+# `gpu` (nvidia, amd, intel) marks software for one kind of graphics card: on
+# a machine whose cards are known and none is of that kind, the app starts
+# unselected (it can still be ticked). Used by the GPU drivers.
+#
 # `repo` (Debian family, native method) registers a third-party apt repository
 # before installing: `key` is the signing key URL and `source` is the
 # "url suite components" part of the sources.list line.
@@ -534,6 +538,7 @@ apps:
         Invoke-RestMethod -Uri 'https://get.scoop.sh' | Invoke-Expression
   amd-software:
     description: "AMD Software: Adrenalin Edition (Radeon drivers and panel). Not in winget: downloads AMD's auto-detect installer and opens it"
+    gpu: [amd]
     method: { windows: script }
     check:
       windows: if (-not (Test-Path (Join-Path $env:ProgramFiles 'AMD\CNext\CNext\RadeonSoftware.exe'))) { exit 1 }
@@ -556,7 +561,39 @@ apps:
     description: MSI Afterburner (overclock, fan curve and the in-game overlay)
     names: { windows: Guru3D.Afterburner }
   hwinfo: { description: Hardware sensors and monitoring, names: { windows: REALiX.HWiNFO } }
-  nvidia-app: { description: "NVIDIA app (GeForce drivers, game optimization and the in-game overlay)", names: { windows: Nvidia.NvidiaApp } }
+  nvidia-app:
+    description: "NVIDIA app (GeForce drivers, game optimization and the in-game overlay). Not in winget: downloads the installer linked on nvidia.com"
+    gpu: [nvidia]
+    method: { windows: script }
+    check:
+      windows: if (-not (& "$env:ENVSETUP_ROOT\windows\installed.ps1" 'NVIDIA App*')) { exit 1 }
+    source:
+      windows: |
+        & "$env:ENVSETUP_ROOT\windows\install-from-url.ps1" -Name 'NVIDIA App*' -Silent '-s -noreboot' `
+          -Page 'https://www.nvidia.com/en-us/software/nvidia-app/' `
+          -Pattern 'https://us\.download\.nvidia\.com/nvapp/client/[0-9.]+/x64/NVIDIA_app_v[0-9.]+_x64\.exe'
+
+  # Software of the peripherals: nothing to configure in them, only to install.
+  mchose-hub:
+    description: "MCHOSE HUB: EQ, voice effects and noise reduction of the MCHOSE V9 Pro headset (from cdn.mchose.com.cn)"
+    method: { windows: script }
+    check:
+      windows: if (-not (& "$env:ENVSETUP_ROOT\windows\installed.ps1" 'MCHOSE HUB*')) { exit 1 }
+    source:
+      windows: |
+        & "$env:ENVSETUP_ROOT\windows\install-from-url.ps1" -Name 'MCHOSE HUB*' -Url 'https://cdn.mchose.com.cn/MCHOSE_HUB_installer.zip'
+  attack-shark-driver:
+    description: "Attack Shark Driver: DPI, polling rate, lift-off distance and macros of the Attack Shark X3 Pro mouse (from download.attackshark.pro)"
+    method: { windows: script }
+    check:
+      windows: if (-not (& "$env:ENVSETUP_ROOT\windows\installed.ps1" 'Attack Shark Driver*')) { exit 1 }
+    source:
+      windows: |
+        & "$env:ENVSETUP_ROOT\windows\install-from-url.ps1" -Name 'Attack Shark Driver*' -Url 'https://download.attackshark.pro/ATTACKSHARK/X3PRO/ATTACKSHARKX3PRO.zip'
+  signalrgb: { description: SignalRGB (one place for the RGB lighting of every device), names: { windows: WhirlwindFX.SignalRgb } }
+  8bitdo-ultimate-software:
+    description: 8BitDo Ultimate Software V2 (buttons, sticks, triggers and profiles of the 8BitDo Ultimate 2.4G controller)
+    names: { windows: 8BitDo.UltimateSoftwareV2 }
   steam: { description: Steam, names: { windows: Valve.Steam } }
   epic-games: { description: Epic Games Launcher, names: { windows: EpicGames.EpicGamesLauncher } }
   gog-galaxy: { description: GOG Galaxy, names: { windows: GOG.Galaxy } }
@@ -577,10 +614,10 @@ apps:
     description: "The Windhawk mods of windows/windhawk/backup.json, installed with their settings (dock, Start menu, Explorer, corners, animations...). See the Windhawk tab"
     method: { windows: windhawk }
   playnite:
-    description: "Playnite portable, copied back from the snapshot of config/playnite.yaml: library, covers, trailers, theme music, themes and extensions, configured. See the Playnite tab"
+    description: "Playnite portable: the library, covers, trailers, themes and extensions from the store (the HD), the settings from git (windows/playnite), with the paths to RetroArch and the games fixed. See the Playnite and Backup tabs"
     method: { windows: playnite }
   retroarch:
-    description: "RetroArch portable and the games, copied back from the snapshot of config/retroarch.yaml: cores, BIOS, saves, states, playlists and settings, with the playlists pointed at the games. See the RetroArch tab"
+    description: "RetroArch portable: downloaded with its cores, the BIOS from the store (the HD), settings, saves and playlists from git (windows/retroarch), the playlists pointed at the games (games in config/retroarch.yaml). See the RetroArch and Backup tabs"
     method: { windows: retroarch }
   ninite:
     description: "Ninite: one installer for the apps picked in the Instalação tab (it installs and updates them, with no questions)"

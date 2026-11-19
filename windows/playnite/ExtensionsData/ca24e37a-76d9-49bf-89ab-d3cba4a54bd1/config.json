@@ -1,0 +1,24 @@
+{
+  "LastUsedQuery": {
+    "ReviewType": 0,
+    "PurchaseType": 0,
+    "Language": "english",
+    "DateRangeMode": 0,
+    "PlaytimePreset": 0,
+    "CustomPlaytimeMinHours": 0,
+    "CustomPlaytimeMaxHours": 0,
+    "PlaytimeDevice": 0,
+    "Display": 1,
+    "LanguageSelectionMode": 1,
+    "SelectedLanguages": [
+      4
+    ],
+    "UseHelpfulSystem": true,
+    "FilterOfftopicActivity": true
+  },
+  "LastReviewsDbCompactTime": "2026-11-19T03:00:33.1899487Z",
+  "DatabaseVersion": 4,
+  "DownloadDataIfOlderThanDays": true,
+  "DownloadIfOlderThanValue": 14,
+  "DescriptionHeight": 180.0
+}

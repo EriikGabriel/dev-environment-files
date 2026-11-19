@@ -20,6 +20,8 @@ export interface RetroArchConfig {
   git: string[];
   /** Also keep the whole program in the store. */
   copy_program: boolean;
+  /** Also copy the games to the store on each save (off when they already live on the kept drive). */
+  copy_games: boolean;
 }
 
 

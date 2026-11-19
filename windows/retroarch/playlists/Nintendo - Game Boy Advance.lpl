@@ -9,7 +9,7 @@
   "sort_mode": 0,
   "items": [
     {
-      "path": "C:\\Emuladores\\Games\\GBA\\Pokemon - Fire Red (USA).gba",
+      "path": "D:\\Games\\Retro\\GBA\\Pokemon - Fire Red (USA).gba",
       "label": "Pokemon - FireRed Version (USA, Europe) (Rev 1)",
       "core_path": "DETECT",
       "core_name": "DETECT",
@@ -17,7 +17,7 @@
       "db_name": "Nintendo - Game Boy Advance.lpl"
     },
     {
-      "path": "C:\\Emuladores\\Games\\GBA\\Sonic Advance 2 (USA).gba",
+      "path": "D:\\Games\\Retro\\GBA\\Sonic Advance 2 (USA).gba",
       "label": "Sonic Advance 2 (USA) (En,Ja,Fr,De,Es,It)",
       "core_path": "DETECT",
       "core_name": "DETECT",

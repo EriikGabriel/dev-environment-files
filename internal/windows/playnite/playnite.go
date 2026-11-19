@@ -192,6 +192,11 @@ type Manifest struct {
 	Extensions      []string `json:"extensions"`
 	// Secrets is how many values were left out of git and kept in the store.
 	Secrets int `json:"secrets"`
+	// RetroArch and RetroGames are the folders of RetroArch and of its games
+	// when the snapshot was saved: the library keeps full paths to them, and a
+	// restore rewrites them when config/retroarch.yaml says they moved.
+	RetroArch  string `json:"retroarch,omitempty"`
+	RetroGames string `json:"retro_games,omitempty"`
 }
 
 // ReadManifest reads the manifest of the store; nil when there is none.

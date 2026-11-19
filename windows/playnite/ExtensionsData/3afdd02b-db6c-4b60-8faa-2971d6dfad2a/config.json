@@ -1,0 +1,767 @@
+{
+  "EnableBackgroundImage": true,
+  "BackgroundImageSameSettings": true,
+  "EnableBackgroundImageRandomSelect": false,
+  "EnableBackgroundImageRandomOnStart": false,
+  "EnableBackgroundImageRandomOnSelect": false,
+  "EnableBackgroundImageAutoChanger": false,
+  "BackgroundImageAutoChangerTimer": 10,
+  "EnableCoverImage": true,
+  "EnableCoverImageRandomSelect": false,
+  "EnableCoverImageRandomOnStart": false,
+  "EnableCoverImageRandomOnSelect": false,
+  "EnableCoverImageAutoChanger": false,
+  "CoverImageAutoChangerTimer": 10,
+  "EnableIconImage": false,
+  "EnableIconImageRandomSelect": false,
+  "EnableIconImageRandomOnStart": false,
+  "EnableIconImageRandomOnSelect": false,
+  "EnableIconImageAutoChanger": false,
+  "IconImageAutoChangerTimer": 10,
+  "SteamGridDbApiKey": "",
+  "ffmpegFile": "",
+  "ffprobeFile": "",
+  "MediaConversion": {
+    "Defaults": {
+      "Crf": 23
+    },
+    "AnimatedWebp": {
+      "Crf": 0,
+      "UseAutoFramerate": true,
+      "FixedFramerate": 25
+    },
+    "Webm": {
+      "ForceReencode": true,
+      "Crf": 0,
+      "UseAutoFramerate": true,
+      "FixedFramerate": 25
+    },
+    "Apng": {
+      "Crf": 0,
+      "UseAutoFramerate": true,
+      "FixedFramerate": 25
+    },
+    "Gif": {
+      "Crf": 0,
+      "UseAutoFramerate": true,
+      "FixedFramerate": 25
+    }
+  },
+  "BulkMediaDownload": {
+    "GameSource": 0,
+    "InstallFilter": 0,
+    "TimeFilter": 0,
+    "GameFilterMonths": 1,
+    "OnlyGamesWithoutPluginData": false,
+    "EnableSteam": true,
+    "EnableSteamGridDb": true,
+    "EnableBackground": true,
+    "EnableCover": false,
+    "EnableIcon": false,
+    "OnlyMissing": true,
+    "Quantity": 5,
+    "DownloadAll": false,
+    "FuzzyMatchThreshold": 90,
+    "PromptOnLowFuzzyMatch": false,
+    "AllowAnimated": false,
+    "PickMode": 1,
+    "BackgroundFilters": {
+      "CheckDimensions": [
+        {
+          "Name": "Steam - 96:31 - 1920x620",
+          "Data": "1920x620",
+          "IsChecked": true
+        },
+        {
+          "Name": "Steam - 96:31 - 3840x1240",
+          "Data": "3840x1240",
+          "IsChecked": false
+        },
+        {
+          "Name": "Galaxy 2.0 - 32:13 - 1600x650",
+          "Data": "1600x650",
+          "IsChecked": false
+        }
+      ],
+      "CheckStyles": [
+        {
+          "Name": "Alternate",
+          "Data": "alternate",
+          "IsChecked": true
+        },
+        {
+          "Name": "Material",
+          "Data": "material",
+          "IsChecked": true
+        },
+        {
+          "Name": "Blurred",
+          "Data": "blurred",
+          "IsChecked": true
+        }
+      ],
+      "CheckTypes": [
+        {
+          "Name": "Static",
+          "Data": "static",
+          "IsChecked": true
+        },
+        {
+          "Name": "Animated",
+          "Data": "animated",
+          "IsChecked": false
+        }
+      ],
+      "CheckTags": [
+        {
+          "Name": "Humor",
+          "Data": "Humor",
+          "IsChecked": true
+        },
+        {
+          "Name": "Adult Content",
+          "Data": "Adult Content",
+          "IsChecked": false
+        },
+        {
+          "Name": "Epilepsy",
+          "Data": "Epilepsy",
+          "IsChecked": true
+        },
+        {
+          "Name": "Untagged",
+          "Data": "Untagged",
+          "IsChecked": true
+        }
+      ],
+      "SortByDateAsc": false
+    },
+    "CoverFilters": {
+      "CheckDimensions": [
+        {
+          "Name": "Steam Vertical - 2:3 - 600x900",
+          "Data": "600x900",
+          "IsChecked": true
+        },
+        {
+          "Name": "Steam Horizontal - 92:43 - 920x430",
+          "Data": "920x430",
+          "IsChecked": true
+        },
+        {
+          "Name": "Steam Horizontal - 92:43 - 460x215",
+          "Data": "460x215",
+          "IsChecked": true
+        },
+        {
+          "Name": "Square - 1:1 - 1024x1024",
+          "Data": "1024x1024",
+          "IsChecked": true
+        },
+        {
+          "Name": "Square - 1:1 - 512x512",
+          "Data": "512x512",
+          "IsChecked": true
+        },
+        {
+          "Name": "Galaxy 2.0 - 22:31 - 660x930",
+          "Data": "660x930",
+          "IsChecked": true
+        },
+        {
+          "Name": "Galaxy 2.0 - 22:31 - 342x482",
+          "Data": "342x482",
+          "IsChecked": true
+        }
+      ],
+      "CheckStyles": [
+        {
+          "Name": "Alternate",
+          "Data": "alternate",
+          "IsChecked": true
+        },
+        {
+          "Name": "White Logo",
+          "Data": "white_logo",
+          "IsChecked": true
+        },
+        {
+          "Name": "Material",
+          "Data": "material",
+          "IsChecked": true
+        },
+        {
+          "Name": "Blurred",
+          "Data": "blurred",
+          "IsChecked": true
+        },
+        {
+          "Name": "No Logo",
+          "Data": "no_logo",
+          "IsChecked": true
+        }
+      ],
+      "CheckTypes": [
+        {
+          "Name": "Static",
+          "Data": "static",
+          "IsChecked": true
+        },
+        {
+          "Name": "Animated",
+          "Data": "animated",
+          "IsChecked": false
+        }
+      ],
+      "CheckTags": [
+        {
+          "Name": "Humor",
+          "Data": "Humor",
+          "IsChecked": true
+        },
+        {
+          "Name": "Adult Content",
+          "Data": "Adult Content",
+          "IsChecked": false
+        },
+        {
+          "Name": "Epilepsy",
+          "Data": "Epilepsy",
+          "IsChecked": true
+        },
+        {
+          "Name": "Untagged",
+          "Data": "Untagged",
+          "IsChecked": true
+        }
+      ],
+      "SortByDateAsc": false
+    },
+    "IconFilters": {
+      "CheckDimensions": [
+        {
+          "Name": "32 px",
+          "Data": "32",
+          "IsChecked": true
+        },
+        {
+          "Name": "64 px",
+          "Data": "64",
+          "IsChecked": true
+        },
+        {
+          "Name": "128 px",
+          "Data": "128",
+          "IsChecked": true
+        },
+        {
+          "Name": "256 px",
+          "Data": "256",
+          "IsChecked": true
+        },
+        {
+          "Name": "512 px",
+          "Data": "512",
+          "IsChecked": true
+        },
+        {
+          "Name": "1024 px",
+          "Data": "1024",
+          "IsChecked": true
+        }
+      ],
+      "CheckStyles": [
+        {
+          "Name": "Official",
+          "Data": "official",
+          "IsChecked": true
+        },
+        {
+          "Name": "Custom",
+          "Data": "custom",
+          "IsChecked": true
+        }
+      ],
+      "CheckTypes": [
+        {
+          "Name": "Static",
+          "Data": "static",
+          "IsChecked": true
+        },
+        {
+          "Name": "Animated",
+          "Data": "animated",
+          "IsChecked": false
+        }
+      ],
+      "CheckTags": [
+        {
+          "Name": "Humor",
+          "Data": "Humor",
+          "IsChecked": true
+        },
+        {
+          "Name": "Adult Content",
+          "Data": "Adult Content",
+          "IsChecked": false
+        },
+        {
+          "Name": "Epilepsy",
+          "Data": "Epilepsy",
+          "IsChecked": true
+        },
+        {
+          "Name": "Untagged",
+          "Data": "Untagged",
+          "IsChecked": true
+        }
+      ],
+      "CheckMimes": [
+        {
+          "Name": "PNG",
+          "Data": "image/png",
+          "IsChecked": true
+        },
+        {
+          "Name": "ICO",
+          "Data": "image/vnd.microsoft.icon",
+          "IsChecked": true
+        }
+      ],
+      "SortByDateAsc": false
+    },
+    "HasAnySource": true,
+    "HasAnyMediaKind": true
+  },
+  "useVideoDelayBackgroundImage": false,
+  "videoDelayBackgroundImage": 5,
+  "useVideoDelayCoverImage": false,
+  "videoDelayCoverImage": 5,
+  "EnableRandomVideoStartPointBackground": false,
+  "EnableRandomVideoStartPointCover": false,
+  "MenuInExtensions": true,
+  "EnableTag": false,
+  "LastAutoLibUpdateAssetsDownload": "0001-01-01T00:00:00",
+  "AutoImport": false,
+  "AutoImportOnInstalled": false,
+  "DatabaseBackupMaxCount": 5,
+  "IncludeEmulatedGames": true,
+  "LibrarySourceFilterMode": 0,
+  "EnabledSources": [],
+  "ExcludedSources": [],
+  "SgGridsFilters": {
+    "CheckDimensions": [
+      {
+        "Name": "Steam Vertical - 2:3 - 600x900",
+        "Data": "600x900",
+        "IsChecked": true
+      },
+      {
+        "Name": "Steam Horizontal - 92:43 - 920x430",
+        "Data": "920x430",
+        "IsChecked": true
+      },
+      {
+        "Name": "Steam Horizontal - 92:43 - 460x215",
+        "Data": "460x215",
+        "IsChecked": true
+      },
+      {
+        "Name": "Square - 1:1 - 1024x1024",
+        "Data": "1024x1024",
+        "IsChecked": true
+      },
+      {
+        "Name": "Square - 1:1 - 512x512",
+        "Data": "512x512",
+        "IsChecked": true
+      },
+      {
+        "Name": "Galaxy 2.0 - 22:31 - 660x930",
+        "Data": "660x930",
+        "IsChecked": true
+      },
+      {
+        "Name": "Galaxy 2.0 - 22:31 - 342x482",
+        "Data": "342x482",
+        "IsChecked": true
+      },
+      {
+        "Name": "Steam Vertical - 2:3 - 600x900",
+        "Data": "600x900",
+        "IsChecked": true
+      },
+      {
+        "Name": "Steam Horizontal - 92:43 - 920x430",
+        "Data": "920x430",
+        "IsChecked": true
+      },
+      {
+        "Name": "Steam Horizontal - 92:43 - 460x215",
+        "Data": "460x215",
+        "IsChecked": true
+      },
+      {
+        "Name": "Square - 1:1 - 1024x1024",
+        "Data": "1024x1024",
+        "IsChecked": true
+      },
+      {
+        "Name": "Square - 1:1 - 512x512",
+        "Data": "512x512",
+        "IsChecked": true
+      },
+      {
+        "Name": "Galaxy 2.0 - 22:31 - 660x930",
+        "Data": "660x930",
+        "IsChecked": true
+      },
+      {
+        "Name": "Galaxy 2.0 - 22:31 - 342x482",
+        "Data": "342x482",
+        "IsChecked": true
+      }
+    ],
+    "CheckStyles": [
+      {
+        "Name": "Alternate",
+        "Data": "alternate",
+        "IsChecked": true
+      },
+      {
+        "Name": "White Logo",
+        "Data": "white_logo",
+        "IsChecked": true
+      },
+      {
+        "Name": "Material",
+        "Data": "material",
+        "IsChecked": true
+      },
+      {
+        "Name": "Blurred",
+        "Data": "blurred",
+        "IsChecked": true
+      },
+      {
+        "Name": "No Logo",
+        "Data": "no_logo",
+        "IsChecked": true
+      },
+      {
+        "Name": "Alternate",
+        "Data": "alternate",
+        "IsChecked": true
+      },
+      {
+        "Name": "White Logo",
+        "Data": "white_logo",
+        "IsChecked": true
+      },
+      {
+        "Name": "Material",
+        "Data": "material",
+        "IsChecked": true
+      },
+      {
+        "Name": "Blurred",
+        "Data": "blurred",
+        "IsChecked": true
+      },
+      {
+        "Name": "No Logo",
+        "Data": "no_logo",
+        "IsChecked": true
+      }
+    ],
+    "CheckTypes": [
+      {
+        "Name": "Static",
+        "Data": "static",
+        "IsChecked": true
+      },
+      {
+        "Name": "Animated",
+        "Data": "animated",
+        "IsChecked": true
+      },
+      {
+        "Name": "Static",
+        "Data": "static",
+        "IsChecked": true
+      },
+      {
+        "Name": "Animated",
+        "Data": "animated",
+        "IsChecked": true
+      }
+    ],
+    "CheckTags": [
+      {
+        "Name": "Humor",
+        "Data": "Humor",
+        "IsChecked": true
+      },
+      {
+        "Name": "Adult Content",
+        "Data": "Adult Content",
+        "IsChecked": false
+      },
+      {
+        "Name": "Epilepsy",
+        "Data": "Epilepsy",
+        "IsChecked": true
+      },
+      {
+        "Name": "Untagged",
+        "Data": "Untagged",
+        "IsChecked": true
+      },
+      {
+        "Name": "Humor",
+        "Data": "Humor",
+        "IsChecked": true
+      },
+      {
+        "Name": "Adult Content",
+        "Data": "Adult Content",
+        "IsChecked": false
+      },
+      {
+        "Name": "Epilepsy",
+        "Data": "Epilepsy",
+        "IsChecked": true
+      },
+      {
+        "Name": "Untagged",
+        "Data": "Untagged",
+        "IsChecked": true
+      }
+    ],
+    "SortByDateAsc": false
+  },
+  "SgHeroesFilters": {
+    "CheckDimensions": [
+      {
+        "Name": "Steam - 96:31 - 1920x620",
+        "Data": "1920x620",
+        "IsChecked": true
+      },
+      {
+        "Name": "Steam - 96:31 - 3840x1240",
+        "Data": "3840x1240",
+        "IsChecked": true
+      },
+      {
+        "Name": "Galaxy 2.0 - 32:13 - 1600x650",
+        "Data": "1600x650",
+        "IsChecked": true
+      },
+      {
+        "Name": "Steam - 96:31 - 1920x620",
+        "Data": "1920x620",
+        "IsChecked": true
+      },
+      {
+        "Name": "Steam - 96:31 - 3840x1240",
+        "Data": "3840x1240",
+        "IsChecked": true
+      },
+      {
+        "Name": "Galaxy 2.0 - 32:13 - 1600x650",
+        "Data": "1600x650",
+        "IsChecked": true
+      }
+    ],
+    "CheckStyles": [
+      {
+        "Name": "Alternate",
+        "Data": "alternate",
+        "IsChecked": true
+      },
+      {
+        "Name": "Material",
+        "Data": "material",
+        "IsChecked": true
+      },
+      {
+        "Name": "Blurred",
+        "Data": "blurred",
+        "IsChecked": true
+      },
+      {
+        "Name": "Alternate",
+        "Data": "alternate",
+        "IsChecked": true
+      },
+      {
+        "Name": "Material",
+        "Data": "material",
+        "IsChecked": true
+      },
+      {
+        "Name": "Blurred",
+        "Data": "blurred",
+        "IsChecked": true
+      }
+    ],
+    "CheckTypes": [
+      {
+        "Name": "Static",
+        "Data": "static",
+        "IsChecked": true
+      },
+      {
+        "Name": "Animated",
+        "Data": "animated",
+        "IsChecked": true
+      },
+      {
+        "Name": "Static",
+        "Data": "static",
+        "IsChecked": true
+      },
+      {
+        "Name": "Animated",
+        "Data": "animated",
+        "IsChecked": true
+      }
+    ],
+    "CheckTags": [
+      {
+        "Name": "Humor",
+        "Data": "Humor",
+        "IsChecked": true
+      },
+      {
+        "Name": "Adult Content",
+        "Data": "Adult Content",
+        "IsChecked": false
+      },
+      {
+        "Name": "Epilepsy",
+        "Data": "Epilepsy",
+        "IsChecked": true
+      },
+      {
+        "Name": "Untagged",
+        "Data": "Untagged",
+        "IsChecked": true
+      },
+      {
+        "Name": "Humor",
+        "Data": "Humor",
+        "IsChecked": true
+      },
+      {
+        "Name": "Adult Content",
+        "Data": "Adult Content",
+        "IsChecked": false
+      },
+      {
+        "Name": "Epilepsy",
+        "Data": "Epilepsy",
+        "IsChecked": true
+      },
+      {
+        "Name": "Untagged",
+        "Data": "Untagged",
+        "IsChecked": true
+      }
+    ],
+    "SortByDateAsc": false
+  },
+  "SgIconsFilters": {
+    "CheckDimensions": [
+      {
+        "Name": "32 px",
+        "Data": "32",
+        "IsChecked": true
+      },
+      {
+        "Name": "64 px",
+        "Data": "64",
+        "IsChecked": true
+      },
+      {
+        "Name": "128 px",
+        "Data": "128",
+        "IsChecked": true
+      },
+      {
+        "Name": "256 px",
+        "Data": "256",
+        "IsChecked": true
+      },
+      {
+        "Name": "512 px",
+        "Data": "512",
+        "IsChecked": true
+      },
+      {
+        "Name": "1024 px",
+        "Data": "1024",
+        "IsChecked": true
+      }
+    ],
+    "CheckStyles": [
+      {
+        "Name": "Official",
+        "Data": "official",
+        "IsChecked": true
+      },
+      {
+        "Name": "Custom",
+        "Data": "custom",
+        "IsChecked": true
+      }
+    ],
+    "CheckTypes": [
+      {
+        "Name": "Static",
+        "Data": "static",
+        "IsChecked": true
+      },
+      {
+        "Name": "Animated",
+        "Data": "animated",
+        "IsChecked": true
+      }
+    ],
+    "CheckTags": [
+      {
+        "Name": "Humor",
+        "Data": "Humor",
+        "IsChecked": true
+      },
+      {
+        "Name": "Adult Content",
+        "Data": "Adult Content",
+        "IsChecked": false
+      },
+      {
+        "Name": "Epilepsy",
+        "Data": "Epilepsy",
+        "IsChecked": true
+      },
+      {
+        "Name": "Untagged",
+        "Data": "Untagged",
+        "IsChecked": true
+      }
+    ],
+    "CheckMimes": [
+      {
+        "Name": "PNG",
+        "Data": "image/png",
+        "IsChecked": true
+      },
+      {
+        "Name": "ICO",
+        "Data": "image/vnd.microsoft.icon",
+        "IsChecked": true
+      }
+    ],
+    "SortByDateAsc": false
+  }
+}

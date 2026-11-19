@@ -1,6 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
-import type { AddResult, ApplyEvent, CopyReport, DataInfo, DesktopPreview, FileView, IconPackPage, Icons, IconsConfig, Layout, LayoutChoice, InstallMedia, NewApp, Plan, Playnite, PlayniteConfig, PlayniteManifest, RetroArch, RetroArchConfig, RetroArchManifest, Policies, Windhawk, Profile, Selection, SystemInfo, VentoyDrive, Wizard, Written } from "./types";
+import type { AddResult, Backup, ApplyEvent, CopyReport, DataInfo, DesktopPreview, FileView, IconPackPage, Icons, IconsConfig, Layout, LayoutChoice, InstallMedia, NewApp, Plan, Playnite, PlayniteConfig, PlayniteManifest, RetroArch, RetroArchConfig, RetroArchManifest, Policies, Windhawk, Profile, Selection, SystemInfo, VentoyDrive, Wizard, Written } from "./types";
 
 const run = <T>(root: string, args: string[]) => invoke<T>("envsetup", { root, args });
 
@@ -221,6 +221,7 @@ export const setRetroArch = (root: string, c: Partial<RetroArchConfig>) =>
     ...(c.exclude !== undefined ? [`--exclude=${c.exclude.join(",")}`] : []),
     ...(c.start_menu !== undefined ? [`--start-menu=${c.start_menu}`] : []),
     ...(c.copy_program !== undefined ? [`--copy-program=${c.copy_program}`] : []),
+    ...(c.copy_games !== undefined ? [`--copy-games=${c.copy_games}`] : []),
   ]);
 
 /** Copies the settings and saves to git (windows/retroarch) and the BIOS and games to the store (only what changed). */
@@ -247,3 +248,23 @@ export const exportWindhawk = (root: string) => run<{ mods: number }>(root, ["wi
 
 /** Installs the mods of the export with their settings; Windows asks for elevation once. */
 export const importWindhawk = (root: string) => run<{ imported: boolean }>(root, ["windhawk-import"]);
+
+/** What a format needs: Playnite and RetroArch saved, the store reachable, git committed and pushed. */
+export const backup = (root: string, fetch = false) => run<Backup>(root, ["backup", ...(fetch ? ["--fetch"] : [])]);
+
+/** Commits config/ and windows/ and pushes them. */
+export const backupPush = (root: string) =>
+  run<{ committed: boolean; files: number; pushed: boolean; branch: string; upstream: string }>(root, ["backup-push"]);
+
+/** Clones the repo of the backup (installing Git with winget when missing). */
+export const backupClone = (root: string, dir: string, url: string, branch: string) =>
+  run<{ path: string }>(root, ["backup-clone", `--dir=${dir}`, `--url=${url}`, ...(branch ? [`--branch=${branch}`] : [])]);
+
+/** git pull --ff-only in the data folder. */
+export const backupPull = (root: string) => run<{ pulled: boolean; output: string }>(root, ["backup-pull"]);
+
+/** Closes Playnite the way its own Exit does (the library is saved first). */
+export const closePlaynite = (root: string) => run<{ closed: boolean }>(root, ["playnite-close"]);
+
+/** Moves the RetroArch games to another folder and points the playlists and the Playnite library at it. */
+export const moveRetroArchGames = (root: string, folder: string) => run<{ games: string }>(root, ["retroarch-move-games", folder]);

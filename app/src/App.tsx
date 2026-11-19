@@ -1,6 +1,7 @@
 import { open } from "@tauri-apps/plugin-dialog";
 import {
 	Command as CommandIcon,
+	DatabaseBackup,
 	FileCode,
 	FolderOpen,
 	Gamepad2,
@@ -20,6 +21,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import * as api from "./api";
 import { errorMessage } from "./api";
+import { BackupTab } from "./components/windows/BackupTab";
 import { ApplyView } from "./components/ApplyView";
 import { DotfilesTab } from "./components/DotfilesTab";
 import { DataFolder } from "./components/DataFolder";
@@ -52,11 +54,11 @@ import type {
 import "./styles.css";
 import { useApplyRun } from "./useApplyRun";
 
-type Tab = "home" | "setup" | "preview" | "dotfiles" | "install" | "policies" | "windhawk" | "playnite" | "retroarch";
+type Tab = "home" | "setup" | "preview" | "dotfiles" | "install" | "policies" | "windhawk" | "playnite" | "retroarch" | "backup";
 
 // Tabs that only exist for a profile with a Windows installation (`media:`
 // in the profile).
-const WINDOWS_TABS: Tab[] = ["install", "policies", "windhawk", "playnite", "retroarch"];
+const WINDOWS_TABS: Tab[] = ["install", "policies", "windhawk", "playnite", "retroarch", "backup"];
 
 const TABS: { id: Tab; label: string; icon: LucideIcon; hint: string }[] = [
 	{ id: "home", label: "Início", icon: House, hint: "resumo da máquina e do perfil" },
@@ -68,6 +70,7 @@ const TABS: { id: Tab; label: string; icon: LucideIcon; hint: string }[] = [
 	{ id: "windhawk", label: "Windhawk", icon: Sparkles, hint: "mods e a dock" },
 	{ id: "playnite", label: "Playnite", icon: Gamepad2, hint: "snapshot do Playnite portable" },
 	{ id: "retroarch", label: "RetroArch", icon: Joystick, hint: "emuladores, jogos e playlists" },
+	{ id: "backup", label: "Backup", icon: DatabaseBackup, hint: "formatar sem perder nada: antes e depois" },
 ];
 
 export default function App() {
@@ -490,6 +493,8 @@ export default function App() {
 					<PlayniteTab root={root} onChanged={() => void loadWizard(true)} />
 				) : tab === "retroarch" && installMedia?.available ? (
 					<RetroArchTab root={root} onChanged={() => void loadWizard(true)} />
+				) : tab === "backup" && installMedia?.available ? (
+					<BackupTab root={root} onNavigate={(t) => go(t)} onChanged={() => void loadWizard(true)} />
 				) : !ready ? (
 					wizard && wizard.steps.length === 0 ? (
 						<p className="banner">Este perfil ainda não tem etapas.</p>

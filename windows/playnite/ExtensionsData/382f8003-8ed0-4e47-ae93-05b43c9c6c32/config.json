@@ -1,0 +1,117 @@
+{
+  "UpdateAutomatically": false,
+  "ShowOtherCopiesInGameMenu": false,
+  "DisplayString": "{Name} [{Installed} on {'Source'}{, ROM: 'ImageNameNoExt}]",
+  "Priorities": [
+    "Steam",
+    "Epic",
+    "Xbox",
+    "Playnite",
+    "Steam Family Sharing",
+    "Riot Games"
+  ],
+  "ShowLibraryColumn": false,
+  "DefaultEnabledFields": {
+    "Name": false,
+    "SortingName": false,
+    "Platforms": false,
+    "PlatformsUnion": false,
+    "PlatformsExcluded": [],
+    "Genres": false,
+    "GenresUnion": false,
+    "GenresExcluded": [],
+    "Developers": false,
+    "DevelopersUnion": false,
+    "DevelopersExcluded": [],
+    "Publishers": false,
+    "PublishersUnion": false,
+    "PublishersExcluded": [],
+    "Categories": false,
+    "CategoriesUnion": false,
+    "CategoriesExcluded": [],
+    "Features": false,
+    "FeaturesUnion": false,
+    "FeaturesExcluded": [],
+    "CompletionStatus": false,
+    "Tags": false,
+    "TagsUnion": false,
+    "TagsExcluded": [],
+    "Description": false,
+    "ReleaseDate": false,
+    "Series": false,
+    "SeriesUnion": false,
+    "SeriesExcluded": [],
+    "AgeRatings": false,
+    "AgeRatingsUnion": false,
+    "AgeRatingsExcluded": [],
+    "Regions": false,
+    "RegionsUnion": false,
+    "RegionsExcluded": [],
+    "Version": false,
+    "UserScore": false,
+    "CriticsScore": false,
+    "CommunityScore": false,
+    "BackgroundImage": false,
+    "Icon": false,
+    "CoverImage": false,
+    "Links": false,
+    "LinksUnion": false,
+    "Logo": false,
+    "Trailer": false,
+    "MicroTrailer": false
+  },
+  "IncludePlatforms": [
+    "PC (Windows)",
+    "Playnite"
+  ],
+  "ExcludeSources": [],
+  "ExcludeCategories": [],
+  "IgnoredGames": [],
+  "AddHiddenToIgnoreList": false,
+  "PreferUserIcons": true,
+  "EnableThemeIcons": true,
+  "EnableUiIntegration": true,
+  "ShowSingleIcon": true,
+  "SupressThemeIconNotification": false,
+  "PreferNewerGame": true,
+  "ReplaceFilters": [],
+  "PriorityProperties": [
+    {
+      "Direction": 0,
+      "PriorityList": [
+        "True",
+        "False"
+      ],
+      "PropertyName": "IsInstalled"
+    },
+    {
+      "Direction": 0,
+      "PriorityList": [
+        "7f8d568e-7cc2-434a-902e-5b634cca0d4d",
+        "b78ee969-6ab5-4c39-8e5d-8a7eb4a72f95",
+        "020abbe1-d174-4a2c-a834-a16d9399bb19",
+        "ddfc2b17-c1bc-4073-bc96-beb616681a0c",
+        "cbe74e84-ab22-4eda-b381-62cafd38998d",
+        "00000000-0000-0000-0000-000000000000"
+      ],
+      "PropertyName": "SourceId"
+    },
+    {
+      "Direction": 1,
+      "PriorityList": [],
+      "PropertyName": "ReleaseDate"
+    },
+    {
+      "Direction": 1,
+      "PriorityList": [],
+      "PropertyName": "Added"
+    }
+  ],
+  "CustomGroups": [],
+  "LowPriorityTags": [],
+  "HighPriorityTags": [],
+  "HiddenTagId": "375388a1-ec2e-470d-b1f5-350b1d80258d",
+  "RevealedTagId": "cf774eeb-8fe9-4097-b69c-40d52adb7fa7",
+  "HighPrioTagId": "0e4b4bcf-2bd9-4a18-84eb-16a7b0d17a54",
+  "LowPrioTagId": "fb655f6b-c180-495e-b5a9-e0a70d921594"
+}

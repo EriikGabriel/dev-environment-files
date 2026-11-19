@@ -174,6 +174,7 @@ func TestRetroArchRestoreDownloads(t *testing.T) {
 	root := t.TempDir()
 	cfg := raFixture(t)
 	cfg.Bundles = []string{"info"}
+	cfg.CopyGames = true
 	must(t, retroarch.Save(retroarch.Path(root), cfg))
 	fr := &fakeRunner{answers: map[string]string{"--version": "Version: 1.22.2\n"}}
 	env := &Env{Info: win, Root: root, Runner: fr}
@@ -224,5 +225,42 @@ func TestRetroArchRestoreDownloads(t *testing.T) {
 		if !strings.Contains(ran, want) {
 			t.Errorf("missing %q in:\n%s", want, ran)
 		}
+	}
+}
+
+func TestMoveRetroArchGames(t *testing.T) {
+	root := t.TempDir()
+	cfg := raFixture(t)
+	cfg.Store = ""
+	must(t, retroarch.Save(retroarch.Path(root), cfg))
+	dest := filepath.Join(t.TempDir(), "Games", "Retro")
+	// robocopy does not run in the tests: the copy is made here
+	must(t, os.MkdirAll(filepath.Join(dest, "SNES"), 0o755))
+	must(t, os.WriteFile(filepath.Join(dest, "SNES", "Mario.sfc"), []byte("rom"), 0o644))
+	old := cfg.Games
+
+	fr := &fakeRunner{}
+	env := &Env{Info: win, Root: root, Runner: fr}
+	must(t, env.MoveRetroArchGames(context.Background(), io.Discard, dest))
+	if exists(old) {
+		t.Error("the old folder is still there")
+	}
+	saved, _, err := retroarch.Load(retroarch.Path(root))
+	must(t, err)
+	if saved.Games != dest {
+		t.Errorf("games = %s", saved.Games)
+	}
+	if !strings.Contains(ranLines(fr), "robocopy '"+old+"' '"+dest+"'") {
+		t.Errorf("no copy:\n%s", ranLines(fr))
+	}
+
+	// an incomplete copy keeps the old folder
+	other := filepath.Join(t.TempDir(), "Other")
+	must(t, os.MkdirAll(other, 0o755))
+	if err := env.MoveRetroArchGames(context.Background(), io.Discard, other); err == nil || !strings.Contains(err.Error(), "incomplete") {
+		t.Errorf("err = %v", err)
+	}
+	if !exists(dest) {
+		t.Error("the games were deleted after an incomplete copy")
 	}
 }

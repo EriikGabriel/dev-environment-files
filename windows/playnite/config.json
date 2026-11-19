@@ -1,0 +1,560 @@
+{
+  "Version": 7,
+  "DetailsVisibility": {
+    "Library": true,
+    "PlayTime": true,
+    "InstallSize": true,
+    "InstallDirectory": true,
+    "LastPlayed": false,
+    "Added": false,
+    "RecentActivity": true,
+    "CompletionStatus": false,
+    "Icon": false,
+    "CoverImage": true,
+    "BackgroundImage": true,
+    "Platform": true,
+    "Genres": true,
+    "Developers": true,
+    "Publishers": true,
+    "ReleaseDate": true,
+    "Categories": true,
+    "Tags": true,
+    "Links": true,
+    "Description": true,
+    "AgeRating": false,
+    "Series": false,
+    "Source": false,
+    "Region": false,
+    "Version": false,
+    "CommunityScore": false,
+    "CriticScore": false,
+    "UserScore": false,
+    "Features": true,
+    "Notes": true,
+    "Name": true
+  },
+  "DefaultIconSource": 2,
+  "DefaultCoverSource": 1,
+  "DefaultBackgroundSource": 3,
+  "IndentGameDetails": true,
+  "CalculatedGameDetailsIndentation": 500.0,
+  "GameDetailsIndentation": 500,
+  "PropertiesPanelWith": 300,
+  "GridViewDetailsPosition": 2,
+  "FilterPanelPosition": 2,
+  "ExplorerPanelPosition": 0,
+  "DetailsListPosition": 0,
+  "ExplorerPanelVisible": false,
+  "FilterPanelWitdh": 240.0,
+  "ExplorerPanelWitdh": 280.0,
+  "GrdiDetailsWitdh": 1000.0,
+  "DetailsListWitdh": 350.0,
+  "ShowGridItemBackground": true,
+  "GridItemWidth": 220.0,
+  "GridItemWidthRatio": 1,
+  "GridItemHeightRatio": 1,
+  "CoverArtStretch": 3,
+  "GridItemSpacing": 8,
+  "GridItemMargin": 2,
+  "FullscreenItemSpacing": 50,
+  "FirstTimeWizardComplete": true,
+  "DisableHwAcceleration": false,
+  "AsyncImageLoading": true,
+  "ShowNameEmptyCover": true,
+  "ShowNamesUnderCovers": true,
+  "ShowBackgroundImageOnWindow": true,
+  "HighQualityBackgroundBlur": true,
+  "BlurWindowBackgroundImage": true,
+  "BackgroundImageBlurAmount": 68.0,
+  "DarkenWindowBackgroundImage": true,
+  "BackgroundImageDarkAmount": 0.657894731,
+  "ShowBackImageOnGridView": true,
+  "DownloadMetadataOnImport": true,
+  "ShowIconsOnList": true,
+  "ShowGroupCount": true,
+  "StartInFullscreen": false,
+  "DatabasePath": "{PlayniteDir}\\library",
+  "FilterSettings": {
+    "UseAndFilteringStyle": false,
+    "IsInstalled": false,
+    "IsUnInstalled": false,
+    "Hidden": false,
+    "Favorite": false
+  },
+  "ViewSettings": {
+    "GroupingOrder": 0,
+    "GamesViewType": 1,
+    "SelectedExplorerField": 2,
+    "ListViewColumns": {
+      "Icon": {
+        "Field": 5,
+        "Visible": true,
+        "Width": "NaN"
+      },
+      "Name": {
+        "Field": 55,
+        "Visible": true,
+        "Width": "NaN"
+      },
+      "Platform": {
+        "Field": 86,
+        "Visible": false,
+        "Width": "NaN"
+      },
+      "Developers": {
+        "Field": 42,
+        "Visible": false,
+        "Width": "NaN"
+      },
+      "Publishers": {
+        "Field": 43,
+        "Visible": false,
+        "Width": "NaN"
+      },
+      "ReleaseDate": {
+        "Field": 18,
+        "Visible": true,
+        "Width": "NaN"
+      },
+      "Genres": {
+        "Field": 41,
+        "Visible": true,
+        "Width": "NaN"
+      },
+      "LastActivity": {
+        "Field": 9,
+        "Visible": true,
+        "Width": "NaN"
+      },
+      "RecentActivity": {
+        "Field": 91,
+        "Visible": false,
+        "Width": "NaN"
+      },
+      "IsInstalled": {
+        "Field": 26,
+        "Visible": false,
+        "Width": "NaN"
+      },
+      "InstallDirectory": {
+        "Field": 7,
+        "Visible": false,
+        "Width": "NaN"
+      },
+      "Categories": {
+        "Field": 45,
+        "Visible": false,
+        "Width": "NaN"
+      },
+      "Playtime": {
+        "Field": 28,
+        "Visible": true,
+        "Width": "NaN"
+      },
+      "Added": {
+        "Field": 29,
+        "Visible": false,
+        "Width": "NaN"
+      },
+      "Modified": {
+        "Field": 30,
+        "Visible": false,
+        "Width": "NaN"
+      },
+      "PlayCount": {
+        "Field": 31,
+        "Visible": false,
+        "Width": "NaN"
+      },
+      "InstallSize": {
+        "Field": 89,
+        "Visible": false,
+        "Width": "NaN"
+      },
+      "Series": {
+        "Field": 82,
+        "Visible": false,
+        "Width": "NaN"
+      },
+      "Version": {
+        "Field": 33,
+        "Visible": false,
+        "Width": "NaN"
+      },
+      "AgeRating": {
+        "Field": 80,
+        "Visible": false,
+        "Width": "NaN"
+      },
+      "Region": {
+        "Field": 84,
+        "Visible": false,
+        "Width": "NaN"
+      },
+      "Source": {
+        "Field": 50,
+        "Visible": false,
+        "Width": "NaN"
+      },
+      "CompletionStatus": {
+        "Field": 37,
+        "Visible": false,
+        "Width": "NaN"
+      },
+      "UserScore": {
+        "Field": 38,
+        "Visible": false,
+        "Width": "NaN"
+      },
+      "CriticScore": {
+        "Field": 39,
+        "Visible": false,
+        "Width": "NaN"
+      },
+      "CommunityScore": {
+        "Field": 40,
+        "Visible": false,
+        "Width": "NaN"
+      },
+      "Tags": {
+        "Field": 44,
+        "Visible": false,
+        "Width": "NaN"
+      },
+      "PluginId": {
+        "Field": 12,
+        "Visible": true,
+        "Width": "NaN"
+      },
+      "Features": {
+        "Field": 56,
+        "Visible": false,
+        "Width": "NaN"
+      },
+      "Roms": {
+        "Field": 78,
+        "Visible": false,
+        "Width": "NaN"
+      }
+    },
+    "ListViewColumsOrder": [
+      5,
+      55,
+      18,
+      41,
+      9,
+      28,
+      12
+    ],
+    "CollapsedGroups": {},
+    "SortingOrder": 0,
+    "SortingOrderDirection": 0
+  },
+  "GridViewSideBarVisible": true,
+  "FilterPanelVisible": false,
+  "ShowSidebar": true,
+  "SidebarPosition": 0,
+  "MainMenuButtonSidebarMove": true,
+  "MinimizeToTray": false,
+  "CloseToTray": true,
+  "EnableTray": true,
+  "Language": "pt_BR",
+  "AfterLaunch": 1,
+  "AfterGameClose": 2,
+  "Theme": "FusionZ_1e05f9eb-8760-41dc-ad68-58ca379961b0",
+  "TrayIcon": 0,
+  "InstallInstanceId": "f14eed18-6a43-4fce-a57e-41a22eb7dc7b",
+  "DisabledPlugins": [
+    "felixkmh_QuickSearch_Plugin"
+  ],
+  "StartMinimized": false,
+  "StartOnBoot": false,
+  "StartOnBootClosedToTray": false,
+  "EnableGameControllerSupport": false,
+  "DisabledGameControllers": [],
+  "GuideControllerButtonSwitchesFullscreen": false,
+  "ShowPanelSeparators": true,
+  "GameDetailsCoverHeight": 100.0,
+  "FontFamilyName": "Roboto",
+  "MonospaceFontFamilyName": "Cascadia Code",
+  "FontSize": 14.0,
+  "FontSizeSmall": 12.0,
+  "FontSizeLarge": 15.0,
+  "FontSizeLarger": 20.0,
+  "FontSizeLargest": 29.0,
+  "DetailsViewListIconSize": 26.0,
+  "TextFormattingMode": 0,
+  "TextRenderingMode": 0,
+  "MetadataSettings": {
+    "Name": {
+      "Import": false,
+      "Sources": [
+        "000001db-dbd1-46c6-b5d0-b1ba559d10e4"
+      ]
+    },
+    "Genre": {
+      "Import": true,
+      "Sources": [
+        "000001db-dbd1-46c6-b5d0-b1ba559d10e4"
+      ]
+    },
+    "ReleaseDate": {
+      "Import": true,
+      "Sources": [
+        "000001db-dbd1-46c6-b5d0-b1ba559d10e4"
+      ]
+    },
+    "Developer": {
+      "Import": true,
+      "Sources": [
+        "000001db-dbd1-46c6-b5d0-b1ba559d10e4"
+      ]
+    },
+    "Publisher": {
+      "Import": true,
+      "Sources": [
+        "000001db-dbd1-46c6-b5d0-b1ba559d10e4"
+      ]
+    },
+    "Tag": {
+      "Import": true,
+      "Sources": [
+        "000001db-dbd1-46c6-b5d0-b1ba559d10e4"
+      ]
+    },
+    "Feature": {
+      "Import": true,
+      "Sources": [
+        "000001db-dbd1-46c6-b5d0-b1ba559d10e4"
+      ]
+    },
+    "Description": {
+      "Import": true,
+      "Sources": [
+        "00000000-0000-0000-0000-000000000000",
+        "000001db-dbd1-46c6-b5d0-b1ba559d10e4"
+      ]
+    },
+    "CoverImage": {
+      "Import": true,
+      "Sources": [
+        "000001db-dbd1-46c6-b5d0-b1ba559d10e4",
+        "00000000-0000-0000-0000-000000000000"
+      ]
+    },
+    "BackgroundImage": {
+      "Import": true,
+      "Sources": [
+        "00000000-0000-0000-0000-000000000000",
+        "000001db-dbd1-46c6-b5d0-b1ba559d10e4"
+      ]
+    },
+    "Icon": {
+      "Import": true,
+      "Sources": [
+        "00000000-0000-0000-0000-000000000000",
+        "000001db-dbd1-46c6-b5d0-b1ba559d10e4"
+      ]
+    },
+    "Links": {
+      "Import": true,
+      "Sources": [
+        "000001db-dbd1-46c6-b5d0-b1ba559d10e4"
+      ]
+    },
+    "CriticScore": {
+      "Import": true,
+      "Sources": [
+        "000001db-dbd1-46c6-b5d0-b1ba559d10e4"
+      ]
+    },
+    "CommunityScore": {
+      "Import": true,
+      "Sources": [
+        "000001db-dbd1-46c6-b5d0-b1ba559d10e4"
+      ]
+    },
+    "AgeRating": {
+      "Import": true,
+      "Sources": [
+        "000001db-dbd1-46c6-b5d0-b1ba559d10e4"
+      ]
+    },
+    "Series": {
+      "Import": true,
+      "Sources": [
+        "000001db-dbd1-46c6-b5d0-b1ba559d10e4"
+      ]
+    },
+    "Region": {
+      "Import": true,
+      "Sources": [
+        "000001db-dbd1-46c6-b5d0-b1ba559d10e4"
+      ]
+    },
+    "Platform": {
+      "Import": true,
+      "Sources": [
+        "000001db-dbd1-46c6-b5d0-b1ba559d10e4"
+      ]
+    },
+    "InstallSize": {
+      "Import": true,
+      "Sources": [
+        "000001db-dbd1-46c6-b5d0-b1ba559d10e4"
+      ]
+    }
+  },
+  "PreScript": null,
+  "PostScript": null,
+  "GameStartedScript": null,
+  "AppStartupScript": null,
+  "AppShutdownScript": null,
+  "DownloadBackgroundsImmediately": true,
+  "ShowImagePerformanceWarning": true,
+  "BackgroundImageAnimation": false,
+  "ClientAutoShutdown": {
+    "GraceTimeout": 60,
+    "MinimalSessionTime": 120,
+    "ShutdownClients": true,
+    "ShutdownPlugins": [
+      "00000002-dbd1-46c6-b5d0-b1ba559d10e4",
+      "aebe8b7c-6dc3-4a66-af31-e7375c6b5e9e",
+      "cb91dfc9-b977-43bf-8e70-55f46e410fab"
+    ]
+  },
+  "DarkenUninstalledGamesGrid": false,
+  "UsedFieldsOnlyOnFilterLists": true,
+  "DiscordPresenceEnabled": false,
+  "ShowHiddenInQuickLaunch": true,
+  "QuickLaunchItems": 10,
+  "DirectoryOpenCommand": null,
+  "AgeRatingOrgPriority": 0,
+  "TraceLogEnabled": false,
+  "GridViewListScrollOptions": {
+    "Sensitivity": 1.25,
+    "Speed": 2500000,
+    "SmoothEnabled": true
+  },
+  "GridViewDetailsScrollOptions": {
+    "Sensitivity": 0.75,
+    "Speed": 2500000,
+    "SmoothEnabled": false
+  },
+  "DetailsViewListScrollOptions": {
+    "Sensitivity": 1.25,
+    "Speed": 2500000,
+    "SmoothEnabled": false
+  },
+  "DetailsViewDetailsScrollOptions": {
+    "Sensitivity": 0.75,
+    "Speed": 2500000,
+    "SmoothEnabled": false
+  },
+  "ListViewListScrollOptions": {
+    "Sensitivity": 1.25,
+    "Speed": 2500000,
+    "SmoothEnabled": false
+  },
+  "ShowTopPanelGeneralViewItem": false,
+  "ShowTopPanelGroupingItem": true,
+  "ShowTopPanelSortingItem": true,
+  "ShowTopPanelFilterPresetsItem": true,
+  "ShowTopPanelDetailsViewSwitch": true,
+  "ShowTopPanelGridViewSwitch": true,
+  "ShowTopPanelListViewSwitch": true,
+  "ShowTopPanelExplorerSwitch": true,
+  "ShowTopPanelSelectRandomGameButton": false,
+  "ShowTopPanelViewSelectRandomGameButton": true,
+  "ShowTopPanelSearchButton": true,
+  "ShowTopPanelSearchBox": true,
+  "FuzzyMatchingInNameFilter": true,
+  "TopPanelSectionSeparatorWidth": 15.0,
+  "PluginTopPanelAlignment": 2,
+  "SelectedFilterPreset": "00000000-0000-0000-0000-000000000000",
+  "ImageScalerMode": 1,
+  "PlaytimeImportMode": 0,
+  "UseCompositionWebViewRenderer": false,
+  "AddonsPerfNoticeShown": true,
+  "GameSortingNameAutofill": true,
+  "GameSortingNameRemovedArticles": [
+    "A",
+    "An",
+    "The"
+  ],
+  "ShowNahimicServiceWarning": true,
+  "ShowElevatedRightsWarning": true,
+  "DateTimeFormatAdded": {
+    "Format": "d",
+    "PastWeekRelativeFormat": false
+  },
+  "DateTimeFormatModified": {
+    "Format": "d",
+    "PastWeekRelativeFormat": false
+  },
+  "DateTimeFormatRecentActivity": {
+    "Format": "d",
+    "PastWeekRelativeFormat": true
+  },
+  "DateTimeFormatReleaseDate": {
+    "PartialFormat": "y",
+    "Format": "d",
+    "PastWeekRelativeFormat": false
+  },
+  "DateTimeFormatLastPlayed": {
+    "Format": "d",
+    "PastWeekRelativeFormat": true
+  },
+  "PlaytimeUseDaysFormat": false,
+  "InstallSizeScanUseSizeOnDisk": true,
+  "ScanLibInstallSizeOnLibUpdate": true,
+  "CheckForProgramUpdates": 0,
+  "CheckForAddonUpdates": 0,
+  "CheckForLibraryUpdates": 1,
+  "CheckForEmulatedLibraryUpdates": 1,
+  "LastProgramUpdateCheck": "2026-11-19T04:40:31.594765-03:00",
+  "LastAddonUpdateCheck": "2026-11-19T04:40:52.6374364-03:00",
+  "LastLibraryUpdateCheck": "2026-11-19T04:04:57.9311885-03:00",
+  "LastEmuLibraryUpdateCheck": "2026-11-19T04:04:58.7018912-03:00",
+  "LastAutoBackup": "2026-11-19T00:00:19.1054979-03:00",
+  "PrimaryGameSearchItemAction": 1,
+  "SecondaryGameSearchItemAction": 0,
+  "GlobalSearchOpenWithLegacySearch": true,
+  "SaveGlobalSearchFilterSettings": true,
+  "CustomSearchKeywrods": {},
+  "GameSearchFilterSettings": {
+    "Uninstalled": true,
+    "Hidden": false
+  },
+  "SystemSearchHotkey": null,
+  "IncludeCommandsInDefaultSearch": true,
+  "AutoBackupEnabled": true,
+  "AutoBackupFrequency": 1,
+  "AutoBackupDir": "C:\\Users\\Erik Gabriel\\AppData\\Local\\Playnite\\Backup",
+  "RotatingBackups": 3,
+  "AutoBackupIncludeLibFiles": false,
+  "AutoBackupIncludeExtensionsData": false,
+  "AutoBackupIncludeExtensions": false,
+  "AutoBackupIncludeThemes": false,
+  "UpdateNotificationOnPatchesOnly": false,
+  "WebImageSarchIconTerm": "\"{Name}\" icon",
+  "WebImageSarchCoverTerm": "\"{Name}\" cover",
+  "WebImageSarchBackgroundTerm": "\"{Name}\" wallpaper",
+  "AccessibilityInterface": 0,
+  "PartialDescriptionLoading": true,
+  "WebImageSafeSearch": 2,
+  "DefaultWebImageSource": 0,
+  "ClearFiltersOnStartup": false,
+  "LnkImportMode": 1,
+  "LastSelectedGame": "500f76a1-1bde-4be7-9d9f-4bae905f6925",
+  "DevelExtenions": [],
+  "SearchWindowVisibility": {
+    "GameIcon": true,
+    "LibraryIcon": true,
+    "HiddenStatus": true,
+    "Platform": true,
+    "PlayTime": true,
+    "CompletionStatus": true,
+    "ReleaseDate": false
+  }
+}

@@ -42,6 +42,7 @@ func newRoot() *cobra.Command {
 		windhawkCommands(f),  // windhawk.go: mods and the taskbar dock
 		playniteCommands(f),  // playnite.go
 		retroarchCommands(f), // retroarch.go
+		backupCommands(f),    // backup.go: what a format needs, git push and pull
 	} {
 		root.AddCommand(group...)
 	}

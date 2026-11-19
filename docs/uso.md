@@ -105,35 +105,77 @@ envsetup playnite-fix media-player
 envsetup retroarch --sizes | set-retroarch --store=D:\envsetup [--copy-program] | retroarch-save | retroarch-restore
 envsetup retroarch-fix playlists                # aponta as playlists para os jogos de novo
 envsetup retroarch-open app                     # abre o RetroArch (ou folder, games, store)
+envsetup retroarch-move-games D:/Games/Retro     # move os jogos e corrige playlists e Playnite
+envsetup playnite-close | playnite-relocate --from=C:/old --to=D:/new
+envsetup backup [--fetch] | backup-push | backup-pull   # o que falta antes de formatar; enviar; atualizar
+envsetup backup-clone --dir=... --url=... --branch=...  # máquina nova: instala o Git e clona
 ```
+
+## Perfil de jogos: drivers e periféricos
+
+- **Placa de vídeo.** A etapa Drivers traz o NVIDIA App e o AMD Software (Adrenalin). Vem
+  marcado só o da placa desta máquina, e o assistente mostra o motivo ("placa NVIDIA detectada").
+- **Periféricos.** A etapa Periféricos instala, já marcados, o MCHOSE HUB (headset V9 Pro), o
+  Attack Shark Driver (mouse X3 Pro), o SignalRGB e o 8BitDo Ultimate Software V2 (controle
+  Ultimate 2.4G). Desmarque o que não quiser. Eles não têm configuração para restaurar: as do
+  mouse e do controle ficam gravadas nos próprios aparelhos.
 
 ## Formatar o PC
 
-Playnite e RetroArch ficam em três lugares: o **git** (configurações e saves, sem senhas), a
-**internet** (o programa RetroArch e os cores) e o **HD** (jogos, BIOS, a biblioteca e as mídias
-do Playnite e as senhas). Detalhes em
-[configuracao.md](configuracao.md#onde-fica-cada-parte-dos-programas-portáteis).
+**Use a aba Backup.** Ela é um passo a passo com duas telas, "Antes de formatar" e "Depois de
+formatar". Cada passo mostra se está pronto, o que falta e um botão para resolver, e o próximo
+passo pendente fica destacado. Numa máquina sem Playnite nem RetroArch, ela já abre em "Depois".
 
-**Antes de formatar**
+Só o **C:** (o SSD) é formatado. Cada coisa mora num destes lugares:
 
-1. Escolha o HD nas abas Playnite e RetroArch: uma pasta num disco que **não** vai ser formatado
-   (um segundo disco, como `D:\envsetup`, ou um HD externo). Os dois podem usar a mesma pasta.
-2. Feche o Playnite e o RetroArch e clique em **Salvar** nas duas abas. A primeira vez copia
-   tudo; depois, só o que mudou.
-3. Faça commit e push (`windows/playnite`, `windows/retroarch`, `config/`).
-4. Se for reinstalar o Windows pelo pendrive, grave-o na aba Instalação.
+| Onde | O quê |
+|---|---|
+| **GitHub** | configurações e saves do Playnite e do RetroArch, sem senhas (`windows/playnite`, `windows/retroarch`) e os `config/*.yaml` |
+| **Internet** | o RetroArch e os cores, os drivers e os programas do perfil |
+| **HD** (`D:\envsetup`) | o Playnite (biblioteca, capas, trailers, temas, extensões), a BIOS e as senhas tiradas do git |
+| **HD** (`D:\Games`) | os jogos: os do RetroArch em `D:\Games\Retro\<sistema>`, os das lojas em `D:\Games\<loja>` |
+
+Os jogos não são copiados. Eles já moram no HD, e o RetroArch e o Playnite apontam para lá.
+Instale todo jogo novo em `D:\Games`: na Steam, em Configurações > Armazenamento > Adicionar
+unidade; na Epic, escolhendo a pasta na instalação. Depois de formatar, adicione `D:\Games\Steam`
+de novo na Steam, e ela reconhece os jogos que já estão lá.
+
+**Antes de formatar** (aba Backup)
+
+1. **Escolher o HD:** uma pasta para o Playnite e o RetroArch num disco que não será formatado.
+2. **Fechar o Playnite e o RetroArch:** o botão fecha o Playnite pelo `--shutdown` dele, que
+   grava a biblioteca antes de sair.
+3. **Salvar o Playnite:** a primeira vez copia ~26 GB; depois, só o que mudou.
+4. **Salvar o RetroArch.**
+5. **Enviar para o GitHub:** faz commit de `config/` e `windows/` e push. Também grava no HD de
+   onde veio o backup (`D:\envsetup\envsetup-git.json`: repositório e branch), para a máquina
+   nova saber o que baixar.
+6. **Pendrive do Windows (opcional):** na aba Instalação.
 
 **Depois de formatar**
 
-1. Instale o app ou clone o repositório (o clone traz os saves mais recentes; o instalador traz
-   os da época em que foi gerado).
-2. Se o HD for externo, conecte-o (a letra pode mudar, o envsetup acha a pasta).
-3. Aplique o perfil de jogos. As etapas Playnite e Emuladores restauram tudo, ou use o botão
-   Restaurar de cada aba.
+1. Instale o app e escolha "Usar dados incluídos". Na aba Backup, **Baixar do GitHub** instala o
+   Git (pelo winget) se faltar, clona o branch do último backup ao lado da pasta de dados e passa
+   a usá-lo. Num clone que já existe, o botão é **Atualizar** (`git pull`).
+2. **Conectar o HD.** Se a letra mudou, a pasta é encontrada sozinha.
+3. **Restaurar tudo:** **Aplicar o perfil** leva à aba Configurar. O perfil de jogos instala
+   drivers, periféricos e lojas e restaura o Playnite (etapa Playnite) e o RetroArch (etapa
+   Emuladores). Também há botões para restaurar só um dos dois.
+4. **Conferir** o que as abas Playnite e RetroArch ainda apontam (menu Iniciar, Windows Media
+   Player).
 
-Formatando também o HD, copie a pasta dele (`D:\envsetup`) para outro disco antes e aponte o
-`store` para lá. Sem ela, o RetroArch volta com configurações e saves e sem jogos e BIOS; o
-Playnite precisa dela.
+**O Playnite e o RetroArch juntos.** A biblioteca do Playnite guarda o caminho completo do
+RetroArch (o emulador) e de cada ROM. Ao salvar, o manifesto do Playnite registra onde estavam o
+RetroArch e os jogos. Ao restaurar, se `config/retroarch.yaml` diz outro lugar, a biblioteca é
+corrigida (`windows/playnite-relocate.ps1`, com a LiteDB do próprio Playnite). Para trocar a
+pasta dos jogos, use **Trocar** na aba RetroArch e responda "Mover". Ou rode
+`envsetup retroarch-move-games <pasta>`: copia, confere, apaga a pasta antiga e corrige as
+playlists e a biblioteca do Playnite.
+
+**Trocar o HD por outro lugar** (pendrive, NAS, pasta sincronizada): escolha a nova pasta em
+"Escolher o HD" e salve os dois de novo. Se os jogos também forem para lá, ligue "Copiar também
+os jogos" na aba RetroArch, ou mova a pasta com "Trocar". Formatando também o HD, copie
+`D:\envsetup` e `D:\Games` para outro disco antes.
 
 ## Windows em detalhe
 

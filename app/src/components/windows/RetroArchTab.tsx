@@ -281,10 +281,11 @@ export function RetroArchTab({ root, onChanged }: Props) {
             title: "HD",
             icon: diskIcon,
             tone: "disk",
-            head: snap ? (m ? `${size(m.bytes)} + ${size(m.game_bytes)} de jogos` : "nada salvo ainda") : "nenhum escolhido",
+            head: snap ? (m ? `${size(m.bytes)}${cfg.copy_games ? ` + ${size(m.game_bytes)} de jogos` : ""}` : "nada salvo ainda") : "nenhum escolhido",
             lines: [
               snap ? `${cfg.store}` : "escolha uma pasta fora do disco do Windows",
-              cfg.copy_program ? "BIOS, jogos, o programa e o que não vai pro git" : "BIOS (pasta system), jogos e as senhas tiradas do git",
+              `${cfg.copy_program ? "o programa, " : ""}BIOS (pasta system)${cfg.copy_games ? ", uma cópia dos jogos" : ""} e as senhas tiradas do git`,
+              cfg.games ? `jogos em ${cfg.games}${cfg.copy_games ? " (copiados a cada salvamento)" : " (ficam lá, não são copiados)"}` : "sem pasta de jogos",
             ],
             badge: m ? { text: `salvo ${when(m.saved_at)}` } : undefined,
           },
@@ -350,6 +351,10 @@ export function RetroArchTab({ root, onChanged }: Props) {
           <input type="checkbox" checked={cfg.copy_program} disabled={!!busy} onChange={(e) => save({ copy_program: e.target.checked })} /> Guardar também o
           programa inteiro no HD (restaura sem internet; ~1 GB a mais)
         </label>
+        <label className="check muted small-note">
+          <input type="checkbox" checked={cfg.copy_games} disabled={!!busy} onChange={(e) => save({ copy_games: e.target.checked })} /> Copiar também os
+          jogos para o HD a cada salvamento (desligado quando eles já moram no HD, como em D:\Games\Retro)
+        </label>
         <div className="row">
           <button
             className="primary"
@@ -411,7 +416,25 @@ export function RetroArchTab({ root, onChanged }: Props) {
                 disabled={!!busy}
                 onClick={async () => {
                   const dir = await pickFolder(label, value);
-                  if (dir) await save({ [key]: dir });
+                  if (!dir) return;
+                  if (key === "games" && value && inst.game_count > 0) {
+                    const move = await ask(
+                      `Mover os ${inst.game_count} jogos de ${value} para ${dir}?\n\n` +
+                        "Os arquivos são copiados e conferidos antes de apagar a pasta antiga; as playlists do RetroArch e a biblioteca do Playnite " +
+                        "passam a apontar para a nova pasta. Feche o RetroArch e o Playnite antes.\n\n" +
+                        '"Não" só troca a pasta na configuração, sem mover nada.',
+                      { title: "Mover os jogos", kind: "info", okLabel: "Mover", cancelLabel: "Não" },
+                    );
+                    if (move) {
+                      await act("move", async () => {
+                        await api.moveRetroArchGames(root, dir);
+                        onChanged();
+                        return `Jogos movidos para ${dir}; RetroArch e Playnite já apontam para lá.`;
+                      });
+                      return;
+                    }
+                  }
+                  await save({ [key]: dir });
                 }}
               >
                 Trocar

@@ -17,6 +17,8 @@ type WizardApp struct {
 	Available bool   `json:"available"`
 	Installed bool   `json:"installed"`
 	Detail    string `json:"detail"` // how it installs, or why it is unavailable
+	// Hint says why a graphics card app starts selected or not.
+	Hint string `json:"hint,omitempty"`
 }
 
 // WizardFile is a config file a step deploys.
@@ -78,6 +80,10 @@ func Wizard(ctx context.Context, cfg *config.Config, profileID string, env *Env)
 		w.Available = true
 		w.Installed = st.installed(ctx)
 		w.Detail = st.describeInstall()
+		if ok, why := env.Suggested(ctx, a); why != "" {
+			w.Default = w.Default && ok
+			w.Hint = why
+		}
 		return w
 	}
 	dests := func(files []config.File) []WizardFile {

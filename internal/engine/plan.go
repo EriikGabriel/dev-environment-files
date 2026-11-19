@@ -34,6 +34,8 @@ type Env struct {
 	WindhawkCLI string
 
 	refreshed map[string]bool
+	// gpus caches GPUs; nil until read.
+	gpus *[]string
 }
 
 // refresh updates a backend's metadata at most once per run.
@@ -152,14 +154,20 @@ func BuildPlan(cfg *config.Config, profileID string, env *Env, opt Options) (*Pl
 		p.groups = append(p.groups, group)
 	}
 
+	// without a selection, the apps a step lists, but not software for a
+	// graphics card the machine does not have
+	byDefault := func(id string) bool {
+		ok, _ := env.Suggested(context.Background(), cfg.Apps[id])
+		return ok
+	}
 	for _, id := range prof.Apps {
-		if selected == nil || selected[id] {
+		if (selected == nil && byDefault(id)) || selected[id] {
 			addApp(id, "")
 		}
 	}
 	for _, st := range prof.Steps {
 		for _, id := range st.Apps {
-			if selected == nil || selected[id] {
+			if (selected == nil && byDefault(id)) || selected[id] {
 				addApp(id, st.ID)
 			}
 		}

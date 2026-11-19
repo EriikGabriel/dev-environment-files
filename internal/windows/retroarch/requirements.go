@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 // Requirement is something the RetroArch setup needs that a plain copy of
@@ -32,7 +33,13 @@ func StartMenuLink() string {
 func Requirements(c Config, in Install) []Requirement {
 	missing, fixable := 0, 0
 	for _, p := range in.Playlists {
-		missing += p.Missing
+		// the history keeps games that were deleted since: those are not a
+		// problem, only the ones that can be pointed at the games again
+		if strings.HasPrefix(p.Name, "builtin/") {
+			missing += p.Fixable
+		} else {
+			missing += p.Missing
+		}
 		fixable += p.Fixable
 	}
 	pl := Requirement{

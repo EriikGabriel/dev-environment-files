@@ -432,6 +432,7 @@ function AppToggle({ app, on, onToggle }: { app: WizardApp; on: boolean; onToggl
       <span className="app-text">
         <strong>{app.id}</strong>
         <span className="muted">{app.available ? app.description || app.detail : `indisponível: ${app.detail}`}</span>
+        {app.hint && <span className={app.default ? "app-hint match" : "app-hint"}>{app.hint}</span>}
       </span>
       {app.installed && <span className="badge ok">instalado</span>}
     </button>

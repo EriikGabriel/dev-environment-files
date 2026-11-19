@@ -134,7 +134,7 @@ func retroarchCommands(f *flags) []*cobra.Command {
 
 	var (
 		pPath, pGames, pStore, pExclude string
-		pStartMenu, pCopyProgram        bool
+		pStartMenu, pCopyProgram, pCopyGames bool
 	)
 	set := jsonFlag(&cobra.Command{
 		Use:   "set-retroarch",
@@ -173,6 +173,9 @@ func retroarchCommands(f *flags) []*cobra.Command {
 			if ch("start-menu") {
 				cfg.StartMenu = pStartMenu
 			}
+			if ch("copy-games") {
+				cfg.CopyGames = pCopyGames
+			}
 			if ch("copy-program") {
 				cfg.CopyProgram = pCopyProgram
 			}
@@ -187,11 +190,12 @@ func retroarchCommands(f *flags) []*cobra.Command {
 		},
 	})
 	set.Flags().StringVar(&pPath, "path", "", `the RetroArch folder (C:\Emuladores\RetroArch)`)
-	set.Flags().StringVar(&pGames, "games", "", `the games folder (C:\Emuladores\Games); empty leaves the games out`)
+	set.Flags().StringVar(&pGames, "games", "", `the games folder (D:\Games\Retro); empty leaves the games out`)
 	set.Flags().StringVar(&pStore, "store", "", "folder for the snapshot; empty forgets it")
 	set.Flags().StringVar(&pExclude, "exclude", "", "folders (relative to the RetroArch folder) and file patterns left out, separated by commas")
 	set.Flags().BoolVar(&pStartMenu, "start-menu", true, "register RetroArch in the Start menu after a restore")
 	set.Flags().BoolVar(&pCopyProgram, "copy-program", false, "also keep the whole program in the store, so a restore does not download it")
+	set.Flags().BoolVar(&pCopyGames, "copy-games", false, "also copy the games to the store on each save")
 
 	save := jsonFlag(&cobra.Command{
 		Use:   "retroarch-save",
@@ -311,5 +315,25 @@ func retroarchCommands(f *flags) []*cobra.Command {
 		},
 	})
 
-	return []*cobra.Command{status, set, save, restore, fix, open}
+	move := jsonFlag(&cobra.Command{
+		Use:   "retroarch-move-games <folder>",
+		Short: "Move the games to another folder and point RetroArch's playlists and the Playnite library at it",
+		Long:  "The files are copied and checked before the old folder is deleted. RetroArch and Playnite must be closed.",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			env, err := windowsEnv("moving the games")
+			if err != nil {
+				return err
+			}
+			if err := env.MoveRetroArchGames(cmd.Context(), progress(), args[0]); err != nil {
+				return err
+			}
+			if f.json {
+				return printJSON(os.Stdout, map[string]any{"games": filepath.Clean(args[0])})
+			}
+			return nil
+		},
+	})
+
+	return []*cobra.Command{status, set, save, restore, fix, open, move}
 }

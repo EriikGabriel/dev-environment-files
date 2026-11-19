@@ -62,13 +62,16 @@ type Config struct {
 	// CopyProgram also keeps the whole program in the store, so a restore
 	// does not download it.
 	CopyProgram bool `yaml:"copy_program" json:"copy_program"`
+	// CopyGames copies the games folder to the store on each save. Off when
+	// the games already live on the drive that is kept (D:\Games\Retro).
+	CopyGames bool `yaml:"copy_games" json:"copy_games"`
 }
 
 // Default is what a missing file means.
 func Default() Config {
 	return Config{
 		Path:      `C:\Emuladores\RetroArch`,
-		Games:     `C:\Emuladores\Games`,
+		Games:     `D:\Games\Retro`,
 		Exclude:   []string{"logs", "downloads", "*.log"},
 		StartMenu: true,
 		Cores:     []string{},
@@ -96,8 +99,8 @@ const header = `# The portable RetroArch and its games, split by where each part
 # ` + "`retroarch-save`" + ` updates git and the store, ` + "`retroarch-restore`" + ` puts everything back.
 #
 # path          the RetroArch folder on this machine (the one with retroarch.exe)
-# games         the folder of the games, one subfolder per system; empty leaves
-#               the games out
+# games         the folder of the games, one subfolder per system (on the drive
+#               that is not formatted: D:\Games\Retro); empty leaves them out
 # store         folder for the rest (second drive, external drive, NAS): it gets
 #               <store>\RetroArch (BIOS and what is not downloaded nor in git),
 #               <store>\Games, a manifest and the secrets left out of git
@@ -110,6 +113,8 @@ const header = `# The portable RetroArch and its games, split by where each part
 # bundles       the asset packs downloaded with the program
 # git           files and folders of path kept in the repo
 # copy_program  also keep the whole program in the store (no download)
+# copy_games    also copy the games to the store on each save (when they live
+#               on the drive that is formatted, or to carry them elsewhere)
 
 `
 

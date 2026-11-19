@@ -1,0 +1,730 @@
+{
+  "EnableIntegrationButtonHeader": false,
+  "EnableIntegrationButtonSide": true,
+  "UserLogin": "",
+  "ShowHltbImg": true,
+  "AutoSetCurrentPlayTime": false,
+  "AutoSetCurrentPlayTimeWithoutConfirmation": true,
+  "UsedStartDateFromGameActivity": false,
+  "AutoSetUserScoreToHltb": false,
+  "AutoAccept": true,
+  "ShowWhenMismatch": false,
+  "UseMatchValue": false,
+  "MatchValue": 95.0,
+  "DefaultDataProvider": 0,
+  "DefaultVndbSpeed": 1,
+  "UseHtltbClassic": true,
+  "UseHtltbAverage": false,
+  "UseHtltbMedian": false,
+  "UseHtltbRushed": false,
+  "UseHtltbLeisure": false,
+  "EnableSucessNotification": true,
+  "SearchApiEndpoint": "/api/search/site",
+  "EnableProgressBarInDataView": true,
+  "GameNameAliases": {},
+  "EnableIntegrationViewItem": true,
+  "IntegrationViewItemOnlyHour": false,
+  "EnableIntegrationButton": true,
+  "EnableIntegrationProgressBar": true,
+  "ProgressBarShowToolTip": true,
+  "ProgressBarShowTime": false,
+  "ProgressBarShowTimeUser": false,
+  "ProgressBarShowTimeAbove": false,
+  "ProgressBarShowTimeInterior": true,
+  "ProgressBarShowTimeBelow": false,
+  "PreferredForTimeToBeat": 0,
+  "ShowMainTime": true,
+  "ShowExtraTime": true,
+  "ShowCompletionistTime": true,
+  "ShowSoloTime": true,
+  "ShowCoOpTime": true,
+  "ShowVsTime": true,
+  "ThumbSolidColorBrush": "#FF2C3A67",
+  "FirstColorBrush": "#FF008B8B",
+  "SecondColorBrush": "#FF4169E1",
+  "ThirdColorBrush": "#FF228B22",
+  "FirstMultiColorBrush": "#FF008B8B",
+  "SecondMultiColorBrush": "#FF4169E1",
+  "ThirdMultiColorBrush": "#FF228B22",
+  "ColorFirst": "#FF008B8B",
+  "ColorSecond": "#FF4169E1",
+  "ColorThird": "#FF228B22",
+  "ColorFirstMulti": "#FF008B8B",
+  "ColorSecondMulti": "#FF4169E1",
+  "ColorThirdMulti": "#FF228B22",
+  "TitleListSort": 2,
+  "IsAsc": false,
+  "IsConvertedDb": false,
+  "IsConverted": true,
+  "StorefrontElements": [
+    {
+      "SourceId": "b78ee969-6ab5-4c39-8e5d-8a7eb4a72f95",
+      "HltbStorefrontId": 31
+    },
+    {
+      "SourceId": "cbe74e84-ab22-4eda-b381-62cafd38998d",
+      "HltbStorefrontId": 31
+    },
+    {
+      "SourceId": "7f8d568e-7cc2-434a-902e-5b634cca0d4d",
+      "HltbStorefrontId": 31
+    },
+    {
+      "SourceId": "ddfc2b17-c1bc-4073-bc96-beb616681a0c",
+      "HltbStorefrontId": 31
+    },
+    {
+      "SourceId": "020abbe1-d174-4a2c-a834-a16d9399bb19",
+      "HltbStorefrontId": 31
+    }
+  ],
+  "Storefronts": [
+    {
+      "SourceId": "00000000-0000-0000-0000-000000000000",
+      "HltbStorefrontId": 0
+    },
+    {
+      "SourceId": "00000000-0000-0000-0000-000000000000",
+      "HltbStorefrontId": 26
+    },
+    {
+      "SourceId": "00000000-0000-0000-0000-000000000000",
+      "HltbStorefrontId": 39
+    },
+    {
+      "SourceId": "00000000-0000-0000-0000-000000000000",
+      "HltbStorefrontId": 1
+    },
+    {
+      "SourceId": "00000000-0000-0000-0000-000000000000",
+      "HltbStorefrontId": 40
+    },
+    {
+      "SourceId": "00000000-0000-0000-0000-000000000000",
+      "HltbStorefrontId": 2
+    },
+    {
+      "SourceId": "00000000-0000-0000-0000-000000000000",
+      "HltbStorefrontId": 3
+    },
+    {
+      "SourceId": "00000000-0000-0000-0000-000000000000",
+      "HltbStorefrontId": 4
+    },
+    {
+      "SourceId": "00000000-0000-0000-0000-000000000000",
+      "HltbStorefrontId": 37
+    },
+    {
+      "SourceId": "00000000-0000-0000-0000-000000000000",
+      "HltbStorefrontId": 5
+    },
+    {
+      "SourceId": "00000000-0000-0000-0000-000000000000",
+      "HltbStorefrontId": 6
+    },
+    {
+      "SourceId": "00000000-0000-0000-0000-000000000000",
+      "HltbStorefrontId": 32
+    },
+    {
+      "SourceId": "00000000-0000-0000-0000-000000000000",
+      "HltbStorefrontId": 41
+    },
+    {
+      "SourceId": "00000000-0000-0000-0000-000000000000",
+      "HltbStorefrontId": 7
+    },
+    {
+      "SourceId": "00000000-0000-0000-0000-000000000000",
+      "HltbStorefrontId": 27
+    },
+    {
+      "SourceId": "00000000-0000-0000-0000-000000000000",
+      "HltbStorefrontId": 8
+    },
+    {
+      "SourceId": "00000000-0000-0000-0000-000000000000",
+      "HltbStorefrontId": 9
+    },
+    {
+      "SourceId": "00000000-0000-0000-0000-000000000000",
+      "HltbStorefrontId": 10
+    },
+    {
+      "SourceId": "00000000-0000-0000-0000-000000000000",
+      "HltbStorefrontId": 42
+    },
+    {
+      "SourceId": "00000000-0000-0000-0000-000000000000",
+      "HltbStorefrontId": 11
+    },
+    {
+      "SourceId": "00000000-0000-0000-0000-000000000000",
+      "HltbStorefrontId": 43
+    },
+    {
+      "SourceId": "00000000-0000-0000-0000-000000000000",
+      "HltbStorefrontId": 12
+    },
+    {
+      "SourceId": "00000000-0000-0000-0000-000000000000",
+      "HltbStorefrontId": 13
+    },
+    {
+      "SourceId": "00000000-0000-0000-0000-000000000000",
+      "HltbStorefrontId": 14
+    },
+    {
+      "SourceId": "00000000-0000-0000-0000-000000000000",
+      "HltbStorefrontId": 28
+    },
+    {
+      "SourceId": "00000000-0000-0000-0000-000000000000",
+      "HltbStorefrontId": 15
+    },
+    {
+      "SourceId": "00000000-0000-0000-0000-000000000000",
+      "HltbStorefrontId": 29
+    },
+    {
+      "SourceId": "00000000-0000-0000-0000-000000000000",
+      "HltbStorefrontId": 44
+    },
+    {
+      "SourceId": "00000000-0000-0000-0000-000000000000",
+      "HltbStorefrontId": 33
+    },
+    {
+      "SourceId": "00000000-0000-0000-0000-000000000000",
+      "HltbStorefrontId": 16
+    },
+    {
+      "SourceId": "00000000-0000-0000-0000-000000000000",
+      "HltbStorefrontId": 45
+    },
+    {
+      "SourceId": "00000000-0000-0000-0000-000000000000",
+      "HltbStorefrontId": 17
+    },
+    {
+      "SourceId": "00000000-0000-0000-0000-000000000000",
+      "HltbStorefrontId": 46
+    },
+    {
+      "SourceId": "00000000-0000-0000-0000-000000000000",
+      "HltbStorefrontId": 19
+    },
+    {
+      "SourceId": "00000000-0000-0000-0000-000000000000",
+      "HltbStorefrontId": 20
+    },
+    {
+      "SourceId": "00000000-0000-0000-0000-000000000000",
+      "HltbStorefrontId": 34
+    },
+    {
+      "SourceId": "00000000-0000-0000-0000-000000000000",
+      "HltbStorefrontId": 35
+    },
+    {
+      "SourceId": "00000000-0000-0000-0000-000000000000",
+      "HltbStorefrontId": 47
+    },
+    {
+      "SourceId": "00000000-0000-0000-0000-000000000000",
+      "HltbStorefrontId": 48
+    },
+    {
+      "SourceId": "00000000-0000-0000-0000-000000000000",
+      "HltbStorefrontId": 21
+    },
+    {
+      "SourceId": "00000000-0000-0000-0000-000000000000",
+      "HltbStorefrontId": 38
+    },
+    {
+      "SourceId": "00000000-0000-0000-0000-000000000000",
+      "HltbStorefrontId": 30
+    },
+    {
+      "SourceId": "00000000-0000-0000-0000-000000000000",
+      "HltbStorefrontId": 22
+    },
+    {
+      "SourceId": "00000000-0000-0000-0000-000000000000",
+      "HltbStorefrontId": 23
+    },
+    {
+      "SourceId": "00000000-0000-0000-0000-000000000000",
+      "HltbStorefrontId": 24
+    },
+    {
+      "SourceId": "00000000-0000-0000-0000-000000000000",
+      "HltbStorefrontId": 36
+    },
+    {
+      "SourceId": "00000000-0000-0000-0000-000000000000",
+      "HltbStorefrontId": 49
+    },
+    {
+      "SourceId": "00000000-0000-0000-0000-000000000000",
+      "HltbStorefrontId": 50
+    },
+    {
+      "SourceId": "00000000-0000-0000-0000-000000000000",
+      "HltbStorefrontId": 51
+    }
+  ],
+  "Platforms": [
+    {
+      "Platform": {
+        "SpecificationId": "arcade",
+        "Id": "03cedd78-c929-442d-bd55-50576e351f4e",
+        "Name": "Arcade"
+      },
+      "HltbPlatform": 5
+    },
+    {
+      "Platform": {
+        "SpecificationId": "atari_2600",
+        "Id": "0bf06040-3ddd-473d-8689-fc82ecfc1405",
+        "Name": "Atari 2600"
+      },
+      "HltbPlatform": 6
+    },
+    {
+      "Platform": {
+        "SpecificationId": "nintendo_wii",
+        "Id": "d1b5936a-ad00-4639-9d25-9737e7506224",
+        "Name": "Nintendo Wii"
+      },
+      "HltbPlatform": 79
+    },
+    {
+      "Platform": {
+        "SpecificationId": "snk_neogeopocket",
+        "Id": "6147dda8-2bbc-4171-8946-5b9980d10d62",
+        "Name": "SNK Neo Geo Pocket"
+      },
+      "HltbPlatform": 40
+    },
+    {
+      "Platform": {
+        "SpecificationId": "nec_pcfx",
+        "Id": "a4427d67-4c24-4145-93fa-b950a5f50a42",
+        "Name": "NEC PC-FX"
+      },
+      "HltbPlatform": 37
+    },
+    {
+      "Platform": {
+        "SpecificationId": "nintendo_gameboycolor",
+        "Id": "ded6f169-410e-41fc-a95f-c2ae384bd47e",
+        "Name": "Nintendo Game Boy Color"
+      },
+      "HltbPlatform": 24
+    },
+    {
+      "Platform": {
+        "SpecificationId": "xbox360",
+        "Id": "91876b5e-8f02-420b-ae96-f69bbbbc50c1",
+        "Name": "Microsoft Xbox 360"
+      },
+      "HltbPlatform": 84
+    },
+    {
+      "Platform": {
+        "SpecificationId": "nintendo_ds",
+        "Id": "d118bcdb-f2aa-4a38-baf1-1c917159085f",
+        "Name": "Nintendo DS"
+      },
+      "HltbPlatform": 44
+    },
+    {
+      "Platform": {
+        "SpecificationId": "sega_32x",
+        "Id": "ebd59e9f-3dac-44cf-ae08-da7b11566910",
+        "Name": "Sega 32X"
+      },
+      "HltbPlatform": 66
+    },
+    {
+      "Platform": {
+        "SpecificationId": "xbox_one",
+        "Id": "a67eaf51-00ca-4179-9175-5e2d8e4a268f",
+        "Name": "Microsoft Xbox One"
+      },
+      "HltbPlatform": 85
+    },
+    {
+      "Platform": {
+        "SpecificationId": "atari_lynx",
+        "Id": "21e1f253-fd90-42a6-90a3-72b7cdaf4b61",
+        "Name": "Atari Lynx"
+      },
+      "HltbPlatform": 12
+    },
+    {
+      "Platform": {
+        "SpecificationId": "nintendo_gamecube",
+        "Id": "bd62d4eb-3d5c-49e5-87ed-97d89b931552",
+        "Name": "Nintendo GameCube"
+      },
+      "HltbPlatform": 45
+    },
+    {
+      "Platform": {
+        "SpecificationId": "atari_5200",
+        "Id": "2649604a-2624-415b-981f-ad5cf3ae6ca0",
+        "Name": "Atari 5200"
+      },
+      "HltbPlatform": 7
+    },
+    {
+      "Platform": {
+        "SpecificationId": "snk_neogeo_cd",
+        "Id": "34514ad9-79db-4f99-bc3c-73cae5761487",
+        "Name": "SNK Neo Geo CD"
+      },
+      "HltbPlatform": 39
+    },
+    {
+      "Platform": {
+        "SpecificationId": "sharp_x68000",
+        "Id": "41f27048-e629-4480-a762-97bdcdd45f86",
+        "Name": "Sharp X68000"
+      },
+      "HltbPlatform": 73
+    },
+    {
+      "Platform": {
+        "SpecificationId": "amstrad_cpc",
+        "Id": "a955b9f8-10ce-4845-89da-05dfdc055e7b",
+        "Name": "Amstrad CPC"
+      },
+      "HltbPlatform": 2
+    },
+    {
+      "Platform": {
+        "SpecificationId": "apple_2",
+        "Id": "34512397-13ff-4841-b36f-8979e26abc9f",
+        "Name": "Apple II"
+      },
+      "HltbPlatform": 4
+    },
+    {
+      "Platform": {
+        "SpecificationId": "atari_7800",
+        "Id": "9bf5c490-08fa-48a2-84df-3496d7f4f0c7",
+        "Name": "Atari 7800"
+      },
+      "HltbPlatform": 8
+    },
+    {
+      "Platform": {
+        "SpecificationId": "sony_playstation",
+        "Id": "00bc7c4d-6a3a-41ac-af6f-f196494239a8",
+        "Name": "Sony PlayStation"
+      },
+      "HltbPlatform": 55
+    },
+    {
+      "Platform": {
+        "SpecificationId": "sony_playstation4",
+        "Id": "0da3222f-26c4-4170-b402-e0fe3a0c2a39",
+        "Name": "Sony PlayStation 4"
+      },
+      "HltbPlatform": 58
+    },
+    {
+      "Platform": {
+        "SpecificationId": "nintendo_3ds",
+        "Id": "1f64bc6f-4253-44f7-b57f-ba5ac3a21edc",
+        "Name": "Nintendo 3DS"
+      },
+      "HltbPlatform": 42
+    },
+    {
+      "Platform": {
+        "SpecificationId": "commodore_pet",
+        "Id": "b68e07e6-c416-4dae-af08-db9164ebbb9e",
+        "Name": "Commodore PET"
+      },
+      "HltbPlatform": 91
+    },
+    {
+      "Platform": {
+        "SpecificationId": "sega_cd",
+        "Id": "d0226458-dd4a-4c9c-b4bc-d767f622d22f",
+        "Name": "Sega CD"
+      },
+      "HltbPlatform": 67
+    },
+    {
+      "Platform": {
+        "SpecificationId": "nintendo_switch2",
+        "Id": "adf776bb-d71d-4aa7-a355-fc865262f10c",
+        "Name": "Nintendo Switch 2"
+      },
+      "HltbPlatform": 98
+    },
+    {
+      "Platform": {
+        "SpecificationId": "nintendo_virtualboy",
+        "Id": "f27fc22a-9c35-46f2-866a-403243a8b279",
+        "Name": "Nintendo Virtual Boy"
+      },
+      "HltbPlatform": 78
+    },
+    {
+      "Platform": {
+        "SpecificationId": "sega_mastersystem",
+        "Id": "c8c47759-6bca-499c-a2f4-010f04ebc16b",
+        "Name": "Sega Master System"
+      },
+      "HltbPlatform": 69
+    },
+    {
+      "Platform": {
+        "SpecificationId": "microsoft_msx",
+        "Id": "41e833d8-4f54-48fd-b4ec-febaa18f5630",
+        "Name": "Microsoft MSX"
+      },
+      "HltbPlatform": 33
+    },
+    {
+      "Platform": {
+        "SpecificationId": "sony_vita",
+        "Id": "69351896-909a-4d58-b59d-f6abcb82be3a",
+        "Name": "Sony PlayStation Vita"
+      },
+      "HltbPlatform": 63
+    },
+    {
+      "Platform": {
+        "SpecificationId": "nintendo_64",
+        "Id": "58b04a5a-d816-40a6-bb72-73b48d5c3605",
+        "Name": "Nintendo 64"
+      },
+      "HltbPlatform": 43
+    },
+    {
+      "Platform": {
+        "SpecificationId": "nintendo_gameboy",
+        "Id": "6c5f3b27-2cfa-47fa-a9db-863140abe664",
+        "Name": "Nintendo Game Boy"
+      },
+      "HltbPlatform": 22
+    },
+    {
+      "Platform": {
+        "SpecificationId": "atari_jaguar",
+        "Id": "c23bd861-2e8b-485a-8c74-daa28840e8f4",
+        "Name": "Atari Jaguar"
+      },
+      "HltbPlatform": 10
+    },
+    {
+      "Platform": {
+        "SpecificationId": "nintendo_gameboyadvance",
+        "Id": "41f5a9f2-5701-4279-88ca-549cf3eb7422",
+        "Name": "Nintendo Game Boy Advance"
+      },
+      "HltbPlatform": 23
+    },
+    {
+      "Platform": {
+        "SpecificationId": "nintendo_switch",
+        "Id": "53d3ff5c-1e53-4fc4-8c61-720640ff5b17",
+        "Name": "Nintendo Switch"
+      },
+      "HltbPlatform": 46
+    },
+    {
+      "Platform": {
+        "SpecificationId": "pc_dos",
+        "Id": "1299e1a6-afe6-4497-ba4f-5a0c162de59d",
+        "Name": "PC (DOS)"
+      },
+      "HltbPlatform": 51
+    },
+    {
+      "Platform": {
+        "SpecificationId": "sony_psp",
+        "Id": "542fe20a-8fae-427a-b458-ae0bdd6bb656",
+        "Name": "Sony PlayStation Portable"
+      },
+      "HltbPlatform": 62
+    },
+    {
+      "Platform": {
+        "SpecificationId": "pc_windows",
+        "Id": "67678fd0-3cac-422b-997b-69683debe52d",
+        "Name": "PC (Windows)"
+      },
+      "HltbPlatform": 51
+    },
+    {
+      "Platform": {
+        "SpecificationId": "sony_playstation5",
+        "Id": "1fdfb2c7-b3bb-4a71-b21d-7775f1a5546a",
+        "Name": "Sony PlayStation 5"
+      },
+      "HltbPlatform": 59
+    },
+    {
+      "Platform": {
+        "SpecificationId": "commodore_64",
+        "Id": "abcc06f9-78bb-4b91-84a0-f64ca104465d",
+        "Name": "Commodore 64"
+      },
+      "HltbPlatform": 17
+    },
+    {
+      "Platform": {
+        "SpecificationId": "xbox",
+        "Id": "e72d7689-c30a-4b8b-b894-614e22f0dd38",
+        "Name": "Microsoft Xbox"
+      },
+      "HltbPlatform": 83
+    },
+    {
+      "Platform": {
+        "SpecificationId": "sony_playstation3",
+        "Id": "3ef0e74e-a9d0-4fa5-8a10-9707176def43",
+        "Name": "Sony PlayStation 3"
+      },
+      "HltbPlatform": 57
+    },
+    {
+      "Platform": {
+        "SpecificationId": "sony_playstation2",
+        "Id": "434a0e38-7606-4593-8ad8-ac0c55e442c8",
+        "Name": "Sony PlayStation 2"
+      },
+      "HltbPlatform": 56
+    },
+    {
+      "Platform": {
+        "SpecificationId": "nintendo_wiiu",
+        "Id": "1aec99a2-5231-4592-8fb6-aaf4f0640f1f",
+        "Name": "Nintendo Wii U"
+      },
+      "HltbPlatform": 80
+    },
+    {
+      "Platform": {
+        "SpecificationId": "sega_saturn",
+        "Id": "46f5fb46-9868-43dc-994e-44f058bd5ab4",
+        "Name": "Sega Saturn"
+      },
+      "HltbPlatform": 71
+    },
+    {
+      "Platform": {
+        "SpecificationId": "sega_gamegear",
+        "Id": "239e3db5-b13d-4634-bdd7-614d1b3a521d",
+        "Name": "Sega Game Gear"
+      },
+      "HltbPlatform": 68
+    },
+    {
+      "Platform": {
+        "SpecificationId": "philips_cdi",
+        "Id": "b523991c-94a1-48cc-8648-1918944fc9f3",
+        "Name": "Philips CD-i"
+      },
+      "HltbPlatform": 53
+    }
+  ],
+  "filterSettings": {
+    "UserData": {
+      "NameSearch": "",
+      "Year": "----",
+      "Storefront": "----",
+      "Platform": "----",
+      "HltbListStatus": "----",
+      "OnlyReplays": false,
+      "OnlyIncludesDlc": false,
+      "OnlyNotPlayed": false,
+      "OnlyInstalled": false,
+      "TitleListSort": 2,
+      "IsAsc": false
+    },
+    "PlayniteData": {
+      "UsedFilteredGames": true,
+      "OnlyNotPlayed": false,
+      "OnlyInstalled": false,
+      "Platform": "----"
+    },
+    "LegacySortMigrated": true,
+    "NestedFiltersMigrated": true
+  },
+  "AutoSetGameStatus": false,
+  "AutoSetGameStatusToHltb": false,
+  "GameStatusPlaying": "00000000-0000-0000-0000-000000000000",
+  "GameStatusCompleted": "00000000-0000-0000-0000-000000000000",
+  "GameStatusCompletionist": "00000000-0000-0000-0000-000000000000",
+  "GameStatusBacklog": "00000000-0000-0000-0000-000000000000",
+  "GameStatusReplays": "00000000-0000-0000-0000-000000000000",
+  "GameStatusRetired": "00000000-0000-0000-0000-000000000000",
+  "ToHltbGameStatusesPlaying": [],
+  "ToHltbGameStatusesCompleted": [],
+  "ToHltbGameStatusesCompletionist": [],
+  "ToHltbGameStatusesBacklog": [],
+  "ToHltbGameStatusesReplays": [],
+  "ToHltbGameStatusesRetired": [],
+  "LegacyGameStatusToHltbListsMigrated": true,
+  "AutoSetToHltbClearOtherLists": true,
+  "LegacyToHltbListSyncOptionsMigrated": true,
+  "ToHltbPlayingListSync": {
+    "ClearOtherLists": true
+  },
+  "ToHltbCompletedListSync": {
+    "ClearOtherLists": true
+  },
+  "ToHltbCompletionistListSync": {
+    "ClearOtherLists": true
+  },
+  "ToHltbBacklogListSync": {
+    "ClearOtherLists": true
+  },
+  "ToHltbReplaysListSync": {
+    "ClearOtherLists": true
+  },
+  "ToHltbRetiredListSync": {
+    "ClearOtherLists": true
+  },
+  "ToHltbAlwaysKeepLists": {
+    "AlwaysKeepPlayingIfPresent": false,
+    "AlwaysKeepBacklogIfPresent": false,
+    "AlwaysKeepReplayIfPresent": false,
+    "AlwaysKeepCompletedIfPresent": false,
+    "AlwaysKeepRetiredIfPresent": false
+  },
+  "AutoSetToHltbCompletedSendPlaytime": true,
+  "AutoSetToHltbCompletedSendCompletionDate": true,
+  "AutoSetToHltbCompletionistSendPlaytime": true,
+  "AutoSetToHltbCompletionistSendCompletionDate": true,
+  "AutoSetToHltbPlayingSendPlaytime": true,
+  "HltbChartStatsOptions": {
+    "Margin": 10.0,
+    "StatsType": 1,
+    "ChartTitle": false,
+    "ChartLabels": true,
+    "ChartLabelsOrdinates": false,
+    "DataNumber": 5.0
+  },
+  "MenuInExtensions": true,
+  "EnableTag": false,
+  "LastAutoLibUpdateAssetsDownload": "0001-01-01T00:00:00",
+  "AutoImport": false,
+  "AutoImportOnInstalled": false,
+  "DatabaseBackupMaxCount": 5,
+  "IncludeEmulatedGames": true,
+  "LibrarySourceFilterMode": 0,
+  "EnabledSources": [],
+  "ExcludedSources": [],
+  "EnableVerboseLogging": false
+}

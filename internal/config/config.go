@@ -81,6 +81,9 @@ type App struct {
 	// Repo is the apt repository to register before installing (Debian
 	// family only).
 	Repo map[string]Repo `yaml:"repo"`
+	// GPU lists the kinds of graphics card the app is for (nvidia, amd,
+	// intel): on a machine without one of them it starts unselected.
+	GPU []string `yaml:"gpu"`
 }
 
 // File is a config file to deploy.

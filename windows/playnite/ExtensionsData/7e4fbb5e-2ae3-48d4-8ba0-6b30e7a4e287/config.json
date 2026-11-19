@@ -1,0 +1,7 @@
+{
+  "ConnectAccount": true,
+  "ImportInstalledGames": true,
+  "ImportUninstalledGames": true,
+  "XboxAppClientPriorityLaunch": false,
+  "ImportConsoleGames": true
+}

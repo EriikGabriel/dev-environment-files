@@ -73,6 +73,9 @@ func (e *Env) SavePlaynite(ctx context.Context, out io.Writer) (playnite.Manifes
 	reportExport(out, "windows/playnite", git)
 	host, _ := os.Hostname()
 	m := playnite.Manifest{SavedAt: time.Now().UTC().Truncate(time.Second), Source: cfg.Path, Computer: host, Extensions: []string{}, Secrets: len(git.Secrets)}
+	if ra, ok, err := e.RetroArchConfig(); err == nil && ok {
+		m.RetroArch, m.RetroGames = ra.Path, ra.Games
+	}
 	if cfg.Store == "" {
 		fmt.Fprintln(out, "no store is set: the library, the media and the secrets are only on this machine")
 		return m, nil
@@ -160,6 +163,15 @@ func (e *Env) RestorePlaynite(ctx context.Context, out io.Writer, mirror bool) e
 	}
 	if len(changed) > 0 {
 		fmt.Fprintf(out, "%s replaced by %s in %d settings files\n", m.Source, cfg.Path, len(changed))
+	}
+	// the library keeps full paths to RetroArch and its games
+	if ra, ok, err := e.RetroArchConfig(); err == nil && ok {
+		if err := e.RelocatePlaynite(ctx, out, m.RetroArch, ra.Path); err != nil {
+			return err
+		}
+		if err := e.RelocatePlaynite(ctx, out, m.RetroGames, ra.Games); err != nil {
+			return err
+		}
 	}
 	if cfg.StartMenu {
 		return e.registerPlaynite(ctx, out, cfg)

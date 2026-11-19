@@ -22,7 +22,7 @@ func TestPlayniteStepRestoresTheSnapshot(t *testing.T) {
 	if len(p.Steps) != 1 {
 		t.Fatalf("want the playnite step, got %d (skipped %+v)", len(p.Steps), p.Skipped)
 	}
-	if l := p.Describe(context.Background()); !l[0].Pending || !strings.Contains(l[0].Detail, "Playnite snapshot") {
+	if l := p.Describe(context.Background()); !l[0].Pending || !strings.Contains(l[0].Detail, "Playnite back from the store") {
 		t.Fatalf("without the folder it is pending: %+v", l)
 	}
 

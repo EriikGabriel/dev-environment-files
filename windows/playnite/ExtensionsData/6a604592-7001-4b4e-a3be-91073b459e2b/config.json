@@ -1,0 +1,63 @@
+{
+  "EnableTagCreation": false,
+  "IgnoreTagId": "00000000-0000-0000-0000-000000000000",
+  "SearchShortcut": {
+    "Key": 49,
+    "Modifiers": 2
+  },
+  "SearchShortcutGlobal": {
+    "Key": 49,
+    "Modifiers": 3
+  },
+  "HotkeyText": "Control + F",
+  "HotkeyTextGlobal": "Alt, Control + F",
+  "Threshold": 0.55,
+  "ExpandAllItems": true,
+  "ShowSeperator": true,
+  "IncrementalUpdate": false,
+  "MaxNumberResults": 20,
+  "EnableExternalGameActions": true,
+  "EnableExternalItems": true,
+  "AsyncItemsDelay": 500,
+  "EnabledAssemblies": {
+    "DuplicateHider": {
+      "Items": true,
+      "Actions": true
+    },
+    "HowLongToBeat": {
+      "Items": true,
+      "Actions": true
+    },
+    "QuickSearch": {
+      "Items": true,
+      "Actions": true
+    },
+    "SuccessStory": {
+      "Items": true,
+      "Actions": true
+    }
+  },
+  "PrioritizationThreshold": 0.55,
+  "MaxPrioritizedGames": 1,
+  "InstallationStatusFirst": true,
+  "ITADThreshold": 0.75,
+  "ITADOverride": "+",
+  "ITADEnabled": true,
+  "EnabledITADShops": {},
+  "EnableGlassEffect": true,
+  "OuterBorderThickness": 12,
+  "EnableFilterSubSources": true,
+  "EnableGlobalHotkey": true,
+  "PreferCoverArt": true,
+  "EnableDetailsView": true,
+  "SearchWindowWidth": 660,
+  "DetailsViewMaxWidth": 400,
+  "IgnoreHiddenGames": false,
+  "MinAcronmLength": 3,
+  "SwapGameActions": false,
+  "KeepGamesInMemory": false,
+  "PersistantGameIndex": true,
+  "EnableInFullscreenMode": false,
+  "AddMainMenuItemsAsCommands": true,
+  "AddExtensionSettingsItems": true
+}

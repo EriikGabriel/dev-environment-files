@@ -295,5 +295,55 @@ func playniteCommands(f *flags) []*cobra.Command {
 		},
 	})
 
-	return []*cobra.Command{status, set, save, restore, fix, open}
+	// progress goes to stderr when stdout carries the JSON answer
+	progress := func() *os.File {
+		if f.json {
+			return os.Stderr
+		}
+		return os.Stdout
+	}
+	closeCmd := jsonFlag(&cobra.Command{
+		Use:   "playnite-close",
+		Short: "Close Playnite the way its own Exit does (it saves the library first)",
+		Args:  cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			env, err := windowsEnv("closing Playnite")
+			if err != nil {
+				return err
+			}
+			if err := env.ClosePlaynite(cmd.Context(), progress()); err != nil {
+				return err
+			}
+			if f.json {
+				return printJSON(os.Stdout, map[string]any{"closed": true})
+			}
+			return nil
+		},
+	})
+
+	var from, to string
+	relocate := jsonFlag(&cobra.Command{
+		Use:   "playnite-relocate",
+		Short: "Rewrite the paths of the Playnite library (games, emulators, scanners) from one folder to another",
+		Args:  cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			env, err := windowsEnv("editing the Playnite library")
+			if err != nil {
+				return err
+			}
+			if err := env.RelocatePlaynite(cmd.Context(), progress(), from, to); err != nil {
+				return err
+			}
+			if f.json {
+				return printJSON(os.Stdout, map[string]any{"from": from, "to": to})
+			}
+			return nil
+		},
+	})
+	relocate.Flags().StringVar(&from, "from", "", "the old folder")
+	relocate.Flags().StringVar(&to, "to", "", "the new folder")
+	relocate.MarkFlagRequired("from")
+	relocate.MarkFlagRequired("to")
+
+	return []*cobra.Command{status, set, save, restore, fix, open, closeCmd, relocate}
 }

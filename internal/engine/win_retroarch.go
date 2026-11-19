@@ -115,14 +115,17 @@ func (e *Env) SaveRetroArch(ctx context.Context, out io.Writer) (retroarch.Manif
 	} else if len(gone) > 0 {
 		fmt.Fprintf(out, "removed from the store (now downloaded or in git): %s\n", strings.Join(gone, ", "))
 	}
-	if cfg.Games != "" {
-		if _, err := os.Stat(cfg.Games); err != nil {
-			return m, fmt.Errorf("the games folder %s does not exist (empty games in config/retroarch.yaml leaves the games out)", cfg.Games)
-		}
+	switch {
+	case cfg.Games == "":
+	case !exists(cfg.Games):
+		return m, fmt.Errorf("the games folder %s does not exist (empty games in config/retroarch.yaml leaves the games out)", cfg.Games)
+	case cfg.CopyGames:
 		fmt.Fprintf(out, "copying %s to %s (%.1f GB, %d games)\n", cfg.Games, cfg.GamesSnapshot(), float64(in.GameBytes)/(1<<30), in.GameCount)
 		if err := e.robocopy(ctx, out, retroarch.RobocopyArgs(cfg.Games, cfg.GamesSnapshot(), nil, true)); err != nil {
 			return m, err
 		}
+	default:
+		fmt.Fprintf(out, "the games stay in %s (%d games, %.1f GB): copy_games is off\n", cfg.Games, in.GameCount, float64(in.GameBytes)/(1<<30))
 	}
 	if err := snapshot.WriteJSON(snapshot.SecretsFile(cfg.Store, retroarch.Program), git.Secrets); err != nil {
 		return m, err
@@ -182,18 +185,21 @@ func (e *Env) RestoreRetroArch(ctx context.Context, out io.Writer, mirror bool) 
 		if err := e.robocopy(ctx, out, retroarch.RobocopyArgs(cfg.Snapshot(), cfg.Path, cfg.RestoreExclude(), mirror && full)); err != nil {
 			return err
 		}
-		if cfg.Games != "" {
-			if exists(cfg.GamesSnapshot()) {
-				fmt.Fprintf(out, "copying the games to %s\n", cfg.Games)
-				if err := e.robocopy(ctx, out, retroarch.RobocopyArgs(cfg.GamesSnapshot(), cfg.Games, nil, mirror)); err != nil {
-					return err
-				}
-			} else {
-				fmt.Fprintf(out, "the store has no games (%s)\n", cfg.GamesSnapshot())
-			}
-		}
 	} else {
-		fmt.Fprintln(out, "no store: the games and the BIOS are not restored; copy them to the folders by hand")
+		fmt.Fprintln(out, "no store: the BIOS is not restored; copy it to the system folder by hand")
+	}
+	// the games: where they live, or the copy in the store
+	switch {
+	case cfg.Games == "":
+	case m != nil && exists(cfg.GamesSnapshot()) && (cfg.CopyGames || !exists(cfg.Games)):
+		fmt.Fprintf(out, "copying the games to %s\n", cfg.Games)
+		if err := e.robocopy(ctx, out, retroarch.RobocopyArgs(cfg.GamesSnapshot(), cfg.Games, nil, mirror)); err != nil {
+			return err
+		}
+	case exists(cfg.Games):
+		fmt.Fprintf(out, "the games are in %s\n", cfg.Games)
+	default:
+		fmt.Fprintf(out, "warning: the games folder %s is not there (connect the drive that has it) and the store has no copy\n", cfg.Games)
 	}
 	// cores the store did not bring
 	if err := e.downloadCores(ctx, out, cfg); err != nil {

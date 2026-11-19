@@ -101,9 +101,9 @@ func (s *appStep) describeInstall() string {
 	case config.MethodPolicies:
 		return "write the group policies of config/policies.yaml to the registry (asks for elevation)"
 	case config.MethodPlaynite:
-		return "copy the Playnite snapshot of config/playnite.yaml back and register it in the Start menu"
+		return "copy Playnite back from the store, its settings from git (windows/playnite) and register it in the Start menu"
 	case config.MethodRetroArch:
-		return "copy the RetroArch and games snapshot of config/retroarch.yaml back, fix the playlists and register it in the Start menu"
+		return "download RetroArch and its cores, copy the BIOS from the store and the settings and saves from git, point the playlists at the games and register it in the Start menu"
 	case config.MethodWindhawk:
 		return "install the Windhawk mods of windows/windhawk/backup.json with their settings (asks for elevation)"
 	case config.MethodNinite:

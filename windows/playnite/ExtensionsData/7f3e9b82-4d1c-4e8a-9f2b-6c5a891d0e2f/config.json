@@ -1,0 +1,11 @@
+{
+  "Enabled": true,
+  "SizingMode": 0,
+  "TargetColumns": 8,
+  "TargetRows": 4,
+  "ViewportAdjustPx": 0,
+  "KeepGridWhileDetailsOpen": true,
+  "HasSavedUserLayout": true,
+  "SavedUserGridItemWidth": 200.0,
+  "SavedUserGridItemSpacing": 8
+}

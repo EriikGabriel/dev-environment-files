@@ -24,11 +24,18 @@ steps:
     apps: [7zip, vcredist, directx, windows-media-player]
     optional: [scoop, powertoys, ninite]
 
+  # Both GPU apps are listed: the one for the card of the machine starts
+  # selected, the other unselected (`gpu` in config/apps.yaml).
   - id: drivers
     title: Drivers e hardware
-    description: O software da placa de vídeo e as ferramentas de monitoramento.
-    apps: [amd-software]
-    optional: [nvidia-app, msi-afterburner, hwinfo]
+    description: O software da placa de vídeo (vem marcado o da placa desta máquina) e as ferramentas de monitoramento.
+    apps: [nvidia-app, amd-software]
+    optional: [msi-afterburner, hwinfo]
+
+  - id: peripherals
+    title: Periféricos
+    description: Os programas do headset, do mouse, do controle e do RGB. Só instalam; as configurações ficam nos aparelhos ou nos próprios programas.
+    apps: [mchose-hub, attack-shark-driver, signalrgb, 8bitdo-ultimate-software]
 
   - id: launchers
     title: Lojas e launchers

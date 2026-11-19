@@ -78,6 +78,31 @@ com PowerShell no Windows. Eles recebem `$ENVSETUP_ROOT` (a pasta de dados) e um
 registra um repositório apt de terceiros antes de instalar (`key` é a URL da chave e `source` a
 parte `url suíte componentes` da linha do sources.list).
 
+**Software da placa de vídeo (`gpu`).** `gpu: [nvidia]` (ou `amd`, `intel`) diz que o app é para
+aquele tipo de placa. O envsetup lê as placas da máquina (`Win32_VideoController`): se nenhuma é
+do tipo, o app vem **desmarcado** e o assistente mostra o motivo ("para placas AMD; esta máquina
+tem NVIDIA"); ainda dá para marcar. Sem placa detectada, vem marcado. O perfil de jogos lista
+`nvidia-app` e `amd-software` na etapa Drivers, e só o da placa da máquina vem marcado.
+
+**Programas baixados do site do fabricante.** Para o que não está no winget, use o método
+`script` com os dois ajudantes de `windows/`:
+
+```yaml
+  mchose-hub:
+    method: { windows: script }
+    check:
+      windows: if (-not (& "$env:ENVSETUP_ROOT\windows\installed.ps1" 'MCHOSE HUB*')) { exit 1 }
+    source:
+      windows: |
+        & "$env:ENVSETUP_ROOT\windows\install-from-url.ps1" -Name 'MCHOSE HUB*' -Url 'https://…/installer.zip'
+```
+
+`installed.ps1` procura o nome (com curingas) em Aplicativos instalados. `install-from-url.ps1`
+baixa o instalador (ou um `.zip` com ele; `-Page` e `-Pattern` acham o link numa página, quando
+ele muda a cada versão), tenta instalar sem perguntas (`-Silent`, padrão `/S` dos instaladores
+NSIS) e, se o programa não aparecer em Aplicativos instalados, abre o instalador para seguir à
+mão. Assim são instalados o NVIDIA App, o MCHOSE HUB e o Attack Shark Driver.
+
 **Para adicionar um app:** pelo app, no botão "+ Adicionar app" da etapa em Configurar (pede o nome do
 pacote ou o ID do winget e cria a entrada), ou com
 `envsetup add-app --step <etapa> --id <id> --name <pacote>`. À mão: crie a entrada aqui e ponha o
@@ -231,7 +256,7 @@ pasta mudou. Restaurar o Playnite precisa do HD. A aba também mostra o que a pa
 | Campo | O que faz |
 |---|---|
 | `path` | a pasta do RetroArch, a que tem `retroarch.exe` (padrão `C:\Emuladores\RetroArch`) |
-| `games` | a pasta dos jogos, uma subpasta por sistema (padrão `C:\Emuladores\Games`); vazio deixa os jogos fora |
+| `games` | a pasta dos jogos, uma subpasta por sistema (padrão `D:\Games\Retro`, no HD); vazio deixa os jogos fora. Para trocar, use "Trocar" na aba (move os arquivos) ou `retroarch-move-games` |
 | `store` | o HD: `<store>\RetroArch` (a BIOS e o que não é baixado nem vai pro git), `<store>\Games`, o manifesto e as senhas tiradas do git |
 | `exclude` | o que nunca é copiado (padrão: `logs`, `downloads`, `*.log`) |
 | `start_menu` | depois de restaurar, põe o RetroArch no menu Iniciar e em Configurações › Apps |
@@ -240,6 +265,7 @@ pasta mudou. Restaurar o Playnite precisa do HD. A aba também mostra o que a pa
 | `bundles` | os pacotes de assets baixados com o programa (`assets`, `autoconfig`, `cheats`, `database-rdb`, `info`, `overlays`, `shaders_slang`, `shaders_glsl`; também `database-cursors`, `shaders_cg`) |
 | `git` | o que vai para `windows/retroarch` (padrão: `retroarch.cfg`, `retroarch-core-options.cfg`, `config`, `remaps`, `playlists`, `saves`, `states`, `thumbnails`) |
 | `copy_program` | guarda também o programa inteiro no HD, para restaurar sem internet (~1 GB a mais) |
+| `copy_games` | copia também os jogos para `<store>\Games` a cada salvamento. Desligado quando os jogos já moram num disco que não é formatado (`D:\Games\Retro`); ligue se o `store` for outro lugar (pendrive, NAS) e você quiser os jogos lá também |
 
 **Por que os jogos não vão para o GitHub.** ROMs e BIOS têm direitos autorais, o repositório é
 público e uma imagem de disco sozinha (o `.bin` de PlayStation) passa do limite de 100 MB do

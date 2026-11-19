@@ -67,7 +67,9 @@ Mapa do código, testes, o contrato entre o app e o motor e como os dados entram
 - [x] `webkit2gtk` e FUSE 2 no catálogo
 - [x] Emulador: RetroArch portable e jogos (configurações e saves no git, programa baixado, BIOS e jogos no HD)
 - [x] Salvar o RetroArch (`D:\envsetup`)
-- [ ] Salvar o Playnite (`store` já é `D:\envsetup`: fechar o Playnite e clicar em Salvar)
+- [x] Salvar o Playnite (`D:\envsetup`) e centralizar os jogos em `D:\Games`
+- [x] Aba Backup: passo a passo para formatar
+- [ ] Steam e Epic: biblioteca em `D:\Games` (adicionar de novo depois de formatar)
 - [ ] Terminar de configurar video do ET
 - [ ] Configurar aparencia geral com alguns tweaks temas e icones (pra dps jogar pro app)
 - [ ] Testar os scripts do GNOME numa sessão real

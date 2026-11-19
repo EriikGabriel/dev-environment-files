@@ -48,6 +48,8 @@ export interface WizardApp {
   available: boolean;
   installed: boolean;
   detail: string;
+  /** Why a graphics card app starts selected or not ("placa NVIDIA detectada"). */
+  hint?: string;
 }
 
 export interface WizardFile {

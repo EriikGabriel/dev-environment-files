@@ -1,0 +1,2038 @@
+{
+  "Persisted": {
+    "ProviderSettings": {
+      "Steam": {
+        "SteamUserId": "76561198405496348",
+        "SteamInstallPathOverride": null,
+        "IgnoredFriends": [],
+        "IsEnabled": true
+      },
+      "Epic": {
+        "AccountId": "0beb1f239f8842ab84c24884f8efaed0",
+        "AccessToken": "",
+        "RefreshToken": "",
+        "TokenType": "bearer",
+        "TokenExpiryUtc": "2026-11-20T04:42:22.951Z",
+        "RefreshTokenExpiryUtc": "2027-11-18T17:49:02.952Z",
+        "IsEnabled": true
+      },
+      "GOG": {
+        "UserId": null,
+        "IsEnabled": true
+      },
+      "BattleNet": {
+        "BattleNetClientId": null,
+        "BattleNetClientSecret": null,
+        "BattleNetRedirectUri": "http://127.0.0.1:55431/",
+        "BattleNetAccessToken": null,
+        "BattleNetRefreshToken": null,
+        "BattleNetTokenType": null,
+        "BattleNetTokenExpiryUtc": "0001-01-01T00:00:00",
+        "BattleNetAccountId": null,
+        "BattleNetBattleTag": null,
+        "Sc2RegionId": 1,
+        "Sc2RealmId": 1,
+        "Sc2ProfileId": 0,
+        "WowRegion": null,
+        "WowRealmSlug": null,
+        "WowCharacter": null,
+        "WowCharacterSource": 0,
+        "WowClassicRealmSlug": null,
+        "WowClassicCharacter": null,
+        "UseDataForAzerothForWowRarity": true,
+        "DataForAzerothUserId": null,
+        "IsEnabled": true
+      },
+      "EA": {
+        "PlayerId": null,
+        "PlayerSubId": null,
+        "DisplayName": null,
+        "IsEnabled": true
+      },
+      "Ubisoft": {
+        "UserId": null,
+        "NameOnPlatform": null,
+        "IsEnabled": true
+      },
+      "GameJolt": {
+        "UserId": null,
+        "IsEnabled": true
+      },
+      "Riot": {
+        "RiotGameName": null,
+        "RiotTagLine": "",
+        "PlatformRegion": "na1",
+        "RiotApiKey": null,
+        "Puuid": null,
+        "IsEnabled": true
+      },
+      "PSN": {
+        "Npsso": "",
+        "IsEnabled": true
+      },
+      "Xbox": {
+        "LowResIcons": false,
+        "IsEnabled": true
+      },
+      "Meta": {
+        "UserId": null,
+        "Alias": null,
+        "IsEnabled": true
+      },
+      "GooglePlay": {
+        "IsEnabled": true
+      },
+      "Apple": {
+        "IsEnabled": true
+      },
+      "FFXIV": {
+        "CharacterProfile": null,
+        "ResolvedCharacterId": 0,
+        "IsEnabled": true
+      },
+      "Minecraft": {
+        "GameFolders": [],
+        "PlayerUuid": null,
+        "IsEnabled": true
+      },
+      "RetroAchievements": {
+        "RaUsername": null,
+        "RaWebApiKey": null,
+        "RaRarityStats": "casual",
+        "RaPointsMode": "points",
+        "HashIndexMaxAgeDays": 30,
+        "EnableArchiveScanning": true,
+        "EnableDiscHashing": true,
+        "EnableRaNameFallback": true,
+        "EnableFuzzyNameMatching": true,
+        "EnableRaSubsetScanning": true,
+        "EmulatorLogPathOverrides": {},
+        "IsEnabled": true
+      },
+      "RPCS3": {
+        "ExecutablePaths": [],
+        "IsEnabled": true
+      },
+      "ShadPS4": {
+        "GameDataPaths": [
+          "C:\\Users\\Erik Gabriel\\AppData\\Roaming\\shadPS4"
+        ],
+        "IsEnabled": true
+      },
+      "Vita3K": {
+        "ExecutablePaths": [],
+        "IsEnabled": true
+      },
+      "Xenia": {
+        "AccountPaths": [],
+        "IsEnabled": true
+      },
+      "Manual": {
+        "ManualTrackingOverrideEnabled": false,
+        "IsEnabled": true
+      },
+      "Exophase": {
+        "UserId": null,
+        "ManagedProviders": [
+          "android",
+          "apple"
+        ],
+        "UbisoftHandedToNative": true,
+        "Friends": [],
+        "FriendGameMappings": {},
+        "IsEnabled": true
+      },
+      "Hoyoverse": {
+        "EnableGenshinImpact": true,
+        "EnableHonkaiStarRail": true,
+        "EnableZenlessZoneZero": true,
+        "GenshinExportPath": null,
+        "HonkaiStarRailExportPath": null,
+        "ZenlessZoneZeroExportPath": null,
+        "IsEnabled": true
+      },
+      "GW2": {
+        "ApiKey": null,
+        "AccountName": null,
+        "AccountId": null,
+        "IsEnabled": true
+      },
+      "Hypixel": {
+        "Username": null,
+        "IsEnabled": true
+      }
+    },
+    "EnableFriendsFeatures": true,
+    "AutoDiscoverFriendProviderKeys": [
+      "Steam",
+      "RetroAchievements"
+    ],
+    "UseExophaseForSteamFriendOwnership": false,
+    "IncludeUnownedFriendGames": false,
+    "Friends": [],
+    "FriendMergeGroups": [],
+    "GlobalLanguage": "english",
+    "EnablePeriodicUpdates": true,
+    "IncludeHiddenGamesInBulkScans": true,
+    "IncludeHiddenGamesInSummaries": true,
+    "RefreshExclusionFilterPresetIds": [],
+    "SummaryExclusionFilterPresetIds": [],
+    "PeriodicUpdateHours": 6,
+    "EnableFriendsPeriodicUpdates": false,
+    "FriendsPeriodicUpdateHours": 24,
+    "EnableInGamePolling": true,
+    "EnableAutoCapstoneGeneration": false,
+    "AutoCapstoneTemplateHistory": [],
+    "AutoCapstoneAppliedTemplates": "{0}\u001fObtain every base game achievement.\u001f{0}: {1}\u001fObtain every achievement in {1}.",
+    "InGamePollIntervalSeconds": 15,
+    "InGamePollRefreshFriends": false,
+    "InGameFriendRefreshMultiplier": 4,
+    "InGameFriendBatchSize": 10,
+    "RecentRefreshGamesCount": 10,
+    "DefaultOverviewRefreshMode": 2,
+    "CustomRefreshPresets": [],
+    "EnableAchievementHotkeys": true,
+    "EnableGlobalAchievementHotkeys": false,
+    "EnableViewAchievementsHotkey": true,
+    "EnableManageAchievementsHotkey": true,
+    "EnableOverviewHotkey": true,
+    "EnableOpenSettingsHotkey": true,
+    "EnableCategoryModeHotkey": true,
+    "EnableTestUnlockHotkey": true,
+    "EnableWorkshopHotkey": true,
+    "EnableCaptureTestFolder": false,
+    "ViewAchievementsHotkey": "Ctrl+Alt+V",
+    "ManageAchievementsHotkey": "Ctrl+Alt+M",
+    "OverviewHotkey": "Ctrl+Alt+O",
+    "OpenSettingsHotkey": "Ctrl+Alt+P",
+    "CategoryModeHotkey": "C",
+    "TestUnlockHotkey": "Ctrl+Alt+T",
+    "WorkshopHotkey": "Ctrl+Alt+W",
+    "EnableNotifications": true,
+    "EnableUnlockToasts": true,
+    "EnableFriendUnlockToasts": true,
+    "EnableProgressToasts": true,
+    "SkipCompletionNotificationAfterCapstone": true,
+    "ProgressToastIntervalPercent": 0,
+    "NotificationStyle": {
+      "Toast": {
+        "ShowHeader": true,
+        "ShowName": true,
+        "ShowDescription": true,
+        "ShowCategory": true,
+        "ShowGameName": true,
+        "ShowRarityBadge": true,
+        "ShowRarityPercent": true,
+        "InlineRarityBadge": false,
+        "InlineGameRarityBadge": false,
+        "RightRarityBadge": false,
+        "RarityPercentUnderBadge": false,
+        "ShowRarityGlow": true,
+        "NotificationBorderGlow": false,
+        "RarityColoredName": true,
+        "ShowUnlockTime": false,
+        "ShowIcon": true,
+        "ShowProviderIcon": true,
+        "ShowAccentStrip": true,
+        "ShowCountdownBar": true,
+        "FrameVignette": 0,
+        "BlurBackground": false,
+        "TitleLineOffset": 0.0,
+        "HeaderEmphasis": 0,
+        "TitleEmphasis": 0,
+        "BodyEmphasis": 0,
+        "GameCategoryEmphasis": 0,
+        "RarityEmphasis": 0,
+        "ProgressEmphasis": 0,
+        "BadgeImages": {},
+        "HeaderTexts": {}
+      },
+      "Frame": {
+        "ShowHeader": true,
+        "ShowName": true,
+        "ShowDescription": true,
+        "ShowCategory": true,
+        "ShowGameName": true,
+        "ShowRarityBadge": true,
+        "ShowRarityPercent": true,
+        "InlineRarityBadge": false,
+        "InlineGameRarityBadge": false,
+        "RightRarityBadge": false,
+        "RarityPercentUnderBadge": false,
+        "ShowRarityGlow": true,
+        "NotificationBorderGlow": false,
+        "RarityColoredName": true,
+        "ShowUnlockTime": true,
+        "ShowIcon": true,
+        "ShowProviderIcon": true,
+        "ShowAccentStrip": true,
+        "ShowCountdownBar": true,
+        "FrameVignette": 0,
+        "BlurBackground": false,
+        "TitleLineOffset": 0.0,
+        "HeaderEmphasis": 0,
+        "TitleEmphasis": 0,
+        "BodyEmphasis": 0,
+        "GameCategoryEmphasis": 0,
+        "RarityEmphasis": 0,
+        "ProgressEmphasis": 0,
+        "BadgeImages": {},
+        "HeaderTexts": {}
+      },
+      "KindStyles": {}
+    },
+    "ToastUseThemeStyling": true,
+    "FrameUseThemeStyling": true,
+    "ToastDurationSeconds": 6,
+    "NotificationDelaySeconds": 0.0,
+    "CaptureDelaySeconds": 0.0,
+    "CaptureAtUnlockAndAfterDelay": false,
+    "MaxConcurrentToasts": 3,
+    "ToastPosition": 0,
+    "EnableControllerVibration": false,
+    "ControllerVibrationStrengthPercent": 50,
+    "ControllerVibrationDurationMs": 650,
+    "UseHiddenUnlockSound": false,
+    "EnableUnlockSounds": false,
+    "AllowThemeUnlockSounds": true,
+    "UnlockSoundVolumePercent": 50,
+    "UnlockSounds": {},
+    "ProviderUnlockSounds": {},
+    "UnlockSoundsSeededFromUniPlaySong": true,
+    "EnableUnlockScreenshots": false,
+    "UnlockScreenshotClean": false,
+    "UnlockScreenshotWithToast": true,
+    "UnlockScreenshotFramed": false,
+    "UnlockScreenshotSuffixClean": "clean",
+    "UnlockScreenshotSuffixWithToast": "notification",
+    "UnlockScreenshotSuffixFramed": "framed",
+    "LibraryLinks": {},
+    "ScreenshotResolution": 0,
+    "UnlockScreenshotCleanRarities": 15,
+    "UnlockScreenshotCleanAlwaysCaptureCompletion": true,
+    "UnlockScreenshotWithToastRarities": 15,
+    "UnlockScreenshotWithToastAlwaysCaptureCompletion": true,
+    "UnlockScreenshotFramedRarities": 15,
+    "UnlockScreenshotFramedAlwaysCaptureCompletion": true,
+    "EnableUnlockRecordings": false,
+    "RecordingClipSeconds": 15,
+    "RecordingFps": 30,
+    "RecordingResolution": 0,
+    "RecordingQuality": 0,
+    "RecordingIncludeAudio": false,
+    "RecordingAudioSource": 0,
+    "RecordingIncludeMicrophone": false,
+    "UnlockRecordingRarities": 15,
+    "UnlockRecordingAlwaysCaptureCompletion": true,
+    "UnlockRecordingClean": false,
+    "UnlockRecordingWithToast": true,
+    "UnlockRecordingFramed": false,
+    "UnlockRecordingCleanRarities": 15,
+    "UnlockRecordingCleanAlwaysCaptureCompletion": true,
+    "UnlockRecordingFramedRarities": 15,
+    "UnlockRecordingFramedAlwaysCaptureCompletion": true,
+    "UnlockRecordingFramedSeconds": 5,
+    "ProviderNotificationOverrides": {},
+    "ProviderNotificationStyles": {},
+    "ShowHiddenIcon": false,
+    "ShowHiddenTitle": false,
+    "ShowHiddenDescription": false,
+    "ShowHiddenSuffix": true,
+    "ShowLockedIcon": true,
+    "ShowLockedTitle": true,
+    "ShowLockedDescription": true,
+    "ShowHiddenTrophy": true,
+    "ShowHiddenPoints": true,
+    "ShowLockedTrophy": true,
+    "ShowLockedPoints": true,
+    "ShowHiddenRarity": true,
+    "ShowLockedRarity": true,
+    "UseSeparateLockedIconsWhenAvailable": false,
+    "ModernCompactListShowRarityGlow": true,
+    "ModernUnlockedListShowRarityGlow": true,
+    "AnimateRarityGlows": true,
+    "RarityGlowSoftTiers": 30,
+    "RarityGlowRayTiers": 0,
+    "ShowHardcoreBorder": true,
+    "RarityGlowPulseMinOpacity": 0.6,
+    "RarityGlowPulseMaxOpacity": 1.0,
+    "RarityGlowPulseSpeed": 0.5,
+    "UseUniformRarityBadges": false,
+    "UseTrophiesForRarity": false,
+    "RoundRarityPercentages": false,
+    "RarityColors": {
+      "Common": "#B56A37",
+      "Uncommon": "#A6B1BF",
+      "Rare": "#CF9B1F",
+      "UltraRare": "#86C8FF",
+      "CompletedStart": "#9C27B0",
+      "CompletedEnd": "#2196F3",
+      "TrophyBronze": "#B56A37",
+      "TrophySilver": "#A6B1BF",
+      "TrophyGold": "#CF9B1F",
+      "TrophyPlatinum": "#86C8FF"
+    },
+    "ProviderColorOverrides": {},
+    "IncludeUnplayedGames": true,
+    "OverviewScoreCard1": {
+      "InstanceId": "34696788a91d4663b258a707d3923751",
+      "Kind": 1,
+      "Options": {
+        "ScoreCard": "Collection",
+        "ScoreCardBadgePosition": "Left"
+      }
+    },
+    "OverviewScoreCard2": {
+      "InstanceId": "aac06072b235401998f35de88fab327e",
+      "Kind": 1,
+      "Options": {
+        "ScoreCard": "Prestige",
+        "ScoreCardBadgePosition": "Left"
+      }
+    },
+    "ShowOverviewScoreCard1": true,
+    "ShowOverviewScoreCard2": true,
+    "ShowTopMenuBarButton": true,
+    "ShowSidebarButton": true,
+    "ShowCompletedProgressColoring": true,
+    "ShowFriendSpoilers": false,
+    "FriendsOverviewRecentUnlockLimit": 200,
+    "ShowCompactListRarityBar": true,
+    "ShowCompactLockedListRarityBar": true,
+    "ShowCompactUnlockedListRarityBar": true,
+    "ProgressColumnAlignmentDefaulted": true,
+    "InlineSurfaceTransparencySeeded": true,
+    "CommonGlowTierCleared": true,
+    "CategoryProgressColumnAlignmentDefaulted": true,
+    "GridColumnHeaderAlignment": 1,
+    "GridCellAlignment": 0,
+    "GridCellVerticalAlignment": 1,
+    "UnlockDateDisplayMode": 0,
+    "PlaytimeDisplayMode": 0,
+    "CategoryCompletionBadgeMode": 0,
+    "IconScaleMode": 0,
+    "CategoryColumnDisplay": 0,
+    "ProgressDetails": [
+      {
+        "Style": 0,
+        "Enabled": true
+      },
+      {
+        "Style": 1,
+        "Enabled": false
+      },
+      {
+        "Style": 2,
+        "Enabled": false
+      }
+    ],
+    "ProgressDetailShownCount": 1,
+    "FriendNameDisplayMode": 2,
+    "EnableAchievementCompactListControl": true,
+    "EnableAchievementDataGridControl": true,
+    "EnableAchievementCompactUnlockedListControl": true,
+    "EnableAchievementCompactLockedListControl": true,
+    "EnableAchievementProgressBarControl": true,
+    "EnableAchievementStatsControl": true,
+    "EnableAchievementButtonControl": true,
+    "EnableAchievementViewItemControl": true,
+    "EnableAchievementPieChartControl": true,
+    "EnableAchievementBarChartControl": true,
+    "CompactListSortMode": 0,
+    "CompactListSortDescending": false,
+    "CompactUnlockedListSortMode": 0,
+    "CompactUnlockedListSortDescending": false,
+    "CompactLockedListSortMode": 0,
+    "CompactLockedListSortDescending": false,
+    "Showcase": {
+      "LayoutVersion": 2,
+      "LastSelectedPageId": "cce013f7262a49a0a4147b39def7262e",
+      "Pages": [
+        {
+          "PageId": "cce013f7262a49a0a4147b39def7262e",
+          "Name": "Showcase",
+          "Blocks": [
+            {
+              "BlockId": "1621eabb4d4e44fb978601314b31e40e",
+              "Row": 0,
+              "Column": 0,
+              "RowSpan": 2,
+              "ColumnSpan": 3,
+              "WidgetInstanceId": "e111baf39ad14a77a66016dd3b125c78"
+            },
+            {
+              "BlockId": "22670826896e421c81c4b66a07722ad2",
+              "Row": 0,
+              "Column": 3,
+              "RowSpan": 2,
+              "ColumnSpan": 1,
+              "WidgetInstanceId": "2fcb616ec74242658138948430f0d81c"
+            },
+            {
+              "BlockId": "831db4aebe6b46179ee43069abab3471",
+              "Row": 0,
+              "Column": 4,
+              "RowSpan": 2,
+              "ColumnSpan": 1,
+              "WidgetInstanceId": "92a3f833c3de4d6593cd08c7457c05e0"
+            },
+            {
+              "BlockId": "0c43e7758d5d4a23a550e2eb1b26e7a1",
+              "Row": 2,
+              "Column": 0,
+              "RowSpan": 3,
+              "ColumnSpan": 3,
+              "WidgetInstanceId": "d921d8e328fb479aa717bad13cbf0421"
+            },
+            {
+              "BlockId": "3ca16552c7fb41ca94dbfc4089131110",
+              "Row": 2,
+              "Column": 3,
+              "RowSpan": 2,
+              "ColumnSpan": 2,
+              "WidgetInstanceId": "c09b4907c93c499d94665bba75ac039b"
+            },
+            {
+              "BlockId": "e9d32d21e1ed42a29ac5f9254a83c3b1",
+              "Row": 4,
+              "Column": 3,
+              "RowSpan": 1,
+              "ColumnSpan": 2,
+              "WidgetInstanceId": "bbe9425b9b9f4b8599e00cc7248587da"
+            }
+          ],
+          "RowCount": 5,
+          "ColumnCount": 5
+        }
+      ],
+      "WidgetInstances": [
+        {
+          "InstanceId": "e111baf39ad14a77a66016dd3b125c78",
+          "Kind": 0,
+          "Options": {
+            "ProfileMedalRows": "Rarity,-Trophy,-Points",
+            "ProfileFullBleed": "False",
+            "ProfileLayout": "Left",
+            "ProfileLinks": "True",
+            "ProfileUnlocksMedal": "True"
+          },
+          "Profile": {}
+        },
+        {
+          "InstanceId": "2fcb616ec74242658138948430f0d81c",
+          "Kind": 1,
+          "Options": {
+            "ScoreCard": "Collection",
+            "ScoreCardBadgePosition": "Left",
+            "ScoreHistoryShown": "True",
+            "TimelineRange": "ThreeMonths"
+          }
+        },
+        {
+          "InstanceId": "92a3f833c3de4d6593cd08c7457c05e0",
+          "Kind": 1,
+          "Options": {
+            "ScoreCard": "Prestige",
+            "ScoreCardBadgePosition": "Left",
+            "ScoreHistoryShown": "True",
+            "TimelineRange": "ThreeMonths"
+          }
+        },
+        {
+          "InstanceId": "d921d8e328fb479aa717bad13cbf0421",
+          "Kind": 10,
+          "Options": {
+            "Source": "All",
+            "PinCollectionId": "default-achievements",
+            "CollectionType": "Achievements"
+          }
+        },
+        {
+          "InstanceId": "c09b4907c93c499d94665bba75ac039b",
+          "Kind": 4,
+          "Options": {}
+        },
+        {
+          "InstanceId": "bbe9425b9b9f4b8599e00cc7248587da",
+          "Kind": 11,
+          "Options": {
+            "Source": "Library",
+            "PinCollectionId": "default-games",
+            "CollectionType": "Games"
+          }
+        }
+      ],
+      "DefaultAchievementPinCollectionId": "default-achievements",
+      "DefaultGamePinCollectionId": "default-games",
+      "AchievementPinCollections": [
+        {
+          "CollectionId": "default-achievements",
+          "Name": "Default",
+          "Pins": []
+        }
+      ],
+      "GamePinCollections": [
+        {
+          "CollectionId": "default-games",
+          "Name": "Default",
+          "GameIds": []
+        }
+      ],
+      "StartPageInstances": {}
+    },
+    "OverviewMiniShowcase": {
+      "LayoutVersion": 2,
+      "LastSelectedPageId": "dd7e6ac996a74cc1bb78cae7383a0512",
+      "Pages": [
+        {
+          "PageId": "dd7e6ac996a74cc1bb78cae7383a0512",
+          "Name": "Overview",
+          "Blocks": [
+            {
+              "BlockId": "a0cd691288a2449d838c51f34aaf3bbe",
+              "Row": 0,
+              "Column": 0,
+              "RowSpan": 1,
+              "ColumnSpan": 1,
+              "WidgetInstanceId": "8c882ab1ac24442e9877ebd89b04e38a"
+            },
+            {
+              "BlockId": "fd3cd9263f7844c08a3fa173d8874661",
+              "Row": 0,
+              "Column": 1,
+              "RowSpan": 1,
+              "ColumnSpan": 1,
+              "WidgetInstanceId": "c89d355d785d4b518cd8b2f65f810c9f"
+            },
+            {
+              "BlockId": "b74b4c341658441686d3d8240193857f",
+              "Row": 0,
+              "Column": 2,
+              "RowSpan": 1,
+              "ColumnSpan": 1,
+              "WidgetInstanceId": "904203cdcdcc4f3f9559dcba81bf8810"
+            },
+            {
+              "BlockId": "ead6cc59dcae44e7b6613ac7ae9d2727",
+              "Row": 0,
+              "Column": 3,
+              "RowSpan": 1,
+              "ColumnSpan": 1,
+              "WidgetInstanceId": "c19749e8017d41feb8fcf5402651b2c5"
+            },
+            {
+              "BlockId": "38f5afd8e21d45c5804e8247c5b4d0ef",
+              "Row": 0,
+              "Column": 4,
+              "RowSpan": 1,
+              "ColumnSpan": 1,
+              "WidgetInstanceId": "307fef07b1bc4bff88b68f45e84198e7"
+            }
+          ],
+          "RowCount": 1,
+          "ColumnCount": 5,
+          "ColumnWeights": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            2.0
+          ]
+        }
+      ],
+      "WidgetInstances": [
+        {
+          "InstanceId": "8c882ab1ac24442e9877ebd89b04e38a",
+          "Kind": 2,
+          "Options": {
+            "Mode": "CompletedGames",
+            "CenterMode": "Percentage",
+            "ShowLegend": "False",
+            "LegendPosition": "Right",
+            "ShowIcons": "True",
+            "IncludeLocked": "True",
+            "SmallSliceMode": "Round"
+          }
+        },
+        {
+          "InstanceId": "c89d355d785d4b518cd8b2f65f810c9f",
+          "Kind": 2,
+          "Options": {
+            "Mode": "Provider",
+            "CenterMode": "Percentage",
+            "ShowLegend": "False",
+            "LegendPosition": "Right",
+            "ShowIcons": "True",
+            "IncludeLocked": "True",
+            "SmallSliceMode": "Round"
+          }
+        },
+        {
+          "InstanceId": "904203cdcdcc4f3f9559dcba81bf8810",
+          "Kind": 2,
+          "Options": {
+            "Mode": "Rarity",
+            "CenterMode": "Percentage",
+            "ShowLegend": "False",
+            "LegendPosition": "Right",
+            "ShowIcons": "True",
+            "IncludeLocked": "True",
+            "SmallSliceMode": "Round"
+          }
+        },
+        {
+          "InstanceId": "c19749e8017d41feb8fcf5402651b2c5",
+          "Kind": 2,
+          "Options": {
+            "Mode": "Trophy",
+            "CenterMode": "Percentage",
+            "ShowLegend": "False",
+            "LegendPosition": "Right",
+            "ShowIcons": "True",
+            "IncludeLocked": "True",
+            "SmallSliceMode": "Round"
+          }
+        },
+        {
+          "InstanceId": "307fef07b1bc4bff88b68f45e84198e7",
+          "Kind": 3,
+          "Options": {
+            "TimelineRange": "OneYear",
+            "TimelineGranularity": "Auto",
+            "ShowControlBar": "True",
+            "ShowControlBarItem.TimeWindow": "True",
+            "ShowControlBarItem.SplitByPlatform": "True",
+            "ShowControlBarItem.Platform": "False",
+            "ShowControlBarItem.Game": "False",
+            "ShowControlBarItem.Tag": "False",
+            "ShowControlBarItem.Rarity": "False",
+            "ShowControlBarItem.Trophy": "False"
+          }
+        }
+      ],
+      "DefaultAchievementPinCollectionId": "default-achievements",
+      "DefaultGamePinCollectionId": "default-games",
+      "AchievementPinCollections": [
+        {
+          "CollectionId": "default-achievements",
+          "Name": "Default",
+          "Pins": []
+        }
+      ],
+      "GamePinCollections": [
+        {
+          "CollectionId": "default-games",
+          "Name": "Default",
+          "GameIds": []
+        }
+      ],
+      "StartPageInstances": {}
+    },
+    "OverviewMiniShowcaseHeight": 225.0,
+    "ShowOverviewMiniShowcase": true,
+    "ControlBarStates": {},
+    "GridOptions": {
+      "Achievement": {
+        "Default": {
+          "UseCoverImages": false,
+          "ShowRarityGlow": true,
+          "NameColor": 0,
+          "TagDisplay": 1,
+          "StatusColor": 1,
+          "ColorRarityColumnsByRarity": false,
+          "UnlockDateMode": 0,
+          "SortColumn": "UnlockTime",
+          "SortDescending": true,
+          "MaxHeight": 600.0,
+          "StartInCategoryMode": false,
+          "HideCategorySummaryRow": false,
+          "InlineDetailsBeforeName": false,
+          "InlineDetailsBeforeDescription": false,
+          "ShowColumnHeaders": true,
+          "ShowControlBar": true,
+          "Columns": {
+            "Visibility": {},
+            "Widths": {},
+            "Order": {},
+            "CellAlignments": {},
+            "CellVerticalAlignments": {},
+            "HeaderAlignments": {},
+            "Locked": {},
+            "HiddenHeaders": {}
+          }
+        },
+        "SingleGame": {
+          "UseCoverImages": false,
+          "ShowRarityGlow": true,
+          "NameColor": 0,
+          "TagDisplay": 1,
+          "StatusColor": 1,
+          "ColorRarityColumnsByRarity": false,
+          "UnlockDateMode": 0,
+          "SortColumn": "UnlockTime",
+          "SortDescending": true,
+          "StartInCategoryMode": false,
+          "HideCategorySummaryRow": false,
+          "InlineDetailsBeforeName": false,
+          "InlineDetailsBeforeDescription": false,
+          "ShowColumnHeaders": true,
+          "ShowControlBar": true,
+          "Columns": {
+            "Visibility": {
+              "Status": true,
+              "Icon": true,
+              "Achievement": true,
+              "Title": false,
+              "Note": false,
+              "Game": false,
+              "Avatar": false,
+              "Friend": false,
+              "UnlockDate": true,
+              "CategoryKind": false,
+              "CategoryType": false,
+              "CategoryLabel": false,
+              "CategoryIcon": false,
+              "Trophy": false,
+              "Rarity": true,
+              "RarityTier": false,
+              "RarityPercent": false,
+              "CollectionScore": false,
+              "PrestigeScore": false,
+              "Points": false,
+              "Captures": true
+            },
+            "Widths": {},
+            "Order": {},
+            "CellAlignments": {},
+            "CellVerticalAlignments": {},
+            "HeaderAlignments": {},
+            "Locked": {},
+            "HiddenHeaders": {}
+          }
+        },
+        "OverviewRecent": {
+          "UseCoverImages": false,
+          "ShowRarityGlow": true,
+          "NameColor": 0,
+          "TagDisplay": 1,
+          "StatusColor": 1,
+          "ColorRarityColumnsByRarity": false,
+          "UnlockDateMode": 0,
+          "SortColumn": "UnlockTime",
+          "SortDescending": true,
+          "StartInCategoryMode": false,
+          "HideCategorySummaryRow": false,
+          "InlineDetailsBeforeName": false,
+          "InlineDetailsBeforeDescription": false,
+          "ShowColumnHeaders": true,
+          "ShowControlBar": true,
+          "Columns": {
+            "Visibility": {
+              "Status": false,
+              "Icon": true,
+              "Achievement": true,
+              "Title": false,
+              "Note": false,
+              "Game": true,
+              "Avatar": false,
+              "Friend": false,
+              "UnlockDate": true,
+              "CategoryKind": false,
+              "CategoryType": false,
+              "CategoryLabel": false,
+              "CategoryIcon": false,
+              "Trophy": false,
+              "Rarity": true,
+              "RarityTier": false,
+              "RarityPercent": false,
+              "CollectionScore": false,
+              "PrestigeScore": false,
+              "Points": false,
+              "Captures": true
+            },
+            "Widths": {},
+            "Order": {},
+            "CellAlignments": {},
+            "CellVerticalAlignments": {},
+            "HeaderAlignments": {},
+            "Locked": {},
+            "HiddenHeaders": {}
+          }
+        },
+        "OverviewSelectedGame": {
+          "UseCoverImages": false,
+          "ShowRarityGlow": true,
+          "NameColor": 0,
+          "TagDisplay": 1,
+          "StatusColor": 1,
+          "ColorRarityColumnsByRarity": false,
+          "UnlockDateMode": 0,
+          "SortColumn": "UnlockTime",
+          "SortDescending": true,
+          "StartInCategoryMode": false,
+          "HideCategorySummaryRow": false,
+          "InlineDetailsBeforeName": false,
+          "InlineDetailsBeforeDescription": false,
+          "ShowColumnHeaders": true,
+          "ShowControlBar": true,
+          "Columns": {
+            "Visibility": {
+              "Status": true,
+              "Icon": true,
+              "Achievement": true,
+              "Title": false,
+              "Note": false,
+              "Game": false,
+              "Avatar": false,
+              "Friend": false,
+              "UnlockDate": true,
+              "CategoryKind": false,
+              "CategoryType": false,
+              "CategoryLabel": false,
+              "CategoryIcon": false,
+              "Trophy": false,
+              "Rarity": true,
+              "RarityTier": false,
+              "RarityPercent": false,
+              "CollectionScore": false,
+              "PrestigeScore": false,
+              "Points": false,
+              "Captures": true
+            },
+            "Widths": {},
+            "Order": {},
+            "CellAlignments": {},
+            "CellVerticalAlignments": {},
+            "HeaderAlignments": {},
+            "Locked": {},
+            "HiddenHeaders": {}
+          }
+        },
+        "FriendsOverviewRecent": {
+          "UseCoverImages": false,
+          "ShowRarityGlow": true,
+          "NameColor": 0,
+          "TagDisplay": 1,
+          "StatusColor": 1,
+          "ColorRarityColumnsByRarity": false,
+          "UnlockDateMode": 0,
+          "SortColumn": "UnlockTime",
+          "SortDescending": true,
+          "StartInCategoryMode": false,
+          "HideCategorySummaryRow": false,
+          "InlineDetailsBeforeName": false,
+          "InlineDetailsBeforeDescription": false,
+          "ShowColumnHeaders": true,
+          "ShowControlBar": true,
+          "Columns": {
+            "Visibility": {},
+            "Widths": {},
+            "Order": {},
+            "CellAlignments": {},
+            "CellVerticalAlignments": {},
+            "HeaderAlignments": {},
+            "Locked": {},
+            "HiddenHeaders": {}
+          }
+        },
+        "FriendsOverviewSelectedFriend": {
+          "UseCoverImages": false,
+          "ShowRarityGlow": true,
+          "NameColor": 0,
+          "TagDisplay": 1,
+          "StatusColor": 1,
+          "ColorRarityColumnsByRarity": false,
+          "UnlockDateMode": 0,
+          "SortColumn": "UnlockTime",
+          "SortDescending": true,
+          "StartInCategoryMode": false,
+          "HideCategorySummaryRow": false,
+          "InlineDetailsBeforeName": false,
+          "InlineDetailsBeforeDescription": false,
+          "ShowColumnHeaders": true,
+          "ShowControlBar": true,
+          "Columns": {
+            "Visibility": {},
+            "Widths": {},
+            "Order": {},
+            "CellAlignments": {},
+            "CellVerticalAlignments": {},
+            "HeaderAlignments": {},
+            "Locked": {},
+            "HiddenHeaders": {}
+          }
+        },
+        "FriendsOverviewSelectedGame": {
+          "UseCoverImages": false,
+          "ShowRarityGlow": true,
+          "NameColor": 0,
+          "TagDisplay": 1,
+          "StatusColor": 1,
+          "ColorRarityColumnsByRarity": false,
+          "UnlockDateMode": 0,
+          "SortColumn": "UnlockTime",
+          "SortDescending": true,
+          "StartInCategoryMode": false,
+          "HideCategorySummaryRow": false,
+          "InlineDetailsBeforeName": false,
+          "InlineDetailsBeforeDescription": false,
+          "ShowColumnHeaders": true,
+          "ShowControlBar": true,
+          "Columns": {
+            "Visibility": {},
+            "Widths": {},
+            "Order": {},
+            "CellAlignments": {},
+            "CellVerticalAlignments": {},
+            "HeaderAlignments": {},
+            "Locked": {},
+            "HiddenHeaders": {}
+          }
+        },
+        "FriendsOverviewSelectedFriendGame": {
+          "UseCoverImages": false,
+          "ShowRarityGlow": true,
+          "NameColor": 0,
+          "TagDisplay": 1,
+          "StatusColor": 1,
+          "ColorRarityColumnsByRarity": false,
+          "UnlockDateMode": 0,
+          "SortColumn": "UnlockTime",
+          "SortDescending": true,
+          "StartInCategoryMode": false,
+          "HideCategorySummaryRow": false,
+          "InlineDetailsBeforeName": false,
+          "InlineDetailsBeforeDescription": false,
+          "ShowColumnHeaders": true,
+          "ShowControlBar": true,
+          "Columns": {
+            "Visibility": {},
+            "Widths": {},
+            "Order": {},
+            "CellAlignments": {},
+            "CellVerticalAlignments": {},
+            "HeaderAlignments": {},
+            "Locked": {},
+            "HiddenHeaders": {}
+          }
+        },
+        "ViewFriendsAchievements": {
+          "UseCoverImages": false,
+          "ShowRarityGlow": true,
+          "NameColor": 0,
+          "TagDisplay": 1,
+          "StatusColor": 1,
+          "ColorRarityColumnsByRarity": false,
+          "UnlockDateMode": 0,
+          "SortColumn": "UnlockTime",
+          "SortDescending": true,
+          "StartInCategoryMode": false,
+          "HideCategorySummaryRow": false,
+          "InlineDetailsBeforeName": false,
+          "InlineDetailsBeforeDescription": false,
+          "ShowColumnHeaders": true,
+          "ShowControlBar": true,
+          "Columns": {
+            "Visibility": {},
+            "Widths": {},
+            "Order": {},
+            "CellAlignments": {},
+            "CellVerticalAlignments": {},
+            "HeaderAlignments": {},
+            "Locked": {},
+            "HiddenHeaders": {}
+          }
+        },
+        "ViewFriendsAchievementsSelectedFriend": {
+          "UseCoverImages": false,
+          "ShowRarityGlow": true,
+          "NameColor": 0,
+          "TagDisplay": 1,
+          "StatusColor": 1,
+          "ColorRarityColumnsByRarity": false,
+          "UnlockDateMode": 0,
+          "SortColumn": "UnlockTime",
+          "SortDescending": true,
+          "StartInCategoryMode": false,
+          "HideCategorySummaryRow": false,
+          "InlineDetailsBeforeName": false,
+          "InlineDetailsBeforeDescription": false,
+          "ShowColumnHeaders": true,
+          "ShowControlBar": true,
+          "Columns": {
+            "Visibility": {},
+            "Widths": {},
+            "Order": {},
+            "CellAlignments": {},
+            "CellVerticalAlignments": {},
+            "HeaderAlignments": {},
+            "Locked": {},
+            "HiddenHeaders": {}
+          }
+        },
+        "StartPageRecent": {
+          "UseCoverImages": false,
+          "ShowRarityGlow": true,
+          "NameColor": 0,
+          "TagDisplay": 1,
+          "StatusColor": 1,
+          "ColorRarityColumnsByRarity": false,
+          "UnlockDateMode": 0,
+          "SortColumn": "UnlockTime",
+          "SortDescending": true,
+          "StartInCategoryMode": false,
+          "HideCategorySummaryRow": false,
+          "InlineDetailsBeforeName": false,
+          "InlineDetailsBeforeDescription": false,
+          "ShowColumnHeaders": true,
+          "ShowControlBar": false,
+          "MaxRows": 25,
+          "Columns": {
+            "Visibility": {},
+            "Widths": {},
+            "Order": {},
+            "CellAlignments": {},
+            "CellVerticalAlignments": {},
+            "HeaderAlignments": {},
+            "Locked": {},
+            "HiddenHeaders": {}
+          }
+        },
+        "StartPageFriendAchievements": {
+          "UseCoverImages": false,
+          "ShowRarityGlow": true,
+          "NameColor": 0,
+          "TagDisplay": 1,
+          "StatusColor": 1,
+          "ColorRarityColumnsByRarity": false,
+          "UnlockDateMode": 0,
+          "SortColumn": "UnlockTime",
+          "SortDescending": true,
+          "StartInCategoryMode": false,
+          "HideCategorySummaryRow": false,
+          "InlineDetailsBeforeName": false,
+          "InlineDetailsBeforeDescription": false,
+          "ShowColumnHeaders": true,
+          "ShowControlBar": false,
+          "MaxRows": 25,
+          "Columns": {
+            "Visibility": {},
+            "Widths": {},
+            "Order": {},
+            "CellAlignments": {},
+            "CellVerticalAlignments": {},
+            "HeaderAlignments": {},
+            "Locked": {},
+            "HiddenHeaders": {}
+          }
+        },
+        "DesktopTheme": {
+          "UseCoverImages": false,
+          "ShowRarityGlow": true,
+          "NameColor": 0,
+          "TagDisplay": 1,
+          "StatusColor": 1,
+          "ColorRarityColumnsByRarity": false,
+          "UnlockDateMode": 0,
+          "SortColumn": "UnlockTime",
+          "SortDescending": true,
+          "MaxHeight": 600.0,
+          "StartInCategoryMode": false,
+          "HideCategorySummaryRow": false,
+          "InlineDetailsBeforeName": false,
+          "InlineDetailsBeforeDescription": false,
+          "ShowColumnHeaders": true,
+          "ShowControlBar": true,
+          "Columns": {
+            "Visibility": {
+              "Status": true,
+              "Icon": true,
+              "Achievement": true,
+              "Title": false,
+              "Note": false,
+              "Game": false,
+              "Avatar": false,
+              "Friend": false,
+              "UnlockDate": true,
+              "CategoryKind": false,
+              "CategoryType": false,
+              "CategoryLabel": false,
+              "CategoryIcon": false,
+              "Trophy": false,
+              "Rarity": true,
+              "RarityTier": false,
+              "RarityPercent": false,
+              "CollectionScore": false,
+              "PrestigeScore": false,
+              "Points": false,
+              "Captures": true
+            },
+            "Widths": {},
+            "Order": {},
+            "CellAlignments": {},
+            "CellVerticalAlignments": {},
+            "HeaderAlignments": {},
+            "Locked": {},
+            "HiddenHeaders": {}
+          }
+        }
+      },
+      "GameSummaries": {
+        "Overview": {
+          "UseCoverImages": true,
+          "ShowMetadataPlatform": true,
+          "ShowMetadataPlaytime": true,
+          "ShowMetadataRegion": true,
+          "ShowMetadataTotal": false,
+          "ShowMetadataPoints": false,
+          "ShowMetadataCollection": false,
+          "ShowMetadataPrestige": false,
+          "ShowCompletionGlow": true,
+          "ColorRarityColumnsByRarity": false,
+          "ShowNameAboveProgress": false,
+          "ShowRarityBadgesBelowProgress": true,
+          "ShowCompletionFrame": false,
+          "LastPlayedDateMode": 0,
+          "SortColumn": "LastUnlockUtc",
+          "SortDescending": true,
+          "ShowColumnHeaders": true,
+          "ShowControlBar": true,
+          "Columns": {
+            "Visibility": {
+              "Cover": true,
+              "GameSummaryName": true,
+              "CategoryKind": false,
+              "GameSummaryPlatform": false,
+              "GameSummaryOwned": false,
+              "GameSummaryLastPlayed": false,
+              "GameSummaryLastUnlock": false,
+              "GameSummaryPlaytime": false,
+              "GameSummaryAdded": false,
+              "GameSummaryReleaseDate": false,
+              "GameSummaryProgression": true,
+              "TotalAchievements": true,
+              "GameSummaryRemaining": false,
+              "GameSummaryCollectionScore": false,
+              "GameSummaryPrestigeScore": false,
+              "GameSummaryPoints": false,
+              "Captures": true
+            },
+            "Widths": {},
+            "Order": {},
+            "CellAlignments": {
+              "GameSummaryProgression": 2
+            },
+            "CellVerticalAlignments": {},
+            "HeaderAlignments": {},
+            "Locked": {},
+            "HiddenHeaders": {}
+          }
+        },
+        "StartPage": {
+          "UseCoverImages": true,
+          "ShowMetadataPlatform": true,
+          "ShowMetadataPlaytime": true,
+          "ShowMetadataRegion": true,
+          "ShowMetadataTotal": false,
+          "ShowMetadataPoints": false,
+          "ShowMetadataCollection": false,
+          "ShowMetadataPrestige": false,
+          "ShowCompletionGlow": true,
+          "ColorRarityColumnsByRarity": false,
+          "ShowNameAboveProgress": false,
+          "ShowRarityBadgesBelowProgress": true,
+          "ShowCompletionFrame": false,
+          "LastPlayedDateMode": 0,
+          "SortColumn": "LastUnlockUtc",
+          "SortDescending": true,
+          "ShowColumnHeaders": true,
+          "ShowControlBar": false,
+          "MaxRows": 25,
+          "Columns": {
+            "Visibility": {},
+            "Widths": {},
+            "Order": {},
+            "CellAlignments": {
+              "GameSummaryProgression": 2
+            },
+            "CellVerticalAlignments": {},
+            "HeaderAlignments": {},
+            "Locked": {},
+            "HiddenHeaders": {}
+          }
+        },
+        "ViewAchievements": {
+          "UseCoverImages": false,
+          "ShowMetadataPlatform": true,
+          "ShowMetadataPlaytime": true,
+          "ShowMetadataRegion": true,
+          "ShowMetadataTotal": false,
+          "ShowMetadataPoints": false,
+          "ShowMetadataCollection": false,
+          "ShowMetadataPrestige": false,
+          "ShowCompletionGlow": true,
+          "ColorRarityColumnsByRarity": false,
+          "ShowNameAboveProgress": false,
+          "ShowRarityBadgesBelowProgress": true,
+          "ShowCompletionFrame": false,
+          "LastPlayedDateMode": 0,
+          "SortColumn": "LastUnlockUtc",
+          "SortDescending": true,
+          "ShowColumnHeaders": true,
+          "ShowControlBar": true,
+          "Columns": {
+            "Visibility": {
+              "Cover": true,
+              "GameSummaryName": true,
+              "CategoryKind": false,
+              "GameSummaryPlatform": false,
+              "GameSummaryOwned": false,
+              "GameSummaryLastPlayed": false,
+              "GameSummaryLastUnlock": false,
+              "GameSummaryPlaytime": false,
+              "GameSummaryAdded": false,
+              "GameSummaryReleaseDate": false,
+              "GameSummaryProgression": true,
+              "TotalAchievements": true,
+              "GameSummaryRemaining": false,
+              "GameSummaryCollectionScore": false,
+              "GameSummaryPrestigeScore": false,
+              "GameSummaryPoints": false,
+              "Captures": true
+            },
+            "Widths": {},
+            "Order": {},
+            "CellAlignments": {
+              "GameSummaryProgression": 2
+            },
+            "CellVerticalAlignments": {},
+            "HeaderAlignments": {},
+            "Locked": {},
+            "HiddenHeaders": {}
+          }
+        },
+        "FriendsOverview": {
+          "UseCoverImages": true,
+          "ShowMetadataPlatform": true,
+          "ShowMetadataPlaytime": true,
+          "ShowMetadataRegion": true,
+          "ShowMetadataTotal": false,
+          "ShowMetadataPoints": false,
+          "ShowMetadataCollection": false,
+          "ShowMetadataPrestige": false,
+          "ShowCompletionGlow": true,
+          "ColorRarityColumnsByRarity": false,
+          "ShowNameAboveProgress": false,
+          "ShowRarityBadgesBelowProgress": true,
+          "ShowCompletionFrame": false,
+          "LastPlayedDateMode": 0,
+          "SortColumn": "LastUnlockUtc",
+          "SortDescending": true,
+          "ShowColumnHeaders": true,
+          "ShowControlBar": true,
+          "Columns": {
+            "Visibility": {},
+            "Widths": {},
+            "Order": {},
+            "CellAlignments": {
+              "GameSummaryProgression": 2
+            },
+            "CellVerticalAlignments": {},
+            "HeaderAlignments": {},
+            "Locked": {},
+            "HiddenHeaders": {}
+          }
+        },
+        "FriendsOverviewSelectedFriend": {
+          "UseCoverImages": true,
+          "ShowMetadataPlatform": true,
+          "ShowMetadataPlaytime": true,
+          "ShowMetadataRegion": true,
+          "ShowMetadataTotal": false,
+          "ShowMetadataPoints": false,
+          "ShowMetadataCollection": false,
+          "ShowMetadataPrestige": false,
+          "ShowCompletionGlow": true,
+          "ColorRarityColumnsByRarity": false,
+          "ShowNameAboveProgress": false,
+          "ShowRarityBadgesBelowProgress": true,
+          "ShowCompletionFrame": false,
+          "LastPlayedDateMode": 0,
+          "SortColumn": "LastUnlockUtc",
+          "SortDescending": true,
+          "ShowColumnHeaders": true,
+          "ShowControlBar": true,
+          "Columns": {
+            "Visibility": {},
+            "Widths": {},
+            "Order": {},
+            "CellAlignments": {
+              "GameSummaryProgression": 2
+            },
+            "CellVerticalAlignments": {},
+            "HeaderAlignments": {},
+            "Locked": {},
+            "HiddenHeaders": {}
+          }
+        },
+        "ViewFriendsAchievements": {
+          "UseCoverImages": false,
+          "ShowMetadataPlatform": true,
+          "ShowMetadataPlaytime": true,
+          "ShowMetadataRegion": true,
+          "ShowMetadataTotal": false,
+          "ShowMetadataPoints": false,
+          "ShowMetadataCollection": false,
+          "ShowMetadataPrestige": false,
+          "ShowCompletionGlow": true,
+          "ColorRarityColumnsByRarity": false,
+          "ShowNameAboveProgress": false,
+          "ShowRarityBadgesBelowProgress": true,
+          "ShowCompletionFrame": false,
+          "LastPlayedDateMode": 0,
+          "SortColumn": "LastUnlockUtc",
+          "SortDescending": true,
+          "ShowColumnHeaders": true,
+          "ShowControlBar": true,
+          "Columns": {
+            "Visibility": {},
+            "Widths": {},
+            "Order": {},
+            "CellAlignments": {
+              "GameSummaryProgression": 2
+            },
+            "CellVerticalAlignments": {},
+            "HeaderAlignments": {},
+            "Locked": {},
+            "HiddenHeaders": {}
+          }
+        },
+        "ViewFriendsAchievementsSelectedFriend": {
+          "UseCoverImages": false,
+          "ShowMetadataPlatform": true,
+          "ShowMetadataPlaytime": true,
+          "ShowMetadataRegion": true,
+          "ShowMetadataTotal": false,
+          "ShowMetadataPoints": false,
+          "ShowMetadataCollection": false,
+          "ShowMetadataPrestige": false,
+          "ShowCompletionGlow": true,
+          "ColorRarityColumnsByRarity": false,
+          "ShowNameAboveProgress": false,
+          "ShowRarityBadgesBelowProgress": true,
+          "ShowCompletionFrame": false,
+          "LastPlayedDateMode": 0,
+          "SortColumn": "LastUnlockUtc",
+          "SortDescending": true,
+          "ShowColumnHeaders": true,
+          "ShowControlBar": true,
+          "Columns": {
+            "Visibility": {},
+            "Widths": {},
+            "Order": {},
+            "CellAlignments": {
+              "GameSummaryProgression": 2
+            },
+            "CellVerticalAlignments": {},
+            "HeaderAlignments": {},
+            "Locked": {},
+            "HiddenHeaders": {}
+          }
+        },
+        "DesktopTheme": {
+          "UseCoverImages": false,
+          "ShowMetadataPlatform": true,
+          "ShowMetadataPlaytime": true,
+          "ShowMetadataRegion": true,
+          "ShowMetadataTotal": false,
+          "ShowMetadataPoints": false,
+          "ShowMetadataCollection": false,
+          "ShowMetadataPrestige": false,
+          "ShowCompletionGlow": true,
+          "ColorRarityColumnsByRarity": false,
+          "ShowNameAboveProgress": false,
+          "ShowRarityBadgesBelowProgress": true,
+          "ShowCompletionFrame": false,
+          "LastPlayedDateMode": 0,
+          "SortColumn": "LastUnlockUtc",
+          "SortDescending": true,
+          "ShowColumnHeaders": true,
+          "ShowControlBar": true,
+          "Columns": {
+            "Visibility": {
+              "Cover": true,
+              "GameSummaryName": true,
+              "CategoryKind": false,
+              "GameSummaryPlatform": false,
+              "GameSummaryOwned": false,
+              "GameSummaryLastPlayed": false,
+              "GameSummaryLastUnlock": false,
+              "GameSummaryPlaytime": false,
+              "GameSummaryAdded": false,
+              "GameSummaryReleaseDate": false,
+              "GameSummaryProgression": true,
+              "TotalAchievements": true,
+              "GameSummaryRemaining": false,
+              "GameSummaryCollectionScore": false,
+              "GameSummaryPrestigeScore": false,
+              "GameSummaryPoints": false,
+              "Captures": true
+            },
+            "Widths": {},
+            "Order": {},
+            "CellAlignments": {
+              "GameSummaryProgression": 2
+            },
+            "CellVerticalAlignments": {},
+            "HeaderAlignments": {},
+            "Locked": {},
+            "HiddenHeaders": {}
+          }
+        }
+      },
+      "FriendSummaries": {
+        "FriendsOverview": {
+          "LastUnlockDateMode": 0,
+          "SortMode": 0,
+          "SortDescending": true,
+          "ShowColumnHeaders": true,
+          "ShowControlBar": true,
+          "Columns": {
+            "Visibility": {},
+            "Widths": {},
+            "Order": {},
+            "CellAlignments": {},
+            "CellVerticalAlignments": {},
+            "HeaderAlignments": {},
+            "Locked": {},
+            "HiddenHeaders": {}
+          }
+        },
+        "ViewFriendsAchievements": {
+          "LastUnlockDateMode": 0,
+          "SortMode": 0,
+          "SortDescending": true,
+          "ShowColumnHeaders": true,
+          "ShowControlBar": true,
+          "Columns": {
+            "Visibility": {},
+            "Widths": {},
+            "Order": {},
+            "CellAlignments": {},
+            "CellVerticalAlignments": {},
+            "HeaderAlignments": {},
+            "Locked": {},
+            "HiddenHeaders": {}
+          }
+        }
+      },
+      "CategorySummaries": {
+        "ViewAchievements": {
+          "Columns": {
+            "Visibility": {
+              "Cover": true,
+              "GameSummaryName": true,
+              "CategoryKind": false,
+              "GameSummaryPlatform": false,
+              "GameSummaryOwned": false,
+              "GameSummaryLastPlayed": false,
+              "GameSummaryLastUnlock": true,
+              "GameSummaryPlaytime": false,
+              "GameSummaryAdded": false,
+              "GameSummaryReleaseDate": false,
+              "GameSummaryProgression": true,
+              "TotalAchievements": true,
+              "GameSummaryRemaining": false,
+              "GameSummaryCollectionScore": true,
+              "GameSummaryPrestigeScore": true,
+              "GameSummaryPoints": true,
+              "Captures": false
+            },
+            "Widths": {},
+            "Order": {},
+            "CellAlignments": {
+              "GameSummaryProgression": 2
+            },
+            "CellVerticalAlignments": {},
+            "HeaderAlignments": {},
+            "Locked": {},
+            "HiddenHeaders": {}
+          },
+          "ShowColumnHeaders": true,
+          "UseCoverImages": false,
+          "ShowCompletionGlow": true,
+          "ColorRarityColumnsByRarity": false,
+          "ShowNameAboveProgress": false,
+          "ShowRarityBadgesBelowProgress": true,
+          "ShowMetadataTotal": false,
+          "ShowMetadataPoints": false,
+          "ShowMetadataCollection": false,
+          "ShowMetadataPrestige": false,
+          "ShowTreeOnly": false
+        },
+        "OverviewSelectedGame": {
+          "Columns": {
+            "Visibility": {
+              "Cover": true,
+              "GameSummaryName": true,
+              "CategoryKind": false,
+              "GameSummaryPlatform": false,
+              "GameSummaryOwned": false,
+              "GameSummaryLastPlayed": false,
+              "GameSummaryLastUnlock": true,
+              "GameSummaryPlaytime": false,
+              "GameSummaryAdded": false,
+              "GameSummaryReleaseDate": false,
+              "GameSummaryProgression": true,
+              "TotalAchievements": true,
+              "GameSummaryRemaining": false,
+              "GameSummaryCollectionScore": true,
+              "GameSummaryPrestigeScore": true,
+              "GameSummaryPoints": true,
+              "Captures": false
+            },
+            "Widths": {},
+            "Order": {},
+            "CellAlignments": {
+              "GameSummaryProgression": 2
+            },
+            "CellVerticalAlignments": {},
+            "HeaderAlignments": {},
+            "Locked": {},
+            "HiddenHeaders": {}
+          },
+          "ShowColumnHeaders": true,
+          "UseCoverImages": false,
+          "ShowCompletionGlow": true,
+          "ColorRarityColumnsByRarity": false,
+          "ShowNameAboveProgress": false,
+          "ShowRarityBadgesBelowProgress": true,
+          "ShowMetadataTotal": false,
+          "ShowMetadataPoints": false,
+          "ShowMetadataCollection": false,
+          "ShowMetadataPrestige": false,
+          "ShowTreeOnly": false
+        },
+        "FriendsOverview": {
+          "Columns": {
+            "Visibility": {},
+            "Widths": {},
+            "Order": {},
+            "CellAlignments": {
+              "GameSummaryProgression": 2
+            },
+            "CellVerticalAlignments": {},
+            "HeaderAlignments": {},
+            "Locked": {},
+            "HiddenHeaders": {}
+          },
+          "ShowColumnHeaders": true,
+          "UseCoverImages": false,
+          "ShowCompletionGlow": true,
+          "ColorRarityColumnsByRarity": false,
+          "ShowNameAboveProgress": false,
+          "ShowRarityBadgesBelowProgress": true,
+          "ShowMetadataTotal": false,
+          "ShowMetadataPoints": false,
+          "ShowMetadataCollection": false,
+          "ShowMetadataPrestige": false,
+          "ShowTreeOnly": false
+        },
+        "ViewFriendsAchievements": {
+          "Columns": {
+            "Visibility": {},
+            "Widths": {},
+            "Order": {},
+            "CellAlignments": {
+              "GameSummaryProgression": 2
+            },
+            "CellVerticalAlignments": {},
+            "HeaderAlignments": {},
+            "Locked": {},
+            "HiddenHeaders": {}
+          },
+          "ShowColumnHeaders": true,
+          "UseCoverImages": false,
+          "ShowCompletionGlow": true,
+          "ColorRarityColumnsByRarity": false,
+          "ShowNameAboveProgress": false,
+          "ShowRarityBadgesBelowProgress": true,
+          "ShowMetadataTotal": false,
+          "ShowMetadataPoints": false,
+          "ShowMetadataCollection": false,
+          "ShowMetadataPrestige": false,
+          "ShowTreeOnly": false
+        },
+        "DesktopTheme": {
+          "Columns": {
+            "Visibility": {
+              "Cover": true,
+              "GameSummaryName": true,
+              "CategoryKind": false,
+              "GameSummaryPlatform": false,
+              "GameSummaryOwned": false,
+              "GameSummaryLastPlayed": false,
+              "GameSummaryLastUnlock": true,
+              "GameSummaryPlaytime": false,
+              "GameSummaryAdded": false,
+              "GameSummaryReleaseDate": false,
+              "GameSummaryProgression": true,
+              "TotalAchievements": true,
+              "GameSummaryRemaining": false,
+              "GameSummaryCollectionScore": true,
+              "GameSummaryPrestigeScore": true,
+              "GameSummaryPoints": true,
+              "Captures": false
+            },
+            "Widths": {},
+            "Order": {},
+            "CellAlignments": {
+              "GameSummaryProgression": 2
+            },
+            "CellVerticalAlignments": {},
+            "HeaderAlignments": {},
+            "Locked": {},
+            "HiddenHeaders": {}
+          },
+          "ShowColumnHeaders": true,
+          "UseCoverImages": false,
+          "ShowCompletionGlow": true,
+          "ColorRarityColumnsByRarity": false,
+          "ShowNameAboveProgress": false,
+          "ShowRarityBadgesBelowProgress": true,
+          "ShowMetadataTotal": false,
+          "ShowMetadataPoints": false,
+          "ShowMetadataCollection": false,
+          "ShowMetadataPrestige": false,
+          "ShowTreeOnly": false
+        }
+      },
+      "ManageAchievements": {
+        "ManageAchievementsEditor": {
+          "ShowColumnHeaders": true,
+          "ShowControlBar": true,
+          "Columns": {
+            "Visibility": {},
+            "Widths": {},
+            "Order": {},
+            "CellAlignments": {},
+            "CellVerticalAlignments": {},
+            "HeaderAlignments": {},
+            "Locked": {},
+            "HiddenHeaders": {}
+          }
+        }
+      }
+    },
+    "StartPageActivityScope": 1,
+    "StartPageProgressScope": 3,
+    "EnableParallelProviderRefresh": true,
+    "ScanDelayMs": 200,
+    "MaxRetryAttempts": 3,
+    "ResourceOverrides": {
+      "PlayAch.Brush.GridSurface": {
+        "Mode": 2,
+        "CustomValue": "#00000000"
+      },
+      "PlayAch.Brush.ControlSurface": {
+        "Mode": 2,
+        "CustomValue": "#00000000"
+      },
+      "PlayAch.Brush.WindowSurface": {
+        "Mode": 2,
+        "CustomValue": "#00000000"
+      }
+    },
+    "OverviewLeftColumnRatio": 0.5,
+    "FriendsOverviewFriendColumnRatio": 0.25,
+    "FriendsOverviewGameColumnRatio": 0.31,
+    "WindowPlacements": {
+      "RefreshProgress": {
+        "Left": 760.0,
+        "Top": 400.0,
+        "Width": 400.0,
+        "Height": 280.0,
+        "IsMaximized": false
+      },
+      "SingleGameAchievements": {
+        "Left": 560.0,
+        "Top": 190.0,
+        "Width": 800.0,
+        "Height": 700.0,
+        "IsMaximized": false
+      },
+      "Overview": {
+        "Left": 320.0,
+        "Top": 140.0,
+        "Width": 1280.0,
+        "Height": 800.0,
+        "IsMaximized": false
+      },
+      "PluginSettings": {
+        "Left": 488.0,
+        "Top": 198.0,
+        "Width": 960.0,
+        "Height": 700.0,
+        "IsMaximized": false
+      }
+    },
+    "ViewAchievementsTimeWindow": "OneYear",
+    "ViewAchievementsTimelineGranularity": 0,
+    "ViewAchievementsTimelineVisible": false,
+    "FirstTimeSetupCompleted": true,
+    "SeenThemeMigration": true,
+    "ThemeMigrationVersionCache": {
+      "C:\\Playnite\\Themes\\Desktop\\FusionZ_1e05f9eb-8760-41dc-ad68-58ca379961b0": {
+        "ThemeName": "Desktop/FusionZ",
+        "ThemePath": "C:\\Playnite\\Themes\\Desktop\\FusionZ_1e05f9eb-8760-41dc-ad68-58ca379961b0",
+        "MigratedThemeVersion": "2.6.1",
+        "MigratedAtUtc": "2026-11-19T02:40:28.6260828Z"
+      },
+      "C:\\Playnite\\Themes\\Fullscreen\\PS5reborn_saVantCZ": {
+        "ThemeName": "Fullscreen/PS5reborn",
+        "ThemePath": "C:\\Playnite\\Themes\\Fullscreen\\PS5reborn_saVantCZ",
+        "MigratedThemeVersion": "3.4.0",
+        "MigratedAtUtc": "2026-11-19T02:40:28.6260828Z"
+      }
+    },
+    "TaggingSettings": {
+      "EnableTagging": false,
+      "EnableFeatureSync": false,
+      "SetCompletionStatus": false,
+      "CompletionStatusSwitchSeeded": true,
+      "TagConfigs": {
+        "HasAchievements": {
+          "DisplayName": "[PA] Platform Achievements",
+          "IsEnabled": true
+        },
+        "InProgress": {
+          "DisplayName": "[PA] In Progress",
+          "IsEnabled": true
+        },
+        "Completed": {
+          "DisplayName": "[PA] Completed",
+          "IsEnabled": true
+        },
+        "NoAchievements": {
+          "DisplayName": "[PA] No Achievements",
+          "IsEnabled": true
+        },
+        "Customized": {
+          "DisplayName": "[PA] Customized",
+          "IsEnabled": true
+        },
+        "NotCustomized": {
+          "DisplayName": "[PA] Not Customized",
+          "IsEnabled": true
+        },
+        "Excluded": {
+          "DisplayName": "[PA] Excluded",
+          "IsEnabled": true
+        },
+        "ExcludedFromSummaries": {
+          "DisplayName": "[PA] Excluded from Summaries",
+          "IsEnabled": true
+        },
+        "CustomIcons": {
+          "DisplayName": "[PA] Custom Icons",
+          "IsEnabled": false
+        },
+        "CustomTrophies": {
+          "DisplayName": "[PA] Custom Trophies",
+          "IsEnabled": false
+        },
+        "CustomPoints": {
+          "DisplayName": "[PA] Custom Points",
+          "IsEnabled": false
+        },
+        "CustomNotes": {
+          "DisplayName": "[PA] Custom Notes",
+          "IsEnabled": false
+        },
+        "NoNotes": {
+          "DisplayName": "[PA] No Notes",
+          "IsEnabled": false
+        },
+        "CustomCategories": {
+          "DisplayName": "[PA] Custom Categories",
+          "IsEnabled": false
+        },
+        "CustomOrder": {
+          "DisplayName": "[PA] Custom Order",
+          "IsEnabled": false
+        },
+        "PlatformOrder": {
+          "DisplayName": "[PA] Platform Order",
+          "IsEnabled": false
+        },
+        "CustomCapstones": {
+          "DisplayName": "[PA] Custom Capstones",
+          "IsEnabled": false
+        },
+        "CustomGoals": {
+          "DisplayName": "[PA] Custom Goals",
+          "IsEnabled": false
+        },
+        "NoGoals": {
+          "DisplayName": "[PA] No Goals",
+          "IsEnabled": false
+        },
+        "CustomSource": {
+          "DisplayName": "[PA] Source Override",
+          "IsEnabled": false
+        },
+        "CustomNotifications": {
+          "DisplayName": "[PA] Notificações customizadas",
+          "IsEnabled": false
+        },
+        "CustomTags": {
+          "DisplayName": "[PA] Custom Tags",
+          "IsEnabled": false
+        },
+        "MetadataIcons": {
+          "DisplayName": "[PA] Metadata Icons",
+          "IsEnabled": false
+        },
+        "PlatformTrophies": {
+          "DisplayName": "[PA] Platform Trophies",
+          "IsEnabled": false
+        },
+        "MetadataTrophies": {
+          "DisplayName": "[PA] Metadata Trophies",
+          "IsEnabled": false
+        },
+        "NoTrophies": {
+          "DisplayName": "[PA] No Trophies",
+          "IsEnabled": false
+        },
+        "PlatformPoints": {
+          "DisplayName": "[PA] Platform Points",
+          "IsEnabled": false
+        },
+        "MetadataPoints": {
+          "DisplayName": "[PA] Metadata Points",
+          "IsEnabled": false
+        },
+        "NoPoints": {
+          "DisplayName": "[PA] No Points",
+          "IsEnabled": false
+        },
+        "PlatformCategories": {
+          "DisplayName": "[PA] Platform Categories",
+          "IsEnabled": false
+        },
+        "MetadataCategories": {
+          "DisplayName": "[PA] Metadata Categories",
+          "IsEnabled": false
+        },
+        "NoCategories": {
+          "DisplayName": "[PA] No Categories",
+          "IsEnabled": false
+        },
+        "PlatformTags": {
+          "DisplayName": "[PA] Platform Tags",
+          "IsEnabled": false
+        },
+        "MetadataTags": {
+          "DisplayName": "[PA] Metadata Tags",
+          "IsEnabled": false
+        },
+        "NoTags": {
+          "DisplayName": "[PA] No Tags",
+          "IsEnabled": false
+        },
+        "PlatformCapstones": {
+          "DisplayName": "[PA] Platform Capstones",
+          "IsEnabled": false
+        },
+        "MetadataCapstones": {
+          "DisplayName": "[PA] Metadata Capstones",
+          "IsEnabled": false
+        },
+        "NoCapstones": {
+          "DisplayName": "[PA] No Capstones",
+          "IsEnabled": false
+        },
+        "PlatformIcons": {
+          "DisplayName": "[PA] Platform Icons",
+          "IsEnabled": false
+        },
+        "NoIcons": {
+          "DisplayName": "[PA] No Icons",
+          "IsEnabled": false
+        },
+        "PlatformText": {
+          "DisplayName": "[PA] Platform Text",
+          "IsEnabled": false
+        },
+        "MetadataText": {
+          "DisplayName": "[PA] Metadata Text",
+          "IsEnabled": false
+        },
+        "CustomText": {
+          "DisplayName": "[PA] Custom Text",
+          "IsEnabled": false
+        },
+        "CustomAchievements": {
+          "DisplayName": "[PA] Custom Achievements",
+          "IsEnabled": true
+        },
+        "ManualAchievements": {
+          "DisplayName": "[PA] Manual Tracking",
+          "IsEnabled": true
+        },
+        "CustomFilters": {
+          "DisplayName": "[PA] Filtered Achievements",
+          "IsEnabled": false
+        },
+        "NoFilters": {
+          "DisplayName": "[PA] No Filtered Achievements",
+          "IsEnabled": false
+        },
+        "LinkedFile": {
+          "DisplayName": "[PA] Linked File",
+          "IsEnabled": true
+        }
+      },
+      "FeatureConfigs": {
+        "HasAchievements": {
+          "DisplayName": "[PA] Platform Achievements",
+          "IsEnabled": true
+        },
+        "CustomAchievements": {
+          "DisplayName": "[PA] Custom Achievements",
+          "IsEnabled": true
+        },
+        "ManualAchievements": {
+          "DisplayName": "[PA] Manual Tracking",
+          "IsEnabled": true
+        },
+        "LinkedFile": {
+          "DisplayName": "[PA] Linked File",
+          "IsEnabled": true
+        }
+      }
+    },
+    "HiddenManageSidebarStatGroups": 0,
+    "MetadataDefaults": {
+      "Icons": "",
+      "Categories": "SteamHunters",
+      "Tags": "TrueGaming",
+      "Rarity": "Exophase",
+      "CapstoneArt": "PlayStation",
+      "TrophyTypes": "PlayStation",
+      "Points": "Xbox",
+      "Text": "",
+      "Order": ""
+    },
+    "MetadataPlatformChoices": {
+      "Steam": {
+        "Categories": "SteamHunters"
+      }
+    },
+    "MetadataConsoleVersion": 0,
+    "MetadataChoicesSeeded": true
+  },
+  "ModernTheme": {},
+  "LegacyTheme": {}
+}
