@@ -1,0 +1,92 @@
+{
+  "version": "1.5",
+  "default_core_path": "",
+  "default_core_name": "",
+  "label_display_mode": 0,
+  "right_thumbnail_mode": 0,
+  "left_thumbnail_mode": 0,
+  "thumbnail_match_mode": 0,
+  "sort_mode": 2,
+  "items": [
+    {
+      "path": "D:\\Games\\Retro\\Playstation\\Harry Potter and the Sorcerer's Stone (USA)\\Harry Potter and the Sorcerer's Stone (USA) (En,Fr,Es).cue",
+      "label": "Harry Potter and the Sorcerer's Stone (USA) (En,Fr,Es)",
+      "core_path": "C:\\Emuladores\\RetroArch\\cores\\mednafen_psx_hw_libretro.dll",
+      "core_name": "Sony - PlayStation (Beetle PSX HW)",
+      "crc32": "SLUS-01415|serial",
+      "db_name": "Sony - PlayStation.lpl"
+    },
+    {
+      "path": "C:\\Emuladores\\Games\\SNES\\Super Bomberman 4 (Japan).sfc",
+      "label": "",
+      "core_path": "C:\\Emuladores\\RetroArch\\cores\\snes9x_libretro.dll",
+      "core_name": "Nintendo - SNES / SFC (Snes9x)",
+      "crc32": "",
+      "db_name": ""
+    },
+    {
+      "path": "D:\\Games\\Retro\\SNES\\Super Bomber Man 4 (BR-J).sfc",
+      "label": "",
+      "core_path": "C:\\Emuladores\\RetroArch\\cores\\snes9x_libretro.dll",
+      "core_name": "Nintendo - SNES / SFC (Snes9x)",
+      "crc32": "",
+      "db_name": ""
+    },
+    {
+      "path": "D:\\Games\\Retro\\GBA\\Pokemon - Fire Red (USA).gba",
+      "label": "",
+      "core_path": "C:\\Emuladores\\RetroArch\\cores\\mgba_libretro.dll",
+      "core_name": "Nintendo - Game Boy Advance (mGBA)",
+      "crc32": "",
+      "db_name": ""
+    },
+    {
+      "path": "D:\\Games\\Retro\\SNES\\Donkey Kong Country (USA).smc",
+      "label": "",
+      "core_path": "C:\\Emuladores\\RetroArch\\cores\\snes9x_libretro.dll",
+      "core_name": "Nintendo - SNES / SFC (Snes9x)",
+      "crc32": "",
+      "db_name": ""
+    },
+    {
+      "path": "C:\\Emuladores\\Games\\GBA\\Pokemon - Fire Red (PT-BR).gba",
+      "label": "",
+      "core_path": "C:\\Emuladores\\RetroArch\\cores\\mgba_libretro.dll",
+      "core_name": "Nintendo - Game Boy Advance (mGBA)",
+      "crc32": "",
+      "db_name": ""
+    },
+    {
+      "path": "D:\\Games\\Retro\\SNES\\Legend of Zelda, The - A Link to the Past (USA).sfc",
+      "label": "",
+      "core_path": "C:\\Emuladores\\RetroArch\\cores\\snes9x_libretro.dll",
+      "core_name": "Nintendo - SNES / SFC (Snes9x)",
+      "crc32": "",
+      "db_name": ""
+    },
+    {
+      "path": "D:\\Games\\Retro\\SNES\\Super Mario World (PT-BR).smc",
+      "label": "",
+      "core_path": "C:\\Emuladores\\RetroArch\\cores\\snes9x_libretro.dll",
+      "core_name": "Nintendo - SNES / SFC (Snes9x)",
+      "crc32": "",
+      "db_name": ""
+    },
+    {
+      "path": "D:\\Games\\Retro\\Playstation\\Harry Potter and the Sorcerer's Stone (USA)\\Harry Potter and the Sorcerer's Stone (USA) (En,Fr,Es).cue",
+      "label": "Harry Potter and the Sorcerer's Stone (USA) (En,Fr,Es)",
+      "core_path": "C:\\Emuladores\\RetroArch\\cores\\genesis_plus_gx_libretro.dll",
+      "core_name": "Sega - MS/GG/MD/CD (Genesis Plus GX)",
+      "crc32": "SLUS-01415|serial",
+      "db_name": "Sony - PlayStation.lpl"
+    },
+    {
+      "path": "D:\\Games\\Retro\\SNES\\Donkey Kong Country (USA).smc",
+      "label": "Donkey Kong Country (USA) (Rev 2)",
+      "core_path": "C:\\Emuladores\\RetroArch\\cores\\bsnes_mercury_balanced_libretro.dll",
+      "core_name": "Nintendo - SNES / SFC (bsnes-mercury Balanced)",
+      "crc32": "762AF827|crc",
+      "db_name": "Nintendo - Super Nintendo Entertainment System.lpl"
+    }
+  ]
+}

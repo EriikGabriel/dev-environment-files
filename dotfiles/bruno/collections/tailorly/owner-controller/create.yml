@@ -1,0 +1,61 @@
+info:
+  name: create
+  type: http
+  seq: 1
+  tags:
+    - owner-controller
+
+http:
+  method: POST
+  url: "{{baseUrl}}/v1/owners"
+  body:
+    type: json
+    data: |-
+      {
+        "kind": "account",
+        "userId": "",
+        "activeSnapshotId": ""
+      }
+  auth:
+    type: basic
+    username: erik@gmail.com
+    password: <PASSWORD>
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+examples:
+  - name: 201 Response
+    description: Created
+    request:
+      url: "{{baseUrl}}/v1/owners"
+      method: POST
+      body:
+        type: json
+        data: |-
+          {
+            "kind": "",
+            "userId": "",
+            "activeSnapshotId": ""
+          }
+    response:
+      status: 201
+      statusText: Created
+      headers:
+        - name: Content-Type
+          value: "*/*"
+      body:
+        type: text
+        data: |-
+          {
+            "id": "",
+            "kind": "",
+            "userId": "",
+            "activeSnapshotId": "",
+            "revision": 0,
+            "expiresAt": ""
+          }

@@ -1,0 +1,139 @@
+include "./cfg/animation.kdl"
+include "./cfg/autostart.kdl"
+
+spawn-at-startup "vicinae" "server"
+
+//Workspaces do monitor 2
+workspace "1" {
+    open-on-output "HDMI-A-1"
+}
+
+workspace "2" {
+    open-on-output "HDMI-A-1"
+}
+
+//Floating Preview
+window-rule {
+    match app-id="org.gnome.NautilusPreviewer"
+    match app-id="qimgv"
+    match app-id="mpv"
+    open-floating true
+    default-column-width { proportion 1.0; }
+}
+
+
+
+include "./cfg/keybinds.kdl"
+binds {
+    
+    //Abrir Vivaldi
+    Mod+B { spawn "zen-browser"; }
+
+    //Dividir a tela
+    Mod+BracketLeft  { consume-window-into-column; }
+    Mod+BracketRight { expel-window-from-column; }
+
+    //Maximizar Tela
+    Alt+M { maximize-column; }
+
+    //Fullscreen
+    Mod+F { fullscreen-window; }
+    
+    // Maximiza para tela inteira mantendo as barras
+    Mod+M { maximize-window-to-edges; }
+
+    //Foco para a ESQUERDA
+    Alt+A { focus-column-left; }
+      
+    //Foco para BAIXO
+    Alt+S { focus-workspace-down; }
+      
+    //Foco para CIMA
+    Alt+W { focus-workspace-up; }
+      
+    //Foco para a DIREITA
+    Alt+D { focus-column-right; }
+
+    //Abre/Fecha o launcher do Noctalia
+    //Alt+Space { spawn "noctalia" "msg" "panel-toggle" "launcher"; }
+    Alt+Space repeat=false { spawn "vicinae" "toggle"; }
+
+    //Fechar Janelas
+    Alt+Q { close-window; }
+
+    //Abre o histórico da área de transferência do Noctalia
+    Mod+V { spawn "noctalia" "msg" "panel-toggle" "clipboard"; }
+
+    //Centralizar Janela
+    Alt+C { center-column; }
+
+    //Ativa/Desativa o Desktop Widgets
+    Alt+R { spawn "noctalia" "msg" "desktop-widgets-toggle"; }
+
+    // Abre o terminal Kitty com Win + Return
+    Mod+Return { spawn "kitty"; }
+    
+    // Screenshot
+    Print { screenshot; }
+    
+}
+
+include "./cfg/input.kdl"
+
+include "./cfg/display.kdl"
+
+include "./cfg/layout.kdl"
+layout {
+    //Bordas Brancas
+    focus-ring {
+        width 2
+        active-color "#ffffff"    // White
+        inactive-color "#44475a"  // Dark blue/grey
+     }
+}
+
+include "./cfg/rules.kdl"
+window-rule {
+    //Bordas redondas nas janelas (default is 20)
+    geometry-corner-radius 14
+    clip-to-geometry true
+}
+
+//Ativa o blur
+   layer-rule {
+   match namespace="^noctalia-(bar-.+|notification|dock|panel|attached-panel|osd)$"
+   background-effect {
+   xray false
+   }
+   }
+   blur {
+   passes 3        //More passes = stronger/smoother blur (default: 3)
+   offset 3.0      //Sample distance per pass
+   noise 0.03      //Grain overlay
+   saturation 0.75 //Color saturation boost
+   }
+
+include "./cfg/misc.kdl"
+
+// Janela de configurações do Noctalia v5
+window-rule {
+    match app-id="dev.noctalia.Noctalia"
+    open-floating true
+    default-column-width { fixed 1080; }
+    default-window-height { fixed 920; }
+}
+
+environment {
+   //Determinar o Zen como navegador padrão
+   BROWSER "zen-browser"
+}
+
+include "./noctalia.kdl"
+
+
+// Monique monitor configuration
+include "monitors.kdl"
+
+//output "eDP-1" {
+//    off
+//}

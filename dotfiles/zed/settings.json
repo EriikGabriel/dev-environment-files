@@ -1,0 +1,382 @@
+{
+	// Extensions Zed installs by itself on first launch (managed by envsetup).
+	"auto_install_extensions": {
+		"astro": true,
+		"biome": true,
+		"catppuccin-icons": true,
+		"charmed-icons": true,
+		"codebook": true,
+		"discord-presence": true,
+		"dockerfile": true,
+		"emmet": true,
+		"gdscript": true,
+		"git-firefly": true,
+		"graphql": true,
+		"html": true,
+		"java": true,
+		"live-server": true,
+		"mcp-server-figma": true,
+		"mcp-server-godot": true,
+		"min-theme": true,
+		"modern-icons": true,
+		"modern-vesper": true,
+		"oscura": true,
+		"package-json-upgrade-lsp": true,
+		"postgres-language-server": true,
+		"prisma": true,
+		"scss": true,
+		"seti-icons": true,
+		"sql": true,
+		"symbols": true,
+		"toml": true,
+		"tsgo": true,
+		"typst": true,
+		"xml": true
+	},
+
+	// ==========================================================
+	// Appearance
+	// ==========================================================
+	"context_servers": {
+		"mcp-server-figma": {
+			"enabled": true,
+			"remote": false,
+			"settings": {
+				"figma_api_key": "<FIGMA_API_KEY>"
+			}
+		}
+	},
+	"theme": {
+		"mode": "dark",
+		"light": "One Light",
+		"dark": "Modern Vesper"
+	},
+	"icon_theme": {
+		"mode": "dark",
+		"light": "Catppuccin Latte",
+		"dark": "Catppuccin Frappé"
+	},
+
+	"buffer_font_family": "JetBrainsMono Nerd Font Mono",
+	"buffer_font_size": 14,
+	"ui_font_family": ".ZedMono",
+	"ui_font_size": 15,
+
+	"buffer_font_features": {
+		"calt": true,
+		"liga": true,
+		"ss01": true
+	},
+
+	// ==========================================================
+	// Editor
+	// ==========================================================
+	"soft_wrap": "editor_width",
+	"hard_tabs": false,
+	"tab_size": 2,
+	"show_whitespaces": "selection",
+	"show_wrap_guides": true,
+	"wrap_guides": [80, 120],
+	"cursor_blink": true,
+	"selection_highlight": false,
+	"lsp_document_colors": "inlay",
+	"cli_default_open_behavior": "new_window",
+
+	"minimap": {
+		"show": "never"
+	},
+
+	"scrollbar": {
+		"show": "auto"
+	},
+
+	"toolbar": {
+		"breadcrumbs": false
+	},
+
+	"indent_guides": {
+		"enabled": true
+	},
+
+	// ==========================================================
+	// Panels
+	// ==========================================================
+	"project_panel": {
+		"dock": "left",
+		"auto_fold_dirs": true
+	},
+
+	"agent": {
+		"flexible": true,
+		"default_model": {
+			"effort": "high",
+			"provider": "zed.dev",
+			"model": "claude-sonnet-5-5",
+			"enable_thinking": true
+		},
+		"dock": "right"
+	},
+
+	"git_panel": {
+		"dock": "left"
+	},
+
+	// ==========================================================
+	// Save / Format
+	// ==========================================================
+	"autosave": "off",
+	"format_on_save": "on",
+
+	"formatter": {
+		"language_server": {
+			"name": "biome"
+		}
+	},
+	"ensure_final_newline_on_save": true,
+	"remove_trailing_whitespace_on_save": true,
+
+	// ==========================================================
+	// Languages
+	// ==========================================================
+	"languages": {
+		"Plain Text": {
+			"language_servers": ["code-spell-checker", "..."]
+		},
+
+		"JavaScript": {
+			"formatter": {
+				"language_server": {
+					"name": "biome"
+				}
+			},
+			"code_actions_on_format": {
+				"source.fixAll.biome": true,
+				"source.organizeImports.biome": true
+			}
+		},
+
+		"TypeScript": {
+			"language_servers": [
+				"!typescript-language-server",
+				"!typescript-ls",
+				"..."
+			],
+			"formatter": {
+				"language_server": {
+					"name": "biome"
+				}
+			},
+			"code_actions_on_format": {
+				"source.fixAll.biome": true,
+				"source.organizeImports.biome": true
+			}
+		},
+
+		"TSX": {
+			"language_servers": [
+				"!typescript-language-server",
+				"!typescript-ls",
+				"..."
+			],
+			"formatter": {
+				"language_server": {
+					"name": "biome"
+				}
+			},
+			"code_actions_on_format": {
+				"source.fixAll.biome": true,
+				"source.organizeImports.biome": true
+			}
+		},
+
+		"CSS": {
+			"language_servers": ["tailwindcss-language-server", "..."],
+			"formatter": {
+				"language_server": {
+					"name": "biome"
+				}
+			}
+		},
+
+		"HTML": {
+			"formatter": {
+				"language_server": {
+					"name": "biome"
+				}
+			}
+		},
+
+		"XML": {
+			"format_on_save": "on",
+			"formatter": {
+				"external": {
+					"command": "prettier",
+					"arguments": ["--parser", "html"]
+				}
+			}
+		},
+
+		"JSON": {
+			"formatter": {
+				"language_server": {
+					"name": "biome"
+				}
+			},
+			"inlay_hints": {
+				"enabled": true
+			},
+			"code_actions_on_format": {
+				"source.fixAll.biome": true,
+				"source.organizeImports.biome": true
+			}
+		},
+
+		"Python": {
+			"formatter": "language_server"
+		},
+
+		"Rust": {
+			"formatter": "language_server"
+		},
+
+		"Prisma": {
+			"formatter": "language_server"
+		}
+	},
+
+	// ==========================================================
+	// Terminal
+	// ==========================================================
+	"terminal": {
+		"font_family": "JetBrainsMono Nerd Font Mono",
+		"font_size": 14,
+
+		"font_features": {
+			"calt": true,
+			"liga": true,
+			"ss01": true
+		},
+
+		"shell": {
+			"program": "fish"
+		}
+	},
+
+	// ==========================================================
+	// Explorer / Files
+	// ==========================================================
+	"file_scan_exclusions": [
+		"**/.git",
+		"**/.svn",
+		"**/.hg",
+		"**/.DS_Store",
+
+		"**/node_modules",
+		"**/.next",
+		"**/dist",
+		"**/build",
+		"**/coverage",
+
+		"**/.omo",
+		"..."
+	],
+
+	"file_types": {
+		"HTML": ["svg"]
+	},
+
+	// ==========================================================
+	// Git
+	// ==========================================================
+	"git": {
+		"inline_blame": {
+			"enabled": false
+		}
+	},
+
+	// ==========================================================
+	// LSP - Language Servers
+	// ==========================================================
+	"lsp": {
+		"vtsls": {
+   "settings": {
+    "typescript": {
+     "updateImportsOnFileMove": {
+      "enabled": "always"
+     }
+    },
+    "javascript": {
+     "updateImportsOnFileMove": {
+      "enabled": "always"
+     }
+    }
+   },
+   "enable_lsp_tasks": true
+  },
+  "vscode-css-language-server": {
+			"settings": {
+				"css": {
+					"lint": {
+						"unknownAtRules": "ignore"
+					}
+				}
+			}
+		}
+		// "typescript-language-server": {
+		// 	"initialization_options": {
+		// 		"preferences": {
+		// 			"includeCompletionsForModuleExports": false,
+		// 			"importModuleSpecifierPreference": "non-relative",
+		// 			"importModuleSpecifierEnding": "minimal"
+		// 		}
+		// 	}
+		// }
+	},
+
+	// ==========================================================
+	// UI
+	// ==========================================================
+	"tabs": {
+		"file_icons": true
+	},
+
+	"tab_bar": {
+		"show": true
+	},
+
+	// ==========================================================
+	// AI Agents
+	// ==========================================================
+	"agent_servers": {
+		"codex-acp": {
+			"default_config_options": {
+				"reasoning_effort": "medium",
+				"model": "gpt-6-luna"
+			},
+			"type": "registry"
+		},
+		"opencode": {
+			"default_config_options": {
+				"mode": "Hephaestus - Deep Agent",
+				"model": "omniroute/AI Pool"
+			},
+			"type": "registry"
+		},
+		"github-copilot-cli": {
+			"default_config_options": {
+				"mode": "https://agentclientprotocol.com/protocol/session-modes#autopilot",
+				"allow_all": "on"
+			},
+			"type": "registry"
+		},
+		"claude-acp": {
+			"default_config_options": {
+				"effort": "low",
+    "mode": "plan",
+    "model": "claude-fable-5-2",
+    "fast": false
+			},
+			"type": "registry"
+		}
+	}
+}

@@ -1,0 +1,116 @@
+# Builds the desktop app (Tauri, with the envsetup sidecar and the data of
+# config/, dotfiles/ and windows/) for Windows and Linux.
+#
+# On a v* tag it publishes the installers on the GitHub release of the tag,
+# with the one-line install scripts of scripts/:
+#
+#   git tag v0.2.0 && git push origin v0.2.0
+#
+# On a push to a branch it only builds, to check that a release would work.
+# Failing tests and build errors are also reported as annotations of the run.
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+    branches: [main, "feat/**"]
+    paths-ignore: ["**.md", "docs/**"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to publish (it is created on the chosen branch if missing), e.g. v0.2.0"
+        required: true
+
+permissions:
+  contents: write
+
+env:
+  # empty on a branch push: build only, no release
+  TAG: ${{ github.event.inputs.tag || (startsWith(github.ref, 'refs/tags/') && github.ref_name) || '' }}
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+          - os: ubuntu-22.04
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      # the tests check Windows paths (robocopy, the tar.exe of System32)
+      - name: Go tests
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          set -o pipefail
+          go test ./... 2>&1 | tee go-test.log || {
+            grep -E -- '--- FAIL|^FAIL|panic:|_test\.go:[0-9]+:' go-test.log | head -40 | while IFS= read -r line; do echo "::error title=go test::$line"; done
+            exit 1
+          }
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: app/src-tauri
+
+      - name: Linux libraries for Tauri
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libfuse2
+
+      - name: Install the app dependencies
+        working-directory: app
+        run: npm ci
+
+      # beforeBuildCommand (tauri.conf.json) builds the Go sidecar for this
+      # runner and the frontend. The output is kept to report the errors.
+      - name: Build the app
+        working-directory: app
+        shell: bash
+        run: |
+          set -o pipefail
+          npm run tauri build 2>&1 | tee tauri-build.log || {
+            grep -E -i -- 'error|failed|cannot|could not' tauri-build.log | grep -v -i 'warning' | head -40 | while IFS= read -r line; do echo "::error title=tauri build::$line"; done
+            exit 1
+          }
+
+      - name: Publish the installers on the release
+        if: env.TAG != ''
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd app/src-tauri/target/release/bundle
+          files=$(find . -type f \( -name '*-setup.exe' -o -name '*.msi' -o -name '*.deb' -o -name '*.rpm' -o -name '*.AppImage' \))
+          echo "$files"
+          gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1 || \
+            gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --title "envsetup $TAG" --notes "$(sed "s/{{TAG}}/$TAG/g" "$GITHUB_WORKSPACE/.github/release-notes.md")" || true
+          gh release upload "$TAG" $files --clobber --repo "$GITHUB_REPOSITORY"
+
+  scripts:
+    needs: build
+    if: github.event.inputs.tag || startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Attach the install scripts
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.event.inputs.tag || github.ref_name }}
+        run: gh release upload "$TAG" scripts/install.sh scripts/install.ps1 --clobber --repo "$GITHUB_REPOSITORY"

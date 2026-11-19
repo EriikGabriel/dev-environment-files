@@ -1,0 +1,62 @@
+info:
+  name: extractedPageCreate
+  type: http
+  seq: 1
+  tags:
+    - ExtractedPage
+
+http:
+  method: POST
+  url: "{{baseUrl}}/v1/extracted-pages"
+  body:
+    type: json
+    data: |-
+      {
+        "extractionMethod": "",
+        "extractionRunId": "",
+        "pageNumber": 0,
+        "textHash": "",
+        "textObjectId": ""
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+examples:
+  - name: 201 Response
+    description: Created
+    request:
+      url: "{{baseUrl}}/v1/extracted-pages"
+      method: POST
+      body:
+        type: json
+        data: |-
+          {
+            "extractionMethod": "",
+            "extractionRunId": "",
+            "pageNumber": 0,
+            "textHash": "",
+            "textObjectId": ""
+          }
+    response:
+      status: 201
+      statusText: Created
+      headers:
+        - name: Content-Type
+          value: "*/*"
+      body:
+        type: text
+        data: |-
+          {
+            "extractionMethod": "",
+            "extractionRunId": "",
+            "id": "",
+            "pageNumber": "",
+            "textHash": "",
+            "textObjectId": ""
+          }

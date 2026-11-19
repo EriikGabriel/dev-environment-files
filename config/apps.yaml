@@ -1,0 +1,640 @@
+# Catalogue of every app envsetup knows how to install.
+#
+# Per-distro maps (names, method, source, check, post, repo) are keyed by
+# distro ID ("ubuntu", "arch", "cachyos"), by ID_LIKE family ("debian",
+# "arch"), by "windows", or "*" as fallback. The lookup order is: exact ID,
+# each ID_LIKE entry, then "*". So `debian:` also covers Ubuntu, Mint and
+# Pop!_OS, and `arch:` covers CachyOS. "*" means every Linux distro: Windows
+# only uses what is under its own `windows:` key.
+#
+# method (default "native"):
+#   native   system package manager (apt / pacman / winget); `names` is the
+#            package, or several packages separated by spaces (apt, pacman)
+#   aur      AUR through yay or paru; `names` is the AUR package
+#   deb-url  download the .deb in `source`; `names` is its dpkg package name
+#   flatpak  flathub; `names` is the application ID
+#   script   shell in `source`; `check` must exit 0 when already installed
+#   winget   Windows Package Manager; `names` is the exact package ID
+#   scoop    scoop (Windows); `names` is the package
+#   steam    a Steam app (Windows); `names` is the AppID. Steam opens its own
+#            install dialog, and the app must be in the account's library
+#   ninite   one Ninite installer (Windows); `names` is the list of ninite.com
+#            apps, separated by spaces. It counts as done once it ran for
+#            that exact list
+#   policies the group policies of config/policies.yaml (Windows), written to
+#            the registry; no `names`
+#   playnite the portable Playnite of config/playnite.yaml (Windows), copied
+#            back from its snapshot; no `names`
+#   retroarch the portable RetroArch and the games of config/retroarch.yaml
+#            (Windows), copied back from their snapshot; no `names`
+#   windhawk the Windhawk 2 export windows/windhawk/backup.json (mods, their
+#            settings and Windhawk's), imported with windhawk-cli; no `names`
+#
+# `gpu` (nvidia, amd, intel) marks software for one kind of graphics card: on
+# a machine whose cards are known and none is of that kind, the app starts
+# unselected (it can still be ticked). Used by the GPU drivers.
+#
+# `devices` marks software for a device: texts matched against the connected
+# devices (their name, or a USB id such as VID_2DC8). When none is connected,
+# the app starts unselected. Used by the peripherals.
+#
+# `repo` (Debian family, native method) registers a third-party apt repository
+# before installing: `key` is the signing key URL and `source` is the
+# "url suite components" part of the sources.list line.
+#
+# `source` and `repo.source` expand {arch} (amd64|arm64), {x64} (x64|arm64)
+# and {codename} (noble, bookworm).
+# `post`, `check` and `script` run under sh with $SUDO set to "sudo" (nothing
+# when already root); on Windows they run under PowerShell. They also see
+# $ENVSETUP_ROOT (the repo) and one $ENVSETUP_<KEY> per value given with --set.
+# `post` runs on every apply, so keep it idempotent.
+
+apps:
+  # ---- base ----
+  curl: { names: { "*": curl } }
+  wget: { names: { "*": wget } }
+  git: { names: { "*": git } }
+  vim: { names: { "*": vim } }
+  unzip: { names: { "*": unzip } }
+  tmux: { names: { "*": tmux } }
+  htop: { names: { "*": htop } }
+  zsh: { names: { "*": zsh } }
+  build-tools:
+    description: Compiler toolchain (gcc, make, ...)
+    names: { debian: build-essential, arch: base-devel }
+
+  # ---- runtimes and services ----
+  docker:
+    description: Docker engine, enabled at boot, user added to the docker group (docker-ce from Docker's apt repo on Debian and Ubuntu)
+    names:
+      debian: docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+      arch: docker
+    repo:
+      ubuntu: { key: https://download.docker.com/linux/ubuntu/gpg, source: "https://download.docker.com/linux/ubuntu {codename} stable" }
+      debian: { key: https://download.docker.com/linux/debian/gpg, source: "https://download.docker.com/linux/debian {codename} stable" }
+    post:
+      "*":
+        - $SUDO systemctl enable --now docker
+        - $SUDO usermod -aG docker "${USER:-$(id -un)}"
+  nodejs:
+    description: Node.js (24.x LTS from the NodeSource apt repo on Debian and Ubuntu, npm included; distro package on Arch)
+    names: { "*": nodejs }
+    repo:
+      debian: { key: https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key, source: "https://deb.nodesource.com/node_24.x nodistro main" }
+  npm:
+    names: { arch: npm }
+    unavailable: [debian] # ships inside the NodeSource nodejs package
+  python: { names: { debian: python3, arch: python } }
+  python-pip: { names: { debian: python3-pip, arch: python-pip } }
+  python-venv:
+    names: { debian: python3-venv }
+    unavailable: [arch] # venv ships with the arch python package
+  postgresql: { names: { "*": postgresql } }
+  redis: { names: { debian: redis-server, arch: redis } }
+
+  # ---- libraries other items need ----
+  webkit2gtk:
+    description: WebKitGTK 4.1, the web view the envsetup desktop app runs on
+    names: { debian: libwebkit2gtk-4.1-0, arch: webkit2gtk-4.1 }
+  fuse2:
+    description: FUSE 2, needed to run AppImages (GodotHub, Vicinae on Ubuntu)
+    # libfuse2t64 is the name since Ubuntu 24.04 and Debian 13; older releases call it libfuse2.
+    names: { debian: libfuse2t64, arch: fuse2 }
+
+  # ---- identity (git, SSH, GitHub) ----
+  # git.name and git.email come from the fields of the profile step, through
+  # --set; nothing personal is stored in the repo.
+  openssh:
+    description: OpenSSH client (ssh, ssh-keygen)
+    names: { debian: openssh-client, arch: openssh }
+  git-identity:
+    description: Global git user.name and user.email, from the fields of this step
+    method: { "*": script }
+    check:
+      "*": |
+        [ -n "$(git config --global user.name)" ] && [ -n "$(git config --global user.email)" ] &&
+        { [ -z "$ENVSETUP_GIT_NAME" ] || [ "$(git config --global user.name)" = "$ENVSETUP_GIT_NAME" ]; } &&
+        { [ -z "$ENVSETUP_GIT_EMAIL" ] || [ "$(git config --global user.email)" = "$ENVSETUP_GIT_EMAIL" ]; }
+    source:
+      "*": |
+        if [ -z "$ENVSETUP_GIT_NAME" ] || [ -z "$ENVSETUP_GIT_EMAIL" ]; then
+          echo "the git name and e-mail are missing: fill in the fields of the step, or pass --set git.name=... --set git.email=..."
+          exit 1
+        fi
+        git config --global user.name "$ENVSETUP_GIT_NAME" &&
+        git config --global user.email "$ENVSETUP_GIT_EMAIL"
+  ssh-key:
+    description: An ed25519 SSH key in ~/.ssh, without passphrase (kept if one already exists)
+    method: { "*": script }
+    check:
+      "*": test -f "$HOME/.ssh/id_ed25519"
+    source:
+      "*": |
+        set -e
+        mkdir -p "$HOME/.ssh" && chmod 700 "$HOME/.ssh"
+        ssh-keygen -t ed25519 -N "" -f "$HOME/.ssh/id_ed25519" \
+          -C "${ENVSETUP_GIT_EMAIL:-$(git config --global user.email || id -un)}"
+  gh-auth:
+    description: Log the GitHub CLI in through the browser (the one-time code shows in the log) and upload the SSH key
+    method: { "*": script }
+    check:
+      "*": gh auth status -h github.com >/dev/null 2>&1
+    source:
+      "*": |
+        set -e
+        gh auth login -h github.com -p ssh -w --skip-ssh-key -s admin:public_key
+        if [ -f "$HOME/.ssh/id_ed25519.pub" ]; then
+          gh ssh-key add "$HOME/.ssh/id_ed25519.pub" -t "$(uname -n)" || echo "the SSH key was not uploaded (it may already be on the account)"
+        fi
+
+  # ---- cli tools ----
+  gh:
+    description: GitHub CLI
+    names: { debian: gh, arch: github-cli }
+  fastfetch:
+    description: System info (needs Ubuntu 24.10+ or Debian 13+ for apt)
+    names: { "*": fastfetch }
+  eza: { names: { "*": eza } }
+  zoxide: { names: { "*": zoxide } }
+  fzf: { names: { "*": fzf } }
+  git-delta: { names: { "*": git-delta } }
+  thefuck: { names: { "*": thefuck } }
+  fd:
+    description: Fast find. Debian ships the binary as fdfind.
+    names: { debian: fd-find, arch: fd }
+    post:
+      debian:
+        - mkdir -p "$HOME/.local/bin" && ln -sf "$(command -v fdfind)" "$HOME/.local/bin/fd"
+  bat:
+    description: cat with syntax highlighting. Debian ships the binary as batcat.
+    names: { "*": bat }
+    post:
+      debian:
+        - mkdir -p "$HOME/.local/bin" && ln -sf "$(command -v batcat)" "$HOME/.local/bin/bat"
+
+  # ---- fonts ----
+  jetbrains-mono:
+    names: { debian: fonts-jetbrains-mono, arch: ttf-jetbrains-mono }
+  inter-font:
+    names: { debian: fonts-inter, arch: inter-font }
+  jetbrains-mono-nerd:
+    description: JetBrainsMono Nerd Font (icons used by powerlevel10k and wezterm)
+    method: { debian: script, arch: native }
+    names: { arch: ttf-jetbrains-mono-nerd }
+    check:
+      debian: ls "$HOME"/.local/share/fonts/JetBrainsMono/*.ttf >/dev/null 2>&1
+    source:
+      debian: |
+        set -e
+        dir="$HOME/.local/share/fonts/JetBrainsMono"
+        mkdir -p "$dir"
+        tmp="$(mktemp --suffix=.zip)"
+        curl -fsSL -o "$tmp" https://github.com/ryanoasis/nerd-fonts/releases/latest/download/JetBrainsMono.zip
+        unzip -oq "$tmp" -d "$dir"
+        rm -f "$tmp"
+        fc-cache -f
+
+  # ---- shell ----
+  oh-my-zsh:
+    method: { "*": script }
+    check:
+      "*": test -d "$HOME/.oh-my-zsh"
+    source:
+      "*": |
+        RUNZSH=no CHSH=no KEEP_ZSHRC=yes sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+  powerlevel10k:
+    method: { "*": script }
+    check:
+      "*": test -d "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k"
+    source:
+      "*": |
+        git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k"
+
+  # ---- desktop apps ----
+  flatpak:
+    description: Flatpak runtime plus the flathub remote (used on Debian-family only)
+    names: { "*": flatpak }
+    unavailable: [arch]
+    post:
+      "*":
+        - $SUDO flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+  wezterm:
+    description: GPU-accelerated terminal
+    method: { debian: flatpak, arch: native }
+    names: { debian: org.wezfurlong.wezterm, arch: wezterm }
+  google-chrome:
+    method: { debian: deb-url, arch: aur }
+    names: { debian: google-chrome-stable, arch: google-chrome }
+    source:
+      debian: https://dl.google.com/linux/direct/google-chrome-stable_current_{arch}.deb
+  vscode:
+    description: Visual Studio Code (the .deb registers Microsoft's apt repo for updates)
+    method: { debian: deb-url, arch: aur }
+    names: { debian: code, arch: visual-studio-code-bin }
+    source:
+      debian: https://code.visualstudio.com/sha/download?build=stable&os=linux-deb-{x64}
+  zed:
+    description: Zed editor (official installer, lands in ~/.local/bin/zed)
+    method: { "*": script }
+    check:
+      "*": test -x "$HOME/.local/bin/zed"
+    source:
+      "*": curl -fsSL https://zed.dev/install.sh | sh
+
+  # ---- more cli tools ----
+  ripgrep: { names: { "*": ripgrep } }
+  btop: { names: { "*": btop } }
+  tree: { names: { "*": tree } }
+  micro: { description: Simple terminal editor, names: { "*": micro } }
+  helix: { description: Modal terminal editor, names: { arch: helix } }
+  pnpm: { names: { arch: pnpm } }
+  docker-compose:
+    names: { arch: docker-compose }
+    unavailable: [debian] # docker-compose-plugin comes with the docker entry there
+  openjdk-21: { names: { debian: openjdk-21-jdk, arch: jdk21-openjdk } }
+
+  # ---- shells and terminals ----
+  fish: { names: { "*": fish } }
+  cachyos-fish-config:
+    description: CachyOS fish defaults (sourced by the fish config)
+    names: { cachyos: cachyos-fish-config }
+  starship:
+    description: Cross-shell prompt
+    names: { arch: starship }
+  fish-plugins:
+    description: fisher plus autopair, fzf.fish and done
+    names: { arch: fisher }
+    post:
+      arch:
+        - test -f "$HOME/.config/fish/conf.d/done.fish" || fish -c "fisher install jorgebucaran/autopair.fish patrickf1/fzf.fish franciscolourenco/done"
+  fish-default-shell:
+    description: Make fish the login shell
+    method: { "*": script }
+    check:
+      "*": '[ "$(basename "$(getent passwd "$(id -un)" | cut -d: -f7)")" = fish ]'
+    source:
+      "*": $SUDO chsh -s "$(command -v fish)" "$(id -un)"
+  zsh-default-shell:
+    description: Make zsh the login shell
+    method: { "*": script }
+    check:
+      "*": '[ "$(basename "$(getent passwd "$(id -un)" | cut -d: -f7)")" = zsh ]'
+    source:
+      "*": $SUDO chsh -s "$(command -v zsh)" "$(id -un)"
+  kitty: { description: GPU terminal, names: { "*": kitty } }
+
+  # ---- desktop: niri + Noctalia (CachyOS) ----
+  niri-noctalia:
+    description: niri compositor with the Noctalia shell (CachyOS edition package)
+    names: { cachyos: cachyos-niri-noctalia }
+
+  # ---- desktop apps ----
+  zen-browser:
+    method: { cachyos: native, arch: aur }
+    names: { arch: zen-browser-bin }
+  obsidian: { names: { arch: obsidian } }
+  discord:
+    method: { debian: deb-url }
+    names: { debian: discord, arch: discord, windows: Discord.Discord }
+    source:
+      debian: https://discord.com/api/download?platform=linux&format=deb
+  spotify:
+    method: { debian: flatpak, arch: aur }
+    names: { debian: com.spotify.Client, arch: spotify, windows: Spotify.Spotify }
+  vlc: { names: { "*": vlc } }
+  bruno:
+    description: API client
+    method: { arch: aur }
+    names: { arch: bruno-bin }
+  beekeeper-studio:
+    description: SQL client
+    method: { arch: aur }
+    names: { arch: beekeeper-studio-bin }
+  localsend:
+    description: Share files on the local network
+    method: { arch: aur }
+    names: { arch: localsend-bin }
+  intellij-idea:
+    description: IntelliJ IDEA Ultimate
+    method: { arch: aur }
+    names: { arch: intellij-idea-ultimate-edition }
+
+  # ---- desktop: GNOME with the WhiteSur look (Ubuntu; the GTK theme is in dotfiles/gtk/) ----
+  # These talk to the running GNOME session, so they only work from inside it.
+  sassc: { names: { debian: sassc } }
+  gnome-tweaks: { names: { debian: gnome-tweaks } }
+  gnome-extension-manager: { names: { debian: gnome-shell-extension-manager } }
+  gnome-settings:
+    description: Dark mode, edge tiling, bottom auto-hiding dock, centered windows
+    method: { debian: script }
+    check:
+      debian: |
+        [ "$(gsettings get org.gnome.desktop.interface color-scheme)" = "'prefer-dark'" ] &&
+        [ "$(gsettings get org.gnome.shell.extensions.dash-to-dock autohide)" = "true" ] &&
+        [ "$(gsettings get org.gnome.mutter center-new-windows)" = "true" ]
+    source:
+      debian: |
+        set -e
+        gsettings set org.gnome.desktop.interface color-scheme "'prefer-dark'"
+        gsettings set org.gnome.mutter edge-tiling true
+        gsettings set org.gnome.mutter center-new-windows true
+        gsettings set org.gnome.shell.extensions.ding icon-size "small"
+        gsettings set org.gnome.shell.extensions.ding show-home false
+        d=org.gnome.shell.extensions.dash-to-dock
+        gsettings set $d extend-height false
+        gsettings set $d dock-fixed false
+        gsettings set $d autohide true
+        gsettings set $d dock-position 'BOTTOM'
+        gsettings set $d dash-max-icon-size 40
+        gsettings set $d show-mounts false
+        gsettings set $d show-mounts-network false
+  gnome-extensions:
+    description: Blur my Shell, User Themes, Search Light, Clipboard Indicator and 6 more (GNOME asks to confirm each)
+    method: { debian: script }
+    check:
+      debian: |
+        for id in blur-my-shell@aunetx user-theme@gnome-shell-extensions.gcampax.github.com search-light@icedman.github.com clipboard-indicator@tudmotu.com window-title-is-back@fthx compiz-windows-effect@hermes83.github.com compiz-alike-magic-lamp-effect@hermes83.github.com custom-hot-corners-extended@G-dH.github.com emoji-copy@felipeftn color-picker@tuberry; do
+          gnome-extensions list | grep -qxF "$id" || exit 1
+        done
+    source:
+      debian: |
+        for id in blur-my-shell@aunetx user-theme@gnome-shell-extensions.gcampax.github.com search-light@icedman.github.com clipboard-indicator@tudmotu.com window-title-is-back@fthx compiz-windows-effect@hermes83.github.com compiz-alike-magic-lamp-effect@hermes83.github.com custom-hot-corners-extended@G-dH.github.com emoji-copy@felipeftn color-picker@tuberry; do
+          gnome-extensions list | grep -qxF "$id" && continue
+          echo "installing $id (confirm the GNOME dialog)"
+          gdbus call --session --dest org.gnome.Shell.Extensions --object-path /org/gnome/Shell/Extensions \
+            --method org.gnome.Shell.Extensions.InstallRemoteExtension "$id" || exit 1
+          n=0
+          until gnome-extensions list | grep -qxF "$id"; do
+            n=$((n + 1)); [ "$n" -gt 60 ] && { echo "timed out waiting for $id"; exit 1; }
+            sleep 1
+          done
+        done
+        e=/org/gnome/shell/extensions
+        dconf write $e/blur-my-shell/dash-to-dock/blur false
+        dconf write $e/search-light/show-panel-icon true
+        dconf write $e/search-light/scale-width 0.28
+        dconf write $e/search-light/scale-height 0.40
+        dconf write $e/search-light/border-thickness 1
+        dconf write $e/search-light/border-radius 7.0
+        dconf write $e/search-light/background-color "(0.0, 0.0, 0.0, 0.6)"
+        dconf write $e/window-title-is-back/show-title false
+        dconf write $e/window-title-is-back/fixed-width false
+        dconf write $e/custom-hot-corners-extended/monitor-0-top-right-0/action "'show-desktop-mon'"
+        dconf write $e/custom-hot-corners-extended/misc/panel-menu-enable false
+        dconf write $e/emoji-copy/always-show false
+        dconf write $e/emoji-copy/paste-on-select false
+        dconf write $e/color-picker/systray-dropper-icon "'tool_color_picker'"
+  whitesur-gtk-theme:
+    description: WhiteSur GTK and shell theme (macOS look), dark blue variant
+    method: { debian: script }
+    check:
+      debian: |
+        test -d /usr/share/themes/WhiteSur-Dark-blue &&
+        [ "$(gsettings get org.gnome.desktop.interface gtk-theme)" = "'WhiteSur-Dark-blue'" ]
+    source:
+      debian: |
+        set -e
+        if [ ! -d /usr/share/themes/WhiteSur-Dark-blue ]; then
+          tmp="$(mktemp -d)"
+          git clone --depth=1 https://github.com/vinceliuice/WhiteSur-gtk-theme.git "$tmp/theme"
+          cd "$tmp/theme"
+          $SUDO ./install.sh -n WhiteSur -t all -m -N glassy -l --shell -i ubuntu -h smaller --round --silent-mode
+          $SUDO ./tweaks.sh -g -i ubuntu -F -d --silent-mode
+          if command -v flatpak >/dev/null; then
+            $SUDO flatpak override --filesystem=xdg-config/gtk-3.0
+            $SUDO flatpak override --filesystem=xdg-config/gtk-4.0
+          fi
+          $SUDO cp -r "$ENVSETUP_ROOT/dotfiles/gtk/WhiteSur-Dark-blue" /usr/share/themes/
+          cd /; rm -rf "$tmp"
+        fi
+        gsettings set org.gnome.desktop.interface gtk-theme "'WhiteSur-Dark-blue'"
+        dconf write /org/gnome/shell/extensions/user-theme/name "'WhiteSur-Dark-blue'"
+        gsettings set org.gnome.desktop.interface accent-color "'blue'"
+  whitesur-icons:
+    description: WhiteSur icon theme
+    method: { debian: script }
+    check:
+      debian: |
+        test -d "$HOME/.local/share/icons/WhiteSur" &&
+        [ "$(gsettings get org.gnome.desktop.interface icon-theme)" = "'WhiteSur-dark'" ]
+    source:
+      debian: |
+        set -e
+        if [ ! -d "$HOME/.local/share/icons/WhiteSur" ]; then
+          tmp="$(mktemp -d)"
+          git clone --depth=1 https://github.com/vinceliuice/WhiteSur-icon-theme.git "$tmp/icons"
+          (cd "$tmp/icons" && ./install.sh -d "$HOME/.local/share/icons" -n WhiteSur -a)
+          rm -rf "$tmp"
+        fi
+        gsettings set org.gnome.desktop.interface icon-theme "'WhiteSur-dark'"
+  mac-wallpaper:
+    description: macOS-style wallpaper
+    method: { debian: script }
+    check:
+      debian: '[ "$(gsettings get org.gnome.desktop.background picture-uri-dark)" = "''file:///usr/share/backgrounds/mac-wallpaper.jpg''" ]'
+    source:
+      debian: |
+        set -e
+        p=/usr/share/backgrounds/mac-wallpaper.jpg
+        $SUDO wget -qO "$p" https://www.iclarified.com/images/news/91914/440181/440181.jpg
+        $SUDO chmod 644 "$p"
+        gsettings set org.gnome.desktop.background picture-uri "'file://$p'"
+        gsettings set org.gnome.desktop.background picture-uri-dark "'file://$p'"
+
+  # ---- icons (macOS look) ----
+  mactahoe-icons:
+    description: MacTahoe icon theme (macOS-style app icons), dark variant
+    method: { "*": script }
+    check:
+      "*": |
+        test -d /usr/share/icons/MacTahoe-dark &&
+        [ "$(gsettings get org.gnome.desktop.interface icon-theme)" = "'MacTahoe-dark'" ]
+    source:
+      "*": |
+        set -e
+        if [ ! -d /usr/share/icons/MacTahoe-dark ]; then
+          tmp="$(mktemp -d)"
+          git clone --depth=1 https://github.com/vinceliuice/MacTahoe-icon-theme.git "$tmp/icons"
+          (cd "$tmp/icons" && $SUDO ./install.sh)
+          rm -rf "$tmp"
+        fi
+        gsettings set org.gnome.desktop.interface icon-theme 'MacTahoe-dark'
+        for f in "$HOME/.config/gtk-3.0/settings.ini" "$HOME/.config/gtk-4.0/settings.ini"; do
+          if [ -f "$f" ] && grep -q '^gtk-icon-theme-name=' "$f"; then
+            sed -i 's/^gtk-icon-theme-name=.*/gtk-icon-theme-name=MacTahoe-dark/' "$f"
+          fi
+        done
+
+  # ---- game dev ----
+  godothub:
+    description: GodotHub, Godot version and project manager (AppImage, needs FUSE 2)
+    method: { "*": script }
+    check:
+      "*": ls "$HOME"/.local/bin/GodotHub*.AppImage >/dev/null 2>&1
+    source:
+      "*": |
+        set -e
+        url="$(curl -fsSL https://api.github.com/repos/RykoTheDev/GodotHub/releases/latest | grep -o 'https://[^"]*linux-amd64\.AppImage"' | head -n1 | tr -d '"')"
+        [ -n "$url" ] || { echo "could not find the GodotHub AppImage in the latest release"; exit 1; }
+        bin="$HOME/.local/bin/GodotHub.AppImage"
+        mkdir -p "$HOME/.local/bin" "$HOME/.local/share/applications"
+        curl -fL -o "$bin" "$url"
+        chmod +x "$bin"
+        cat > "$HOME/.local/share/applications/godothub.desktop" <<EOD
+        [Desktop Entry]
+        Type=Application
+        Name=GodotHub
+        Comment=Godot Version and Project Management
+        Exec="$bin"
+        TryExec=$bin
+        Icon=godot
+        StartupWMClass=godothub
+        Terminal=false
+        Categories=Development;
+        EOD
+
+  # ---- launcher ----
+  vicinae:
+    description: Vicinae launcher (Alt+Space in the niri config). On Debian-family it is the AppImage.
+    method: { arch: aur, debian: script }
+    names: { arch: vicinae-bin }
+    check:
+      debian: test -x "$HOME/.local/bin/vicinae"
+    source:
+      debian: |
+        set -e
+        url="$(curl -fsSL https://api.github.com/repos/vicinaehq/vicinae/releases/latest | grep -o 'https://[^"]*Vicinae-x86_64\.AppImage' | head -n1)"
+        [ -n "$url" ] || { echo "could not find the Vicinae AppImage in the latest release"; exit 1; }
+        mkdir -p "$HOME/.local/bin"
+        curl -fL -o "$HOME/.local/bin/vicinae" "$url"
+        chmod +x "$HOME/.local/bin/vicinae"
+
+  # ---- windows / gaming ----
+  # winget IDs, checked against github.com/microsoft/winget-pkgs.
+  7zip: { description: File archiver, names: { windows: 7zip.7zip } }
+  vcredist:
+    description: Visual C++ 2015-2022 runtime (x64), which most games need
+    names: { windows: Microsoft.VCRedist.2015+.x64 }
+  directx:
+    description: DirectX end-user runtime, for older games
+    names: { windows: Microsoft.DirectX }
+  windows-media-player:
+    description: "Windows Media Player (the Media.WindowsMediaPlayer capability). Playnite plays trailers with it; the answer file used to remove it. Asks for elevation"
+    method: { windows: script }
+    check:
+      windows: if (-not (Test-Path (Join-Path $env:SystemRoot 'System32\wmp.dll'))) { exit 1 }
+    source:
+      windows: |
+        $cmd = '$ErrorActionPreference = ''Stop''; Get-WindowsCapability -Online -Name ''Media.WindowsMediaPlayer*'' | Where-Object State -ne ''Installed'' | Add-WindowsCapability -Online'
+        $enc = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($cmd))
+        Write-Output 'installing Windows Media Player from Windows Update: accept the elevation prompt'
+        $p = Start-Process powershell.exe -Verb RunAs -Wait -PassThru -WindowStyle Hidden -ArgumentList '-NoProfile', '-EncodedCommand', $enc
+        if ($p.ExitCode) { throw "Add-WindowsCapability failed (code $($p.ExitCode))" }
+  powertoys: { description: Microsoft PowerToys, names: { windows: Microsoft.PowerToys } }
+  # Microsoft Store package (Raycast Technologies): not in the winget community source.
+  raycast: { description: "Raycast (command bar: launch apps, search files, clipboard history, extensions)", names: { windows: 9PFXXSHC64H3 } }
+  scoop:
+    description: scoop, a command-line installer (needed by items that use the scoop method)
+    method: { windows: script }
+    check:
+      windows: if (-not (Get-Command scoop -ErrorAction SilentlyContinue)) { exit 1 }
+    source:
+      windows: |
+        Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
+        Invoke-RestMethod -Uri 'https://get.scoop.sh' | Invoke-Expression
+  amd-software:
+    description: "AMD Software: Adrenalin Edition (Radeon drivers and panel). Not in winget: downloads AMD's auto-detect installer and opens it"
+    gpu: [amd]
+    method: { windows: script }
+    check:
+      windows: if (-not (Test-Path (Join-Path $env:ProgramFiles 'AMD\CNext\CNext\RadeonSoftware.exe'))) { exit 1 }
+    source:
+      windows: |
+        $page = 'https://www.amd.com/en/support/download/drivers.html'
+        $agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
+        $html = (Invoke-WebRequest -UseBasicParsing -Uri $page -UserAgent $agent).Content
+        $link = [regex]::Match($html, 'https://drivers\.amd\.com/[^''"]*minimalsetup[^''"]*_web\.exe')
+        if (-not $link.Success) {
+          Start-Process $page
+          throw 'could not find the installer link on the AMD page; the page was opened so you can download it by hand'
+        }
+        $exe = Join-Path $env:TEMP 'amd-software-setup.exe'
+        Write-Output ('downloading ' + $link.Value)
+        Invoke-WebRequest -UseBasicParsing -Uri $link.Value -OutFile $exe -UserAgent $agent -Headers @{ Referer = 'https://www.amd.com/' }
+        Write-Output 'the AMD installer is open: follow it to the end'
+        Start-Process -FilePath $exe -Wait
+  msi-afterburner:
+    description: MSI Afterburner (overclock, fan curve and the in-game overlay)
+    names: { windows: Guru3D.Afterburner }
+  hwinfo: { description: Hardware sensors and monitoring, names: { windows: REALiX.HWiNFO } }
+  nvidia-app:
+    description: "NVIDIA app (GeForce drivers, game optimization and the in-game overlay). Not in winget: downloads the installer linked on nvidia.com"
+    gpu: [nvidia]
+    method: { windows: script }
+    check:
+      windows: if (-not (& "$env:ENVSETUP_ROOT\windows\installed.ps1" 'NVIDIA App*')) { exit 1 }
+    source:
+      windows: |
+        & "$env:ENVSETUP_ROOT\windows\install-from-url.ps1" -Name 'NVIDIA App*' -Silent '-s -noreboot' `
+          -Page 'https://www.nvidia.com/en-us/software/nvidia-app/' `
+          -Pattern 'https://us\.download\.nvidia\.com/nvapp/client/[0-9.]+/x64/NVIDIA_app_v[0-9.]+_x64\.exe'
+
+  # Software of the peripherals: nothing to configure in them, only to install.
+  mchose-hub:
+    devices: [MCHOSE]
+    description: "MCHOSE HUB: EQ, voice effects and noise reduction of the MCHOSE V9 Pro headset (from cdn.mchose.com.cn)"
+    method: { windows: script }
+    check:
+      windows: if (-not (& "$env:ENVSETUP_ROOT\windows\installed.ps1" 'MCHOSE HUB*')) { exit 1 }
+    source:
+      windows: |
+        & "$env:ENVSETUP_ROOT\windows\install-from-url.ps1" -Name 'MCHOSE HUB*' -Url 'https://cdn.mchose.com.cn/MCHOSE_HUB_installer.zip'
+  attack-shark-driver:
+    devices: ["VID_3151&PID_503D", ATTACK SHARK]
+    description: "Attack Shark Driver: DPI, polling rate, lift-off distance and macros of the Attack Shark X3 Pro mouse (from download.attackshark.pro)"
+    method: { windows: script }
+    check:
+      windows: if (-not (& "$env:ENVSETUP_ROOT\windows\installed.ps1" 'Attack Shark Driver*')) { exit 1 }
+    source:
+      windows: |
+        & "$env:ENVSETUP_ROOT\windows\install-from-url.ps1" -Name 'Attack Shark Driver*' -Url 'https://download.attackshark.pro/ATTACKSHARK/X3PRO/ATTACKSHARKX3PRO.zip'
+  signalrgb: { description: SignalRGB (one place for the RGB lighting of every device), names: { windows: WhirlwindFX.SignalRgb } }
+  8bitdo-ultimate-software:
+    description: 8BitDo Ultimate Software V2 (buttons, sticks, triggers and profiles of the 8BitDo Ultimate 2.4G controller)
+    devices: [VID_2DC8, 8BitDo]
+    names: { windows: 8BitDo.UltimateSoftwareV2 }
+  steam: { description: Steam, names: { windows: Valve.Steam } }
+  epic-games: { description: Epic Games Launcher, names: { windows: EpicGames.EpicGamesLauncher } }
+  gog-galaxy: { description: GOG Galaxy, names: { windows: GOG.Galaxy } }
+  ea-app: { description: EA app, names: { windows: ElectronicArts.EADesktop } }
+  ubisoft-connect: { description: Ubisoft Connect, names: { windows: Ubisoft.Connect } }
+  battle-net: { description: Battle.net, names: { windows: Blizzard.BattleNet } }
+  hydra-launcher:
+    description: 'Hydra Launcher (open-source game launcher with its own download manager; github.com/hydralauncher/hydra). Set its download folder to D:\Games\Hydra'
+    names: { windows: HydraLauncher.Hydra }
+  opera-gx: { description: Opera GX browser, names: { windows: Opera.OperaGX } }
+  brave: { description: Brave browser, names: { windows: Brave.Brave } }
+  obs-studio: { description: OBS Studio (recording and streaming), names: { windows: OBSProject.OBSStudio } }
+  wallpaper-engine:
+    description: Wallpaper Engine, bought on Steam (AppID 431960). Steam opens its install dialog
+    method: { windows: steam }
+    names: { windows: "431960" }
+  windhawk:
+    description: "Windhawk 2, the customization platform for Windows programs (mods for the taskbar, Start menu, Explorer, windows...)"
+    names: { windows: RamenSoftware.Windhawk }
+  windhawk-mods:
+    description: "The Windhawk mods of windows/windhawk/backup.json, installed with their settings (dock, Start menu, Explorer, corners, animations...). See the Windhawk tab"
+    method: { windows: windhawk }
+  playnite:
+    description: "Playnite portable: the library, covers, trailers, themes and extensions from the store (the HD), the settings from git (windows/playnite), with the paths to RetroArch and the games fixed. See the Playnite and Backup tabs"
+    method: { windows: playnite }
+  retroarch:
+    description: "RetroArch portable: downloaded with its cores, the BIOS from the store (the HD), settings, saves and playlists from git (windows/retroarch), the playlists pointed at the games (games in config/retroarch.yaml). See the RetroArch and Backup tabs"
+    method: { windows: retroarch }
+  ninite:
+    description: "Ninite: one installer for the apps picked in the Instalação tab (it installs and updates them, with no questions)"
+    method: { windows: ninite }
+    names: { windows: brave discord steam epic git spotify powertoys adoptjavax21 node.js24 }
+  group-policies:
+    description: "Group policies from config/policies.yaml (telemetry, suggestions, widgets, Windows Update...); review them in the Políticas tab"
+    method: { windows: policies }

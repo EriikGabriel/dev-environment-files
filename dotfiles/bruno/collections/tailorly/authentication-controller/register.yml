@@ -1,0 +1,54 @@
+info:
+  name: register
+  type: http
+  seq: 1
+  tags:
+    - authentication-controller
+
+http:
+  method: POST
+  url: "{{baseUrl}}/v1/auth/register"
+  body:
+    type: json
+    data: |-
+      {
+        "email": "",
+        "password": ""
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+examples:
+  - name: 201 Response
+    description: Created
+    request:
+      url: "{{baseUrl}}/v1/auth/register"
+      method: POST
+      body:
+        type: json
+        data: |-
+          {
+            "email": "",
+            "password": ""
+          }
+    response:
+      status: 201
+      statusText: Created
+      headers:
+        - name: Content-Type
+          value: "*/*"
+      body:
+        type: text
+        data: |-
+          {
+            "id": "",
+            "email": "",
+            "enabled": false,
+            "roles": []
+          }

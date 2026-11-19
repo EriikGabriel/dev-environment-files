@@ -1,0 +1,162 @@
+name: Dev · CachyOS (niri + Noctalia)
+description: O ambiente atual - niri com Noctalia, fish + starship, kitty e Zed.
+environment: dev
+match: [cachyos, arch]
+
+# How the desktop looks. It feeds the preview in the app, and `dock.pinned` is
+# written to the real Noctalia config on apply (edit it in the preview, or here).
+desktop:
+  kind: niri-noctalia
+  app: niri-noctalia
+  wallpaper: dotfiles/wallpapers/macos-ventura.jpg
+  icon_theme: MacTahoe-dark
+  colors: { accent: "#ffc799", panel: "#101010", text: "#e6e6e6" }
+  dock:
+    position: bottom
+    autohide: true
+    pinned: [org.gnome.Nautilus, spotify, discord, kitty, obsidian, zen, jetbrains-idea, dev.zed.Zed, beekeeper-studio, GodotHub, bruno]
+  bar:
+    position: top
+    start: [launcher, clock, sysmon, active_window, media]
+    center: [workspaces]
+    end: [tray, notifications, screen_tools, screen_recorder, arch_updater, battery, volume, brightness, clipboard, keybinds, control-center]
+
+# Each step is one screen of the setup. `apps` start selected, `optional`
+# start unselected, and `options` is a pick-one list (`default`; "none" skips).
+# Files are symlinked into the repo; a file with `app:` is only deployed when
+# that app is part of the plan.
+steps:
+  - id: base
+    title: Essenciais
+    description: Ferramentas básicas de linha de comando e de compilação.
+    apps: [curl, wget, git, vim, unzip, build-tools, ripgrep, btop, tree, webkit2gtk]
+    optional: [htop, tmux, micro, helix]
+
+  - id: shell
+    title: Shell
+    description: O shell de login, o prompt e os utilitários que a config usa.
+    choice_title: Shell
+    default: fish
+    options:
+      - id: fish
+        title: fish + starship
+        description: Config atual - fish com starship, fzf.fish, autopair e done.
+        apps: [fish, cachyos-fish-config, starship, fish-plugins, fish-default-shell]
+        files:
+          - { src: dotfiles/fish/config.fish, dest: ~/.config/fish/config.fish }
+          - { src: dotfiles/fish/fish_plugins, dest: ~/.config/fish/fish_plugins }
+          - { src: dotfiles/starship/starship.toml, dest: ~/.config/starship.toml }
+      - id: zsh
+        title: zsh + powerlevel10k
+        description: A config antiga - oh-my-zsh, zinit e powerlevel10k.
+        apps: [zsh, oh-my-zsh, powerlevel10k, zsh-default-shell]
+        files:
+          - { src: dotfiles/zsh/.zshrc, dest: ~/.zshrc }
+          - { src: dotfiles/zsh/.p10k.zsh, dest: ~/.p10k.zsh }
+    apps: [eza, bat, fd, fzf, zoxide, thefuck, fastfetch]
+    optional: [git-delta]
+    files:
+      - { src: dotfiles/fastfetch/cachyos.jsonc, dest: ~/.config/fastfetch/config.jsonc, app: fastfetch }
+      - { src: dotfiles/fastfetch/logos, dest: ~/.config/fastfetch/logos, app: fastfetch }
+
+  - id: terminal
+    title: Terminal e fontes
+    description: O emulador de terminal e as fontes usadas nele e no editor.
+    choice_title: Terminal
+    default: kitty
+    options:
+      - id: kitty
+        title: kitty
+        description: Terminal atual, com o tema e a config do repo.
+        apps: [kitty]
+        files:
+          - { src: dotfiles/kitty/kitty.conf, dest: ~/.config/kitty/kitty.conf }
+          - { src: dotfiles/kitty/current-theme.conf, dest: ~/.config/kitty/current-theme.conf }
+          - { src: dotfiles/kitty/themes, dest: ~/.config/kitty/themes }
+      - id: wezterm
+        title: WezTerm
+        description: O terminal da config antiga (tema Poimandres).
+        apps: [wezterm]
+        files:
+          - { src: dotfiles/wezterm/.wezterm.lua, dest: ~/.wezterm.lua }
+    apps: [jetbrains-mono-nerd]
+    optional: [jetbrains-mono, inter-font]
+
+  - id: runtimes
+    title: Linguagens e serviços
+    description: Runtimes, gerenciadores de pacote, containers e bancos de dados.
+    apps: [nodejs, npm, pnpm, python, python-pip, openjdk-21, docker, docker-compose, postgresql, gh]
+
+  - id: identity
+    title: Identidade
+    description: Nome e e-mail do git, a chave SSH e o login no GitHub. O que você digita fica só neste computador.
+    inputs:
+      - { id: git.name, label: Nome no git, from: git config --global user.name }
+      - { id: git.email, label: E-mail no git, from: git config --global user.email }
+    apps: [openssh, git-identity, ssh-key, gh-auth]
+
+  - id: editor
+    title: Editor de código
+    description: O editor principal, com configurações e extensões.
+    choice_title: Editor
+    default: zed
+    options:
+      - id: zed
+        title: Zed
+        description: Settings, keymap, snippets e as 31 extensões atuais (instaladas pelo próprio Zed).
+        apps: [zed]
+        files:
+          # Extensions live in settings.json (auto_install_extensions). The
+          # Figma API key in the repo copy is a placeholder.
+          - { src: dotfiles/zed/settings.json, dest: ~/.config/zed/settings.json }
+          - { src: dotfiles/zed/keymap.json, dest: ~/.config/zed/keymap.json }
+          - { src: dotfiles/zed/snippets, dest: ~/.config/zed/snippets }
+      - id: vscode
+        title: VS Code
+        description: Settings, keybindings e a lista de extensões exportada.
+        apps: [vscode]
+        files:
+          - { src: dotfiles/vscode/settings.jsonc, dest: ~/.config/Code/User/settings.json }
+          - { src: dotfiles/vscode/keybinds.json, dest: ~/.config/Code/User/keybindings.json }
+        vscode_extensions: dotfiles/vscode/extensions.json
+    optional: [intellij-idea]
+
+  - id: apps
+    title: Aplicativos
+    description: Navegador e os apps do dia a dia.
+    apps: [zen-browser, obsidian, bruno, beekeeper-studio, discord, spotify, fuse2, godothub]
+    optional: [google-chrome, localsend, vlc]
+
+  - id: workspace
+    title: Pastas de trabalho
+    description: A estrutura da pasta www e as collections do Bruno guardadas no repo.
+    choice_title: Estrutura
+    default: www
+    options:
+      - id: www
+        title: ~/www
+        description: Cria projects, games e notes, e liga as collections do Bruno (que são locais) às do repo.
+        # Edit this list to change the structure.
+        dirs: [~/www/projects, ~/www/games, ~/www/notes]
+        files:
+          # Passwords inside the collections are placeholders in the repo copy.
+          - { src: dotfiles/bruno/collections, dest: "~/www/projects/api collections", app: bruno }
+          # workspace.yml points Bruno at the folder above (absolute path).
+          - { src: dotfiles/bruno/workspace.yml, dest: ~/.config/bruno/default-workspace/workspace.yml, app: bruno }
+
+  - id: desktop
+    title: Desktop
+    description: niri + Noctalia, com os atalhos, regras e o tema Vesper atuais, e os ícones estilo macOS.
+    apps: [niri-noctalia, vicinae, mactahoe-icons]
+    files:
+      # monitors.kdl inside dotfiles/niri is specific to this machine's outputs.
+      - { src: dotfiles/niri, dest: ~/.config/niri, app: niri-noctalia }
+      # niri starts the launcher itself (spawn-at-startup "vicinae" "server").
+      - { src: dotfiles/vicinae/settings.json, dest: ~/.config/vicinae/settings.json, app: vicinae }
+      - { src: dotfiles/noctalia/config.toml, dest: ~/.config/noctalia/config.toml, app: niri-noctalia }
+      - { src: dotfiles/wallpapers, dest: ~/Imagens/Wallpapers, app: niri-noctalia }
+      - { src: dotfiles/noctalia/palettes, dest: ~/.config/noctalia/palettes, app: niri-noctalia }
+      - { src: dotfiles/noctalia/colorschemes, dest: ~/.config/noctalia/colorschemes, app: niri-noctalia }
+
+# Extra files added with `envsetup add` (or dropped in the app) land here.
+files: []

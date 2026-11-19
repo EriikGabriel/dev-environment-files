@@ -1,0 +1,52 @@
+info:
+  name: currentAccountCurrent
+  type: http
+  seq: 1
+  tags:
+    - CurrentAccount
+
+http:
+  method: GET
+  url: "{{baseUrl}}/v1/me"
+  auth:
+    type: bearer
+    token: "{{accessToken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+examples:
+  - name: 200 Response
+    description: OK
+    request:
+      url: "{{baseUrl}}/v1/me"
+      method: GET
+    response:
+      status: 200
+      statusText: OK
+      headers:
+        - name: Content-Type
+          value: "*/*"
+      body:
+        type: text
+        data: |-
+          {
+            "owner": {
+              "activeSnapshotId": "",
+              "expiresAt": "",
+              "id": "",
+              "kind": "",
+              "revision": 0,
+              "userId": ""
+            },
+            "user": {
+              "email": "",
+              "enabled": false,
+              "id": "",
+              "roles": []
+            }
+          }

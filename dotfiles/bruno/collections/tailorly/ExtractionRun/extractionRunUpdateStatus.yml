@@ -1,0 +1,65 @@
+info:
+  name: extractionRunUpdateStatus
+  type: http
+  seq: 4
+  tags:
+    - ExtractionRun
+
+http:
+  method: PATCH
+  url: "{{baseUrl}}/v1/extraction-runs/:id/status"
+  params:
+    - name: id
+      value: ""
+      type: path
+  body:
+    type: json
+    data: |-
+      {
+        "status": ""
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+examples:
+  - name: 200 Response
+    description: OK
+    request:
+      url: "{{baseUrl}}/v1/extraction-runs/:id/status"
+      method: PATCH
+      params:
+        - name: id
+          value: ""
+          type: path
+      body:
+        type: json
+        data: |-
+          {
+            "status": ""
+          }
+    response:
+      status: 200
+      statusText: OK
+      headers:
+        - name: Content-Type
+          value: "*/*"
+      body:
+        type: text
+        data: |-
+          {
+            "baseVersionId": "",
+            "errorCode": "",
+            "finishedAt": "",
+            "id": "",
+            "outputObjectId": "",
+            "pipelineFingerprint": "",
+            "pipelineVersions": {},
+            "startedAt": "",
+            "status": ""
+          }

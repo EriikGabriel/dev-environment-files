@@ -1,0 +1,55 @@
+info:
+  name: createUser
+  type: http
+  seq: 2
+  tags:
+    - user-controller
+
+http:
+  method: POST
+  url: "{{baseUrl}}/v1/users"
+  headers:
+    - name: X-XSRF-TOKEN
+      value: "{{csrfToken}}"
+  body:
+    type: json
+    data: |-
+      {
+        "email": "admin@gmail.com",
+        "password": "<PASSWORD>"
+      }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+examples:
+  - name: 201 Response
+    description: Created
+    request:
+      url: "{{baseUrl}}/v1/users"
+      method: POST
+      body:
+        type: json
+        data: |-
+          {
+            "email": "",
+            "password": ""
+          }
+    response:
+      status: 201
+      statusText: Created
+      headers:
+        - name: Content-Type
+          value: "*/*"
+      body:
+        type: text
+        data: |-
+          {
+            "id": "",
+            "email": "",
+            "enabled": false
+          }

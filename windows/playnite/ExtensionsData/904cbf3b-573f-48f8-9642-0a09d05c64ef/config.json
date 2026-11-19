@@ -1,0 +1,703 @@
+{
+  "SelectedPresets": {
+    "PS5reborn_saVantCZ": [],
+    "Solaris_b6e50d04-24ae-4ecd-bd3a-080367930992": [
+      "Avatar.Avatar38",
+      "Profile.Profile04"
+    ]
+  },
+  "UserSettings": {
+    "PS5reborn_saVantCZ": {
+      "ItemCount": {
+        "Type": "Double",
+        "Value": "12"
+      },
+      "BigCovers": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "LegalInfo": {
+        "Type": "Boolean",
+        "Value": "False"
+      }
+    },
+    "Solaris_b6e50d04-24ae-4ecd-bd3a-080367930992": {
+      "TO_UserName": {
+        "Type": "String",
+        "Value": "Erik Gabriel"
+      },
+      "TO_UserTitle": {
+        "Type": "String",
+        "Value": "Gamer"
+      },
+      "TO_ScaleMain": {
+        "Type": "Double",
+        "Value": "1"
+      },
+      "TO_ScaleGameDetails": {
+        "Type": "Double",
+        "Value": "1"
+      },
+      "TO_FullHeightMenu": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_TrailerDelay": {
+        "Type": "TimeSpan",
+        "Value": "00:00:02"
+      },
+      "TO_TrailerFull": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_TrailerExt": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_TrailerExtFade": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_IVMTrailerDelay": {
+        "Type": "TimeSpan",
+        "Value": "00:00:00.3000000"
+      },
+      "TO_IVMGameIcon": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_IVMGameTitle": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_IVMAchievementsAlwaysVisible": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_HeroBackground": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_CoverCornerRadius": {
+        "Type": "CornerRadius",
+        "Value": "8,8,8,8"
+      },
+      "TO_CoverSelectionCornerRadius": {
+        "Type": "CornerRadius",
+        "Value": "12,12,12,12"
+      },
+      "TO_GDTrailerDelay": {
+        "Type": "TimeSpan",
+        "Value": "00:00:01"
+      },
+      "TO_GDFSTrailerDelay": {
+        "Type": "TimeSpan",
+        "Value": "00:00:02"
+      },
+      "TO_GDGameIcon": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_CustomAvatarPath": {
+        "Type": "String",
+        "Value": "C:/solaris/avatar.png"
+      },
+      "TO_CustomProfilePath": {
+        "Type": "String",
+        "Value": "C:/solaris/profile.png"
+      },
+      "TO_CustomIntroPath": {
+        "Type": "String",
+        "Value": "C:/solaris/intro.mp4"
+      },
+      "TO_CustomLockScreenPath": {
+        "Type": "String",
+        "Value": "C:/solaris/lockscreen.mp4"
+      },
+      "TO_CustomIconAgeRatingPath": {
+        "Type": "String",
+        "Value": "C:/solaris/AgeRating"
+      },
+      "TO_CustomIconCoverPath": {
+        "Type": "String",
+        "Value": "C:/solaris/Cover"
+      },
+      "TO_CustomIconFilterPath": {
+        "Type": "String",
+        "Value": "C:/solaris/Filter"
+      },
+      "TO_CustomIconLibraryPath": {
+        "Type": "String",
+        "Value": "C:/solaris/Library"
+      },
+      "TO_CustomFilterColorPath": {
+        "Type": "String",
+        "Value": "C:/solaris/Background"
+      },
+      "TO_DropShadow": {
+        "Type": "Boolean",
+        "Value": "False"
+      },
+      "TO_GameStatus": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_LibraryIcons": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_PrioritizeSource": {
+        "Type": "Boolean",
+        "Value": "False"
+      },
+      "TO_FilterIcons": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_GameScoreNumber": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_GameScoreStars": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_GameScoreNull": {
+        "Type": "Boolean",
+        "Value": "False"
+      },
+      "TO_InterfaceAnimation": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_MenuAnimation": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_BorderAnimation": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_ToggleLayoutView": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_USDateTime": {
+        "Type": "Boolean",
+        "Value": "False"
+      },
+      "TO_SkipIntro": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_LockScreen": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_LockScreenClock": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_LockScreenWarning": {
+        "Type": "Boolean",
+        "Value": "False"
+      },
+      "TO_DarkenLockScreenVideo": {
+        "Type": "Double",
+        "Value": "0"
+      },
+      "TO_InvertMainMenu": {
+        "Type": "Boolean",
+        "Value": "False"
+      },
+      "TO_Profile": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_UserNameMenu": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_UserTitleMenu": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_HelpButton": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_PatreonButton": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_KofiButton": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_TopBarUserName": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_TopBarSwitchLayout": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_TopBarCollapseButtons": {
+        "Type": "Boolean",
+        "Value": "False"
+      },
+      "TO_TopBarAchievements": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_TopBarAchievementsAlt": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_TopBarMediaPlayer": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_TopBarPlugins": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_TopBarStatistics": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_TopBarNetworkStatus": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_TopBarFilteredGamesCount": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_Trailer": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_MicroTrailer": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_TrailerLogo": {
+        "Type": "Boolean",
+        "Value": "False"
+      },
+      "TO_TopBarAlwaysVisible": {
+        "Type": "Boolean",
+        "Value": "False"
+      },
+      "TO_BottomBarAlwaysVisible": {
+        "Type": "Boolean",
+        "Value": "False"
+      },
+      "TO_BottomBarHorizontal": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_Icons": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_ReleaseYear": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_Developer": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_Publisher": {
+        "Type": "Boolean",
+        "Value": "False"
+      },
+      "TO_AgeRating": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_Genres": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_Favorite": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_ButtonPanel": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_ContentBackground": {
+        "Type": "Boolean",
+        "Value": "False"
+      },
+      "TO_GameListAlt": {
+        "Type": "Boolean",
+        "Value": "False"
+      },
+      "TO_DarkenContentBackground": {
+        "Type": "Double",
+        "Value": "0.8"
+      },
+      "TO_DarkenTopBar": {
+        "Type": "Double",
+        "Value": "0.3"
+      },
+      "TO_DarkenBottomBar": {
+        "Type": "Double",
+        "Value": "0"
+      },
+      "TO_IVMDarkenBackgroundImage": {
+        "Type": "Double",
+        "Value": "0.7"
+      },
+      "TO_InfoVerticalMode": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_IVMInvert": {
+        "Type": "Boolean",
+        "Value": "False"
+      },
+      "TO_IVMBackgroundImage": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_IVMLogo": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_IVMTrailer": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_IVMMicroTrailer": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_IVMButtonMuted": {
+        "Type": "Boolean",
+        "Value": "False"
+      },
+      "TO_IVMInvertMuteButton": {
+        "Type": "Boolean",
+        "Value": "False"
+      },
+      "TO_IVMDescription": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_IVMAchievementsCount": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_IVMUserScore": {
+        "Type": "Boolean",
+        "Value": "False"
+      },
+      "TO_IVMCommunityScore": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_IVMCriticScore": {
+        "Type": "Boolean",
+        "Value": "False"
+      },
+      "TO_IVMAgeRating": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_IVMGenres": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_IVMFavorite": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_IVMButtonPanel": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_VerticalScrollBar": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_BottomBarVertical": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_SteamHeroFade": {
+        "Type": "Double",
+        "Value": "0.4"
+      },
+      "TO_SteamHeroCurvature": {
+        "Type": "Double",
+        "Value": "1.5"
+      },
+      "TO_BackgroundAnimation": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_AnimatedBackground": {
+        "Type": "Boolean",
+        "Value": "False"
+      },
+      "TO_LogoAnimation": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_BlurMode": {
+        "Type": "Boolean",
+        "Value": "False"
+      },
+      "TO_DynamicColor": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_DynamicFilterColor": {
+        "Type": "Boolean",
+        "Value": "False"
+      },
+      "TO_BlurAmount": {
+        "Type": "Int32",
+        "Value": "10"
+      },
+      "TO_DarkenBackground": {
+        "Type": "Double",
+        "Value": "0.5"
+      },
+      "TO_DarkenImageBackground": {
+        "Type": "Double",
+        "Value": "0.2"
+      },
+      "TO_BackgroundShadow": {
+        "Type": "Double",
+        "Value": "0.5"
+      },
+      "TO_GDBackgroundShadow": {
+        "Type": "Double",
+        "Value": "0.5"
+      },
+      "TO_LeftBackgroundShadow": {
+        "Type": "Double",
+        "Value": "0.8"
+      },
+      "TO_CoverDownload": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_CoverSource": {
+        "Type": "Boolean",
+        "Value": "False"
+      },
+      "TO_CoverCompletionStatus": {
+        "Type": "Boolean",
+        "Value": "False"
+      },
+      "TO_CoverAchievements": {
+        "Type": "Boolean",
+        "Value": "False"
+      },
+      "TO_CoverTimePlayed": {
+        "Type": "Boolean",
+        "Value": "False"
+      },
+      "TO_TextWrappingCover": {
+        "Type": "Boolean",
+        "Value": "False"
+      },
+      "TO_CoverDropShadow": {
+        "Type": "Boolean",
+        "Value": "False"
+      },
+      "TO_CoverMouse": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_CoverSelection": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_ShineAnimation": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_InvertCoverAnimation": {
+        "Type": "Boolean",
+        "Value": "False"
+      },
+      "TO_GDFSWidth": {
+        "Type": "Double",
+        "Value": "750"
+      },
+      "TO_GDFSTrailerLayout": {
+        "Type": "Boolean",
+        "Value": "False"
+      },
+      "TO_GDTrailer": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_GDHideTrailer": {
+        "Type": "Boolean",
+        "Value": "False"
+      },
+      "TO_GDReleaseYear": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_GDDeveloper": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_GDPublisher": {
+        "Type": "Boolean",
+        "Value": "False"
+      },
+      "TO_GDUserScore": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_GDCommunityScore": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_GDCriticScore": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_GDAgeRating": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_GDAgeRatingColored": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_GDAgeRatingIcon": {
+        "Type": "Boolean",
+        "Value": "False"
+      },
+      "TO_GDAgeRatingIconPosition": {
+        "Type": "Boolean",
+        "Value": "False"
+      },
+      "TO_GDAchievementsAlwaysVisible": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_GDAchievementsCount": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_RedirectFocusToDescription": {
+        "Type": "Boolean",
+        "Value": "False"
+      },
+      "TO_GDDescriptionImg": {
+        "Type": "Boolean",
+        "Value": "False"
+      },
+      "TO_GDDescriptionFont": {
+        "Type": "Boolean",
+        "Value": "False"
+      },
+      "TO_GDBlurDetailsPanel": {
+        "Type": "Boolean",
+        "Value": "False"
+      },
+      "TO_GDDarkenDetailsPanel": {
+        "Type": "Double",
+        "Value": "0.5"
+      },
+      "TO_CoverChanger": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_CoverChangerGD": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_AgeRatingAlt": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_TotalAchievement": {
+        "Type": "Boolean",
+        "Value": "False"
+      },
+      "TO_IconsAchievements": {
+        "Type": "Boolean",
+        "Value": "False"
+      },
+      "TO_IconsGlowAchievements": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_HiddenAchievement": {
+        "Type": "Boolean",
+        "Value": "False"
+      },
+      "TO_FiveRowsAchievementList": {
+        "Type": "Boolean",
+        "Value": "False"
+      },
+      "TO_AchievementScorePanel": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_ExtraAchievementInfo": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_HLTBMainStory": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_HLTBMainExtra": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_HLTBCompletionist": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_HLTBSolo": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_HLTBCoOp": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_HLTBVs": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_MediaPlayerNotification": {
+        "Type": "Boolean",
+        "Value": "True"
+      },
+      "TO_MediaPlayerNotificationPosition": {
+        "Type": "Boolean",
+        "Value": "False"
+      },
+      "TO_MediaPlayerOrientation": {
+        "Type": "Boolean",
+        "Value": "False"
+      },
+      "TO_Avatar": {
+        "Type": "Int32",
+        "Value": "38"
+      },
+      "TO_ProfileBackground": {
+        "Type": "Int32",
+        "Value": "4"
+      }
+    }
+  }
+}

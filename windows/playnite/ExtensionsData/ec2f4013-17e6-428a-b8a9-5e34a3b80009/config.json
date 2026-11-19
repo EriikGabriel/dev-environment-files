@@ -1,0 +1,171 @@
+{
+  "EnableIntegrationButtonHeader": true,
+  "ControlBackgroundBrush_Edit": "",
+  "ControlBackgroundBrush_EditGradient": {
+    "StartPoint": "0,0",
+    "EndPoint": "0,0"
+  },
+  "TextBrush_Edit": "",
+  "TextBrush_EditGradient": {
+    "StartPoint": "0,0",
+    "EndPoint": "0,0"
+  },
+  "TextBrushDarker_Edit": "",
+  "TextBrushDarker_EditGradient": {
+    "StartPoint": "0,0",
+    "EndPoint": "0,0"
+  },
+  "TextBrushDark_Edit": "",
+  "TextBrushDark_EditGradient": {
+    "StartPoint": "0,0",
+    "EndPoint": "0,0"
+  },
+  "NormalBrush_Edit": "",
+  "NormalBrush_EditGradient": {
+    "StartPoint": "0,0",
+    "EndPoint": "0,0"
+  },
+  "NormalBrushDark_Edit": "",
+  "NormalBrushDark_EditGradient": {
+    "StartPoint": "0,0",
+    "EndPoint": "0,0"
+  },
+  "NormalBorderBrush_Edit": "",
+  "NormalBorderBrush_EditGradient": {
+    "StartPoint": "0,0",
+    "EndPoint": "0,0"
+  },
+  "HoverBrush_Edit": "",
+  "HoverBrush_EditGradient": {
+    "StartPoint": "0,0",
+    "EndPoint": "0,0"
+  },
+  "GlyphBrush_Edit": "",
+  "GlyphBrush_EditGradient": {
+    "StartPoint": "0,0",
+    "EndPoint": "0,0"
+  },
+  "HighlightGlyphBrush_Edit": "",
+  "HighlightGlyphBrush_EditGradient": {
+    "StartPoint": "0,0",
+    "EndPoint": "0,0"
+  },
+  "PopupBorderBrush_Edit": "",
+  "PopupBorderBrush_EditGradient": {
+    "StartPoint": "0,0",
+    "EndPoint": "0,0"
+  },
+  "TooltipBackgroundBrush_Edit": "",
+  "TooltipBackgroundBrush_EditGradient": {
+    "StartPoint": "0,0",
+    "EndPoint": "0,0"
+  },
+  "ButtonBackgroundBrush_Edit": "",
+  "ButtonBackgroundBrush_EditGradient": {
+    "StartPoint": "0,0",
+    "EndPoint": "0,0"
+  },
+  "GridItemBackgroundBrush_Edit": "",
+  "GridItemBackgroundBrush_EditGradient": {
+    "StartPoint": "0,0",
+    "EndPoint": "0,0"
+  },
+  "PanelSeparatorBrush_Edit": "",
+  "PanelSeparatorBrush_EditGradient": {
+    "StartPoint": "0,0",
+    "EndPoint": "0,0"
+  },
+  "WindowPanelSeparatorBrush_Edit": "",
+  "WindowPanelSeparatorBrush_EditGradient": {
+    "StartPoint": "0,0",
+    "EndPoint": "0,0"
+  },
+  "PopupBackgroundBrush_Edit": "",
+  "PopupBackgroundBrush_EditGradient": {
+    "StartPoint": "0,0",
+    "EndPoint": "0,0"
+  },
+  "CheckBoxCheckMarkBkBrush_Edit": "",
+  "CheckBoxCheckMarkBkBrush_EditGradient": {
+    "StartPoint": "0,0",
+    "EndPoint": "0,0"
+  },
+  "PositiveRatingBrush_Edit": "",
+  "PositiveRatingBrush_EditGradient": {
+    "StartPoint": "0,0",
+    "EndPoint": "0,0"
+  },
+  "NegativeRatingBrush_Edit": "",
+  "NegativeRatingBrush_EditGradient": {
+    "StartPoint": "0,0",
+    "EndPoint": "0,0"
+  },
+  "MixedRatingBrush_Edit": "",
+  "MixedRatingBrush_EditGradient": {
+    "StartPoint": "0,0",
+    "EndPoint": "0,0"
+  },
+  "WarningBrush_Edit": "",
+  "WarningBrush_EditGradient": {
+    "StartPoint": "0,0",
+    "EndPoint": "0,0"
+  },
+  "ExpanderBackgroundBrush_Edit": "",
+  "ExpanderBackgroundBrush_EditGradient": {
+    "StartPoint": "0,0",
+    "EndPoint": "0,0"
+  },
+  "WindowBackgourndBrush_Edit": "",
+  "WindowBackgourndBrush_EditGradient": {
+    "StartPoint": "0,0",
+    "EndPoint": "0,0"
+  },
+  "EnableIntegrationIcon": true,
+  "UseIconCircle": true,
+  "UseIconClock": false,
+  "UseIconSquareCorne": false,
+  "UseIconWe4ponx": false,
+  "MenuInExtensions": true,
+  "EnableTag": false,
+  "LastAutoLibUpdateAssetsDownload": "2026-11-17T12:02:47.5715333-03:00",
+  "AutoImport": true,
+  "AutoImportOnInstalled": false,
+  "ThemesConstants": [
+    {
+      "Id": "FusionZ_1e05f9eb-8760-41dc-ad68-58ca379961b0",
+      "Name": "FusionZ",
+      "Constants": [
+        {
+          "Name": "ImageBackgroundDarkenMask",
+          "TypeResource": "double",
+          "Element": 0.6,
+          "Opacity": 1.0
+        },
+        {
+          "Name": "GridViewImageCoverShowPlatformBanner",
+          "TypeResource": "bool",
+          "Element": true,
+          "Opacity": 1.0
+        },
+        {
+          "Name": "DetailViewDetailInfoColumn",
+          "TypeResource": "double",
+          "Element": 650.4,
+          "Opacity": 1.0
+        },
+        {
+          "Name": "GridViewDetailInfoColumn",
+          "TypeResource": "double",
+          "Element": 420.3,
+          "Opacity": 1.0
+        },
+        {
+          "Name": "DetailsViewGameOverviewMaxWidth",
+          "TypeResource": "double",
+          "Element": 1245.6,
+          "Opacity": 1.0
+        }
+      ]
+    }
+  ]
+}

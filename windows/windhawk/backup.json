@@ -1,0 +1,290 @@
+{
+  "format": "windhawk-user-data-v1",
+  "appSettings": {
+    "language": "pt-BR",
+    "theme": "dark",
+    "disableUpdateCheck": false,
+    "devModeOptOut": false,
+    "hideTrayIcon": false,
+    "alwaysCompileModsLocally": false,
+    "dontAutoShowToolkit": false,
+    "disableToolkitHotkey": false,
+    "modTasksDialogDelay": 2000,
+    "loggingVerbosity": 0,
+    "engine": {
+      "loggingVerbosity": 0,
+      "include": [
+        "dwm.exe"
+      ],
+      "exclude": [],
+      "injectIntoCriticalProcesses": false,
+      "injectIntoIncompatiblePrograms": false,
+      "injectIntoGames": false
+    }
+  },
+  "mods": [
+    {
+      "modId": "action-center-active-display",
+      "version": "1.1.1",
+      "name": "Action Center on Active Display"
+    },
+    {
+      "modId": "auto-custom-titlebar-colors",
+      "version": "1.2.0",
+      "name": "Auto Custom Titlebar Colors",
+      "settings": {
+        "customColours.light": 1,
+        "customColours.dark": 1,
+        "lightMode.useHex": 0,
+        "lightMode.activeColour.hex": "FFFFFF",
+        "lightMode.activeColour.r": 255,
+        "lightMode.activeColour.g": 255,
+        "lightMode.activeColour.b": 255,
+        "lightMode.inactiveColour.hex": "E6E6E6",
+        "lightMode.inactiveColour.r": 230,
+        "lightMode.inactiveColour.g": 230,
+        "lightMode.inactiveColour.b": 230,
+        "darkMode.useHex": 0,
+        "darkMode.activeColour.hex": "000000",
+        "darkMode.activeColour.r": 0,
+        "darkMode.activeColour.g": 0,
+        "darkMode.activeColour.b": 0,
+        "darkMode.inactiveColour.hex": "202020",
+        "darkMode.inactiveColour.r": 32,
+        "darkMode.inactiveColour.g": 32,
+        "darkMode.inactiveColour.b": 32,
+        "excludeMozilla": 1
+      }
+    },
+    {
+      "modId": "ctrl-backspace-fix-for-win32-text-boxes",
+      "version": "1.0.1",
+      "name": "Ctrl+Backspace Fix for Win32 Text Boxes"
+    },
+    {
+      "modId": "custom-corner-radius",
+      "version": "1.4",
+      "name": "Custom Window Corner Radius",
+      "settings": {
+        "radius": 15,
+        "perCornerRadius": "",
+        "smallRadius": 6,
+        "tooltipRadius": -1,
+        "roundMaximizedAndSnapped": "none",
+        "excludedPrograms[0]": ""
+      }
+    },
+    {
+      "modId": "dark-menus",
+      "version": "1.4.2",
+      "name": "Dark mode context menus",
+      "settings": {
+        "AppMode": "ForceDark",
+        "TranslucentFlyoutsFix": 0
+      }
+    },
+    {
+      "modId": "disable-office-hotkeys",
+      "version": "1.0.0",
+      "name": "Disable Office Hotkeys"
+    },
+    {
+      "modId": "explorer-details-better-file-sizes",
+      "version": "1.6",
+      "name": "Better file sizes in Explorer details",
+      "settings": {
+        "calculateFolderSizes": "disabled",
+        "sortSizesMixFolders": 1,
+        "disableKbOnlySizes": "1",
+        "useIecTerms": 0
+      }
+    },
+    {
+      "modId": "explorer-nav-dragover-fix",
+      "version": "1.2.6",
+      "name": "Explorer Nav DragOver Fix",
+      "settings": {
+        "protectedMaxDepth": 3,
+        "releaseMoveY": 6,
+        "capturedRowMarginX": 8,
+        "capturedRowMarginY": 3,
+        "enableWheelScrollDuringDrag": 1,
+        "accelerateEdgeScrollDuringDrag": 1,
+        "edgeScrollBandPx": 48,
+        "edgeScrollMaxLines": 6,
+        "collapseTransientExpansions": 1
+      }
+    },
+    {
+      "modId": "hide-start-button",
+      "version": "1.0",
+      "name": "Hide Start Button"
+    },
+    {
+      "modId": "icon-resource-redirect",
+      "version": "1.3",
+      "name": "Resource Redirect",
+      "settings": {
+        "iconTheme": "Big Sur DarkMode|themes/icons/niivu/Big%20Sur%20DarkMode.zip",
+        "disableThumbnails": 0,
+        "allResourceRedirect": 0,
+        "themePaths[0]": "",
+        "redirectionResourcePaths[0].original": "",
+        "redirectionResourcePaths[0].redirect": "",
+        "themeFolder": ""
+      }
+    },
+    {
+      "modId": "mac-island-dock",
+      "version": "3.2.0",
+      "name": "Ilha e Dock estilo Mac",
+      "settings": {
+        "taskbarMode": "dock",
+        "windowsHideTray": 0,
+        "showIsland": 1,
+        "calendarIcs[0]": "",
+        "hiding.autoHide": 0,
+        "hiding.hideWhen": "mouseAway",
+        "hiding.showDelay": 0,
+        "hiding.revealHeight": 0,
+        "hiding.hideDelay": 400,
+        "hiding.showDuration": 260,
+        "hiding.hideDuration": 220,
+        "hiding.fullscreenGuard": 1,
+        "icons.magnification": 130,
+        "icons.magnificationRange": 150,
+        "icons.onlyApps": 0,
+        "icons.bounceOnLaunch": 1,
+        "icons.keepOpenOnLaunch": 1,
+        "icons.keepOpenDuration": 1500,
+        "dock.iconSize": 32,
+        "dock.iconGap": 12,
+        "dock.bottomGap": 12,
+        "dock.cornerRadius": 22,
+        "dock.maxWidth": 0,
+        "dock.background": 1,
+        "dock.backgroundOpacity": 70,
+        "dock.dotIndicator": 1,
+        "dock.separator": 1,
+        "dock.attentionMode": "dock",
+        "dock.hideTray": 0,
+        "animations.enabled": 1,
+        "animations.level": "all",
+        "animations.speed": 125,
+        "animations.frameRate": "screen"
+      }
+    },
+    {
+      "modId": "macos-minimize-animation",
+      "version": "3.2.1",
+      "name": "MacOS Minimize Animation",
+      "settings": {
+        "duration_ms": 450,
+        "open_animation": 1,
+        "launch_animation": 1,
+        "close_animation": 1,
+        "close_direction": "up",
+        "hide_as_close": 0,
+        "multi_monitor": 0,
+        "unhide_taskbar": 1,
+        "unhide_duration_ms": 450,
+        "engine": "modern",
+        "tile_count": 35,
+        "excluded_programs[0]": ""
+      }
+    },
+    {
+      "modId": "macos-style-dock",
+      "version": "1.1.2",
+      "name": "MacOS Style Dock",
+      "settings": {
+        "dock.size": 50,
+        "dock.color": "auto",
+        "dock.customColor": "333333",
+        "dock.opacity": 15,
+        "dock.blur": 10,
+        "dock.border": "mac",
+        "dock.autoHide": "hybrid",
+        "magnification.amount": 70,
+        "magnification.range": 55,
+        "magnification.smoothing": 100,
+        "spacing.horizontal": 15,
+        "spacing.vertical": 12,
+        "spacing.buttons": 12,
+        "items.squircleIcons": 1,
+        "items.squircleColor": "dark",
+        "items.squircleCustomColor": "0B0C0D",
+        "items.explorerFirst": 1,
+        "items.recycleBin": 0,
+        "items.tooltips": 1,
+        "items.indicators": "dots",
+        "items.previews": 0,
+        "items.appsDivider": 0,
+        "items.highResIcons": 1,
+        "customIcons.finderPath": "",
+        "customIcons.finderMargin": 25,
+        "customIcons.finderSize": 100,
+        "customIcons.trashEmptyPath": "",
+        "customIcons.trashFullPath": "",
+        "customIcons.trashMargin": 25,
+        "customIcons.trashSize": 100,
+        "hotCorners.bottomLeft": "off",
+        "hotCorners.bottomRight": "hidden",
+        "advanced.glowDirection": "horizontal",
+        "advanced.glowSize": 6,
+        "advanced.glowOpacity": 60,
+        "advanced.glowColor": "",
+        "advanced.tooltipColor": "BFBFBF"
+      },
+      "config": {
+        "disabled": true
+      }
+    },
+    {
+      "modId": "windows-11-file-explorer-styler",
+      "version": "1.7.2",
+      "name": "Windows 11 File Explorer Styler",
+      "settings": {
+        "theme": "Translucent Explorer11",
+        "backgroundTranslucentEffect": "acrylicblur",
+        "backgroundTranslucentEffectRegion": "",
+        "styleConstants[0]": "",
+        "controlStyles[0].target": "",
+        "controlStyles[0].styles[0]": "",
+        "themeResourceVariables[0]": "",
+        "explorerFrameContainerHeight": 0,
+        "xamlDiagnosticsHandling": "alert"
+      }
+    },
+    {
+      "modId": "windows-11-start-menu-styler",
+      "version": "1.8",
+      "name": "Windows 11 Start Menu Styler",
+      "settings": {
+        "theme": "SideBySideMinimal",
+        "disableNewStartMenuLayout": "",
+        "styleConstants[0]": "",
+        "controlStyles[0].target": "",
+        "controlStyles[0].styles[0]": "",
+        "themeResourceVariables[0]": "",
+        "webContentStyles[0].target": "",
+        "webContentStyles[0].styles[0]": "",
+        "webContentCustomJs": ""
+      }
+    },
+    {
+      "modId": "wobbly-windows",
+      "version": "0.115.4",
+      "name": "Wobbly Windows",
+      "settings": {
+        "WobblinessPreset": "2",
+        "EnableResizeWobble": 1,
+        "EnableWindowStateWobble": 1,
+        "AdvancedMode.enable": 0,
+        "AdvancedMode.Stiffness": 6,
+        "AdvancedMode.Drag": 90,
+        "AdvancedMode.MoveFactor": 10
+      }
+    }
+  ]
+}

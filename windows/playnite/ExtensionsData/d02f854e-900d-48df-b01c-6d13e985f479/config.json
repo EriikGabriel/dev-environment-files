@@ -1,0 +1,718 @@
+{
+  "NotifitcationAfterUpdate": false,
+  "AutoUpdateCompanies": true,
+  "AutoUpdateGenres": true,
+  "AutoUpdateFeatures": true,
+  "AutoUpdateTags": true,
+  "AutoUpdateTagsToFeatures": true,
+  "AutoUpdateTagsToGenres": true,
+  "ListGenreEquivalences": [
+    {
+      "Id": "0cd642d6-6007-4c83-a947-73365a3bbc7c",
+      "Name": "RTS",
+      "OldNames": [
+        "Real Time Strategy (RTS)"
+      ],
+      "IconUnicode": ""
+    }
+  ],
+  "ListFeatureEquivalences": [
+    {
+      "Id": "b2d6aed6-8b17-4dce-ac9a-209884f0a9cf",
+      "Name": "Co-Op",
+      "OldNames": [
+        "Co-Operative"
+      ],
+      "IconUnicode": ""
+    }
+  ],
+  "ListTagsEquivalences": [
+    {
+      "Id": "d1957527-0357-45d8-b382-5882bc2086d8",
+      "Name": "Sem música",
+      "OldNames": [
+        "[UPS] No Music"
+      ],
+      "IconUnicode": ""
+    },
+    {
+      "Id": "c03df0ce-1a94-4caf-bbad-1360f1a0d53d",
+      "Name": "Vídeo faltando",
+      "OldNames": [
+        "[EMT] Video missing"
+      ],
+      "IconUnicode": ""
+    },
+    {
+      "Id": "95efd8d6-92f1-43fd-84c4-c4df2d0f0d8a",
+      "Name": "Com música",
+      "OldNames": [
+        "[UPS] Has Music"
+      ],
+      "IconUnicode": ""
+    }
+  ],
+  "ListCompaniesEquivalences": [
+    {
+      "Id": "a357e463-fc61-4b49-80c0-2b7f0cb3eca7",
+      "Name": "Electronic Arts",
+      "OldNames": [
+        "Electronic Arts"
+      ],
+      "IconUnicode": ""
+    },
+    {
+      "Id": "8852fbc5-0c32-4dd3-960e-66a63fe2b4e7",
+      "Name": "Ubisoft",
+      "OldNames": [
+        "Ubisoft Entertainment",
+        "Ubisoft Montreal"
+      ],
+      "IconUnicode": ""
+    },
+    {
+      "Id": "7ff54864-b581-4a18-b7d5-2782b69a9c8a",
+      "Name": "Rockstar Games",
+      "OldNames": [
+        "Rockstar Games",
+        "Rockstar New England",
+        "Rockstar North",
+        "Rockstar Toronto",
+        "Rockstar Vancouver"
+      ],
+      "IconUnicode": ""
+    },
+    {
+      "Id": "f41c0b82-1fea-44c3-982a-a55ed03997d0",
+      "Name": "Activision",
+      "OldNames": [
+        "Activision"
+      ],
+      "IconUnicode": ""
+    },
+    {
+      "Id": "0aaacd94-6ac4-414c-b8e2-453c041bfe43",
+      "Name": "Bandai Namco",
+      "OldNames": [
+        "Bandai Namco Entertainment",
+        "Bandai Namco Studios"
+      ],
+      "IconUnicode": ""
+    },
+    {
+      "Id": "2b3cf37a-bedb-4132-8d8d-cda998910bae",
+      "Name": "Square Enix",
+      "OldNames": [
+        "Square Enix",
+        "Square Enix Business Division 6",
+        "Square Enix Europe"
+      ],
+      "IconUnicode": ""
+    },
+    {
+      "Id": "b2ffc40a-e7e0-46b8-ae8b-31f41e9e47c9",
+      "Name": "CD Projekt RED",
+      "OldNames": [
+        "CD Projekt RED"
+      ],
+      "IconUnicode": ""
+    },
+    {
+      "Id": "c0752c17-5cf5-4c5c-99dd-5cebbd1234ef",
+      "Name": "Warner Bros. Games",
+      "OldNames": [
+        "Warner Bros. Entertainment Inc.",
+        "Warner Bros. Games"
+      ],
+      "IconUnicode": ""
+    },
+    {
+      "Id": "c144e2d4-b886-4d27-b964-ffc90acbe3fc",
+      "Name": "Xbox Game Studios",
+      "OldNames": [
+        "Microsoft Casual Games",
+        "Microsoft Studios"
+      ],
+      "IconUnicode": ""
+    },
+    {
+      "Id": "85d46e73-5b6c-4723-995c-929bb1f9ff23",
+      "Name": "PlayStation Studios",
+      "OldNames": [
+        "Sony Computer Entertainment",
+        "Sony Computer Entertainment of America",
+        "Sony Interactive Entertainment"
+      ],
+      "IconUnicode": ""
+    }
+  ],
+  "ListGenreExclusion": [],
+  "ListFeatureExclusion": [],
+  "ListTagsExclusion": [],
+  "ListCompaniesExclusion": [],
+  "ListTagsToFeatures": [
+    {
+      "TagId": "0e4b4bcf-2bd9-4a18-84eb-16a7b0d17a54",
+      "TagName": "[DH] Alto",
+      "FeatureId": "b44c5d48-4dfe-4350-bac7-15177a789c0f",
+      "FeatureName": "Co-Operative"
+    }
+  ],
+  "ListTagsToGenres": [
+    {
+      "TagId": "0e4b4bcf-2bd9-4a18-84eb-16a7b0d17a54",
+      "TagName": "[DH] Alto",
+      "GenreId": "2b24e086-5a1e-47e6-8ab8-f8b0873010eb",
+      "GenreName": "RPG"
+    }
+  ],
+  "ListTagsToCategories": [],
+  "EnableIntegrationFeatures": true,
+  "OneForSameIcon": false,
+  "UsedDark": false,
+  "UsedGog": false,
+  "ItemFeatures": [
+    {
+      "Name": "Achievements",
+      "IconDefault": "ico_achievements.png",
+      "NameAssociated": "Achievements",
+      "IconCustom": "",
+      "IsDark": false,
+      "IsGog": false,
+      "IsAdd": false
+    },
+    {
+      "Name": "Additional High-Quality Audio",
+      "IconDefault": "ico_hdaudio.png",
+      "NameAssociated": "Additional High-Quality Audio",
+      "IconCustom": "",
+      "IsDark": false,
+      "IsGog": false,
+      "IsAdd": false
+    },
+    {
+      "Name": "Captions Available",
+      "IconDefault": "ico_cc.png",
+      "NameAssociated": "Captions Available",
+      "IconCustom": "",
+      "IsDark": false,
+      "IsGog": false,
+      "IsAdd": false
+    },
+    {
+      "Name": "Cloud Saves",
+      "IconDefault": "ico_cloud.png",
+      "NameAssociated": "Cloud Saves",
+      "IconCustom": "",
+      "IsDark": false,
+      "IsGog": false,
+      "IsAdd": false
+    },
+    {
+      "Name": "Commentary Available",
+      "IconDefault": "ico_commentary.png",
+      "NameAssociated": "Commentary Available",
+      "IconCustom": "",
+      "IsDark": false,
+      "IsGog": false,
+      "IsAdd": false
+    },
+    {
+      "Name": "Controller support",
+      "IconDefault": "ico_controller.png",
+      "NameAssociated": "Controller support",
+      "IconCustom": "",
+      "IsDark": false,
+      "IsGog": false,
+      "IsAdd": false
+    },
+    {
+      "Name": "Co-Op",
+      "IconDefault": "ico_coop.png",
+      "NameAssociated": "Co-Op",
+      "IconCustom": "",
+      "IsDark": false,
+      "IsGog": false,
+      "IsAdd": false
+    },
+    {
+      "Name": "Co-Operative",
+      "IconDefault": "ico_coop.png",
+      "NameAssociated": "Co-Operative",
+      "IconCustom": "",
+      "IsDark": false,
+      "IsGog": false,
+      "IsAdd": false
+    },
+    {
+      "Name": "Cross-Platform Multiplayer",
+      "IconDefault": "ico_multiPlayer.png",
+      "NameAssociated": "Cross-Platform Multiplayer",
+      "IconCustom": "",
+      "IsDark": false,
+      "IsGog": false,
+      "IsAdd": false
+    },
+    {
+      "Name": "DLC",
+      "IconDefault": "ico_dlc.png",
+      "NameAssociated": "DLC",
+      "IconCustom": "",
+      "IsDark": false,
+      "IsGog": false,
+      "IsAdd": false
+    },
+    {
+      "Name": "Family Sharing",
+      "IconDefault": "ico_familysharing.png",
+      "NameAssociated": "Family Sharing",
+      "IconCustom": "",
+      "IsDark": false,
+      "IsGog": false,
+      "IsAdd": false
+    },
+    {
+      "Name": "Full Controller Support",
+      "IconDefault": "ico_controller.png",
+      "NameAssociated": "Full Controller Support",
+      "IconCustom": "",
+      "IsDark": false,
+      "IsGog": false,
+      "IsAdd": false
+    },
+    {
+      "Name": "HDR available",
+      "IconDefault": "ico_hdr.png",
+      "NameAssociated": "HDR available",
+      "IconCustom": "",
+      "IsDark": false,
+      "IsGog": false,
+      "IsAdd": false
+    },
+    {
+      "Name": "In-App Purchases",
+      "IconDefault": "ico_cart.png",
+      "NameAssociated": "In-App Purchases",
+      "IconCustom": "",
+      "IsDark": false,
+      "IsGog": false,
+      "IsAdd": false
+    },
+    {
+      "Name": "Includes Level Editor",
+      "IconDefault": "ico_editor.png",
+      "NameAssociated": "Includes Level Editor",
+      "IconCustom": "",
+      "IsDark": false,
+      "IsGog": false,
+      "IsAdd": false
+    },
+    {
+      "Name": "Includes Source SDK",
+      "IconDefault": "ico_sdk.png",
+      "NameAssociated": "Includes Source SDK",
+      "IconCustom": "",
+      "IsDark": false,
+      "IsGog": false,
+      "IsAdd": false
+    },
+    {
+      "Name": "LAN Co-Op",
+      "IconDefault": "ico_coop.png",
+      "NameAssociated": "LAN Co-Op",
+      "IconCustom": "",
+      "IsDark": false,
+      "IsGog": false,
+      "IsAdd": false
+    },
+    {
+      "Name": "LAN Pvp",
+      "IconDefault": "ico_multiPlayer.png",
+      "NameAssociated": "LAN Pvp",
+      "IconCustom": "",
+      "IsDark": false,
+      "IsGog": false,
+      "IsAdd": false
+    },
+    {
+      "Name": "Leaderboards",
+      "IconDefault": "ico_leaderboards.png",
+      "NameAssociated": "Leaderboards",
+      "IconCustom": "",
+      "IsDark": false,
+      "IsGog": false,
+      "IsAdd": false
+    },
+    {
+      "Name": "Massively Multiplayer Online (MMO)",
+      "IconDefault": "ico_multiPlayer.png",
+      "NameAssociated": "Massively Multiplayer Online (MMO)",
+      "IconCustom": "",
+      "IsDark": false,
+      "IsGog": false,
+      "IsAdd": false
+    },
+    {
+      "Name": "MMO",
+      "IconDefault": "ico_multiPlayer.png",
+      "NameAssociated": "MMO",
+      "IconCustom": "",
+      "IsDark": false,
+      "IsGog": false,
+      "IsAdd": false
+    },
+    {
+      "Name": "Mods",
+      "IconDefault": "ico_sdk.png",
+      "NameAssociated": "Mods",
+      "IconCustom": "",
+      "IsDark": false,
+      "IsGog": false,
+      "IsAdd": false
+    },
+    {
+      "Name": "Multiplayer",
+      "IconDefault": "ico_multiPlayer.png",
+      "NameAssociated": "Multiplayer",
+      "IconCustom": "",
+      "IsDark": false,
+      "IsGog": false,
+      "IsAdd": false
+    },
+    {
+      "Name": "Nexus Mods",
+      "IconDefault": "ico_nexus.png",
+      "NameAssociated": "Nexus Mods",
+      "IconCustom": "",
+      "IsDark": false,
+      "IsGog": false,
+      "IsAdd": false
+    },
+    {
+      "Name": "Online Co-Op",
+      "IconDefault": "ico_coop.png",
+      "NameAssociated": "Online Co-Op",
+      "IconCustom": "",
+      "IsDark": false,
+      "IsGog": false,
+      "IsAdd": false
+    },
+    {
+      "Name": "Online Pvp",
+      "IconDefault": "ico_multiPlayer.png",
+      "NameAssociated": "Online Pvp",
+      "IconCustom": "",
+      "IsDark": false,
+      "IsGog": false,
+      "IsAdd": false
+    },
+    {
+      "Name": "Overlay",
+      "IconDefault": "ico_overlay.png",
+      "NameAssociated": "Overlay",
+      "IconCustom": "",
+      "IsDark": false,
+      "IsGog": false,
+      "IsAdd": false
+    },
+    {
+      "Name": "Partial Controller Support",
+      "IconDefault": "ico_partial_controller.png",
+      "NameAssociated": "Partial Controller Support",
+      "IconCustom": "",
+      "IsDark": false,
+      "IsGog": false,
+      "IsAdd": false
+    },
+    {
+      "Name": "Pvp",
+      "IconDefault": "ico_multiPlayer.png",
+      "NameAssociated": "Pvp",
+      "IconCustom": "",
+      "IsDark": false,
+      "IsGog": false,
+      "IsAdd": false
+    },
+    {
+      "Name": "Remote Play On Phone",
+      "IconDefault": "ico_remote_play.png",
+      "NameAssociated": "Remote Play On Phone",
+      "IconCustom": "",
+      "IsDark": false,
+      "IsGog": false,
+      "IsAdd": false
+    },
+    {
+      "Name": "Remote Play On Tablet",
+      "IconDefault": "ico_remote_play.png",
+      "NameAssociated": "Remote Play On Tablet",
+      "IconCustom": "",
+      "IsDark": false,
+      "IsGog": false,
+      "IsAdd": false
+    },
+    {
+      "Name": "Remote Play On TV",
+      "IconDefault": "ico_remote_play.png",
+      "NameAssociated": "Remote Play On TV",
+      "IconCustom": "",
+      "IsDark": false,
+      "IsGog": false,
+      "IsAdd": false
+    },
+    {
+      "Name": "Remote Play Together",
+      "IconDefault": "ico_remote_play_together.png",
+      "NameAssociated": "Remote Play Together",
+      "IconCustom": "",
+      "IsDark": false,
+      "IsGog": false,
+      "IsAdd": false
+    },
+    {
+      "Name": "Shared/Split Screen",
+      "IconDefault": "ico_multiPlayer.png",
+      "NameAssociated": "Shared/Split Screen",
+      "IconCustom": "",
+      "IsDark": false,
+      "IsGog": false,
+      "IsAdd": false
+    },
+    {
+      "Name": "Shared/Split Screen Co-Op",
+      "IconDefault": "ico_multiPlayer.png",
+      "NameAssociated": "Shared/Split Screen Co-Op",
+      "IconCustom": "",
+      "IsDark": false,
+      "IsGog": false,
+      "IsAdd": false
+    },
+    {
+      "Name": "Shared/Split Screen Pvp",
+      "IconDefault": "ico_multiPlayer.png",
+      "NameAssociated": "Shared/Split Screen Pvp",
+      "IconCustom": "",
+      "IsDark": false,
+      "IsGog": false,
+      "IsAdd": false
+    },
+    {
+      "Name": "Single Player",
+      "IconDefault": "ico_singlePlayer.png",
+      "Feature": {
+        "Id": "c7b1fee4-aaf3-42b5-b65d-b53e94ff2961",
+        "Name": "Single Player"
+      },
+      "NameAssociated": "Single Player",
+      "IconCustom": "",
+      "IsDark": false,
+      "IsGog": false,
+      "IsAdd": false
+    },
+    {
+      "Name": "Split Screen",
+      "IconDefault": "ico_multiPlayer.png",
+      "NameAssociated": "Split Screen",
+      "IconCustom": "",
+      "IsDark": false,
+      "IsGog": false,
+      "IsAdd": false
+    },
+    {
+      "Name": "Stats",
+      "IconDefault": "ico_stats.png",
+      "NameAssociated": "Stats",
+      "IconCustom": "",
+      "IsDark": false,
+      "IsGog": false,
+      "IsAdd": false
+    },
+    {
+      "Name": "Steam Timeline",
+      "IconDefault": "ico_timeline.png",
+      "NameAssociated": "Steam Timeline",
+      "IconCustom": "",
+      "IsDark": false,
+      "IsGog": false,
+      "IsAdd": false
+    },
+    {
+      "Name": "SteamVR Collectibles",
+      "IconDefault": "ico_collectibles.png",
+      "NameAssociated": "SteamVR Collectibles",
+      "IconCustom": "",
+      "IsDark": false,
+      "IsGog": false,
+      "IsAdd": false
+    },
+    {
+      "Name": "Trading Cards",
+      "IconDefault": "ico_cards.png",
+      "NameAssociated": "Trading Cards",
+      "IconCustom": "",
+      "IsDark": false,
+      "IsGog": false,
+      "IsAdd": false
+    },
+    {
+      "Name": "Valve Anti-Cheat Enabled",
+      "IconDefault": "ico_vac.png",
+      "NameAssociated": "Valve Anti-Cheat Enabled",
+      "IconCustom": "",
+      "IsDark": false,
+      "IsGog": false,
+      "IsAdd": false
+    },
+    {
+      "Name": "VR",
+      "IconDefault": "ico_vr.png",
+      "NameAssociated": "VR",
+      "IconCustom": "",
+      "IsDark": false,
+      "IsGog": false,
+      "IsAdd": false
+    },
+    {
+      "Name": "VR Gamepad",
+      "IconDefault": "ico_vr_input_motion.png",
+      "NameAssociated": "VR Gamepad",
+      "IconCustom": "",
+      "IsDark": false,
+      "IsGog": false,
+      "IsAdd": false
+    },
+    {
+      "Name": "VR Keyboard/Mouse",
+      "IconDefault": "ico_vr_input_kbm.png",
+      "NameAssociated": "VR Keyboard/Mouse",
+      "IconCustom": "",
+      "IsDark": false,
+      "IsGog": false,
+      "IsAdd": false
+    },
+    {
+      "Name": "VR Motion Controllers",
+      "IconDefault": "ico_vr_input_motion.png",
+      "NameAssociated": "VR Motion Controllers",
+      "IconCustom": "",
+      "IsDark": false,
+      "IsGog": false,
+      "IsAdd": false
+    },
+    {
+      "Name": "VR Room-Scale",
+      "IconDefault": "ico_vr_area_roomscale.png",
+      "NameAssociated": "VR Room-Scale",
+      "IconCustom": "",
+      "IsDark": false,
+      "IsGog": false,
+      "IsAdd": false
+    },
+    {
+      "Name": "VR Seated",
+      "IconDefault": "ico_vr_area_seated.png",
+      "NameAssociated": "VR Seated",
+      "IconCustom": "",
+      "IsDark": false,
+      "IsGog": false,
+      "IsAdd": false
+    },
+    {
+      "Name": "VR Standing",
+      "IconDefault": "ico_vr_area_standing.png",
+      "NameAssociated": "VR Standing",
+      "IconCustom": "",
+      "IsDark": false,
+      "IsGog": false,
+      "IsAdd": false
+    },
+    {
+      "Name": "Workshop",
+      "IconDefault": "ico_workshop.png",
+      "NameAssociated": "Workshop",
+      "IconCustom": "",
+      "IsDark": false,
+      "IsGog": false,
+      "IsAdd": false
+    }
+  ],
+  "EnableIntegrationAgeRatings": true,
+  "AgeRatings": [
+    {
+      "Age": 3,
+      "AgeRatingIds": [
+        "5f0553f4-cc6a-4f34-949c-6c7fd7256a41"
+      ],
+      "Color": "#FFFFFFFF"
+    },
+    {
+      "Age": 6,
+      "AgeRatingIds": [],
+      "Color": "#FFFFD700"
+    },
+    {
+      "Age": 7,
+      "AgeRatingIds": [
+        "41abe59e-40ab-46b7-8b2c-c0bdd11e3ce0"
+      ],
+      "Color": "#FFFFD700"
+    },
+    {
+      "Age": 8,
+      "AgeRatingIds": [],
+      "Color": "#FFFFD700"
+    },
+    {
+      "Age": 10,
+      "AgeRatingIds": [],
+      "Color": "#FF2E8B57"
+    },
+    {
+      "Age": 12,
+      "AgeRatingIds": [
+        "60aea41b-6ccb-471f-ac76-fdf52ee6894d"
+      ],
+      "Color": "#FF2E8B57"
+    },
+    {
+      "Age": 13,
+      "AgeRatingIds": [],
+      "Color": "#FF2E8B57"
+    },
+    {
+      "Age": 14,
+      "AgeRatingIds": [],
+      "Color": "#FF2E8B57"
+    },
+    {
+      "Age": 15,
+      "AgeRatingIds": [],
+      "Color": "#FF1E90FF"
+    },
+    {
+      "Age": 16,
+      "AgeRatingIds": [
+        "96f79217-64e7-42b9-8425-20939a952280"
+      ],
+      "Color": "#FF1E90FF"
+    },
+    {
+      "Age": 17,
+      "AgeRatingIds": [],
+      "Color": "#FF1E90FF"
+    },
+    {
+      "Age": 18,
+      "AgeRatingIds": [
+        "a4af4a66-e6a9-405e-b26c-8174f6d8c58f"
+      ],
+      "Color": "#FFB22222"
+    }
+  ],
+  "ShowMissingAge": true,
+  "MenuInExtensions": true,
+  "EnableTag": false,
+  "LastAutoLibUpdateAssetsDownload": "2026-11-19T04:05:01.5099333-03:00",
+  "AutoImport": true,
+  "AutoImportOnInstalled": false
+}

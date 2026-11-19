@@ -1,0 +1,62 @@
+info:
+  name: updateActiveSnapshot
+  type: http
+  seq: 3
+  tags:
+    - owner-controller
+
+http:
+  method: PATCH
+  url: "{{baseUrl}}/v1/owners/:id/active-snapshot"
+  params:
+    - name: id
+      value: ""
+      type: path
+  body:
+    type: json
+    data: |-
+      {
+        "activeSnapshotId": ""
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+examples:
+  - name: 200 Response
+    description: OK
+    request:
+      url: "{{baseUrl}}/v1/owners/:id/active-snapshot"
+      method: PATCH
+      params:
+        - name: id
+          value: ""
+          type: path
+      body:
+        type: json
+        data: |-
+          {
+            "activeSnapshotId": ""
+          }
+    response:
+      status: 200
+      statusText: OK
+      headers:
+        - name: Content-Type
+          value: "*/*"
+      body:
+        type: text
+        data: |-
+          {
+            "id": "",
+            "kind": "",
+            "userId": "",
+            "activeSnapshotId": "",
+            "revision": 0,
+            "expiresAt": ""
+          }

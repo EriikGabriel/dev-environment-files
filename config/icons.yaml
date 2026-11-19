@@ -1,0 +1,29 @@
+# Icons of the shortcuts on the Windows desktop, in the Start menu and on the
+# taskbar. Edited in the app's Preview tab or with `envsetup set-icons`;
+# `envsetup apply-icons` writes it to the machine and `restore-icons` undoes it.
+#
+# enabled       apply-icons does nothing while this is false
+# style         plate of the drawn icons: light or dark
+# pack          folder of .ico/.png files named after the apps (repo-relative or
+#               absolute); an app with a file there gets it untouched. The
+#               repo ships windows/icons/mactahoe, the macOS Tahoe icons
+# scopes        desktop, start-menu, taskbar
+# system_icons  also set This PC, Recycle Bin, User files and Network from the
+#               pack (this-pc, recycle-bin, recycle-bin-full, user-files, network)
+# skip          shortcut names that keep their icon
+# overrides     shortcut name: image file
+
+enabled: true
+style: dark
+pack: windows/icons/mactahoe
+scopes:
+    - desktop
+    - start-menu
+    - taskbar
+system_icons: true
+skip:
+    - PowerToys (Preview)
+    - Windows Software Development Kit
+    - Windows PowerShell
+overrides:
+    Steam: windows/icons/mactahoe/steam.png

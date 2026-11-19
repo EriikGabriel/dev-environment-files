@@ -1,0 +1,59 @@
+{
+  "EnableTagAllDlc": true,
+  "PriceNotification": false,
+  "GogCurrency": {
+    "country": "US",
+    "currency": "USD",
+    "symbol": "$"
+  },
+  "OriginCurrency": {
+    "country": "US",
+    "currency": "USD",
+    "symbol": "$"
+  },
+  "IgnoredList": [],
+  "ManuallyOwneds": [],
+  "EnableIntegrationButton": true,
+  "EnableIntegrationListDlcAll": true,
+  "EnableIntegrationListDlcOwned": true,
+  "EnableIntegrationListDlcNotOwned": true,
+  "EnableIntegrationButtonDetails": false,
+  "SteamApiSettings": {
+    "UseApi": false,
+    "UseAuth": true
+  },
+  "SteamStoreSettings": {
+    "UseApi": false,
+    "UseAuth": true,
+    "ForceAuth": true
+  },
+  "EpicStoreSettings": {
+    "UseApi": false,
+    "UseAuth": true,
+    "ForceAuth": true
+  },
+  "GogStoreSettings": {
+    "UseApi": false,
+    "UseAuth": true,
+    "ForceAuth": true
+  },
+  "IsConverted": true,
+  "MenuInExtensions": true,
+  "EnableTag": false,
+  "LastAutoLibUpdateAssetsDownload": "0001-01-01T00:00:00",
+  "AutoImport": false,
+  "AutoImportOnInstalled": false,
+  "DatabaseBackupMaxCount": 5,
+  "IncludeEmulatedGames": false,
+  "LibrarySourceFilterMode": 1,
+  "EnabledSources": [
+    "Steam",
+    "Epic",
+    "GOG",
+    "EA app",
+    "Origin",
+    "Playstation",
+    "Nintendo"
+  ],
+  "ExcludedSources": []
+}

@@ -1,0 +1,80 @@
+name: Gaming · Windows
+description: O ambiente de jogos no Windows - drivers, lojas, comunicação e os apps da Steam.
+environment: gaming
+match: [windows]
+
+# Same model as the dev profiles: each step is one screen, `apps` start
+# selected and `optional` start unselected. Apps are installed with winget
+# (see config/apps.yaml); add or remove items here, or with the buttons in the
+# app (`envsetup add-app` / `remove-app`).
+# The unattended Windows installation: the answer file made at
+# schneegans.de/windows/unattend-generator, the ventoy.json that ties it to
+# the image, and the catalogue app whose Ninite installer goes on the drive.
+# The app's Instalação tab shows what the answer file does and writes all of
+# it to a Ventoy USB drive (`envsetup media`, `write-media`).
+media:
+  unattend: windows/autounattend.xml
+  ventoy: windows/ventoy.json
+  ninite: ninite
+
+steps:
+  - id: base
+    title: Essenciais
+    description: Runtimes que os jogos pedem e utilitários básicos, como o Raycast.
+    apps: [7zip, vcredist, directx, windows-media-player, raycast]
+    optional: [scoop, powertoys, ninite]
+
+  # Both GPU apps are listed: the one for the card of the machine starts
+  # selected, the other unselected (`gpu` in config/apps.yaml).
+  - id: drivers
+    title: Drivers e hardware
+    description: O software da placa de vídeo (vem marcado o da placa desta máquina) e as ferramentas de monitoramento.
+    apps: [nvidia-app, amd-software]
+    optional: [msi-afterburner, hwinfo]
+
+  - id: peripherals
+    title: Periféricos
+    description: Os programas do headset, do mouse, do controle e do RGB. Só instalam; as configurações ficam nos aparelhos ou nos próprios programas.
+    apps: [mchose-hub, attack-shark-driver, signalrgb, 8bitdo-ultimate-software]
+
+  - id: launchers
+    title: Lojas e launchers
+    description: As lojas e launchers de onde os jogos são instalados (instale os jogos em D:\Games).
+    apps: [steam, epic-games, hydra-launcher]
+    optional: [gog-galaxy, ea-app, ubisoft-connect, battle-net]
+
+  - id: appearance
+    title: Aparência
+    description: O Windhawk e os mods do backup do repo, já com as configurações (dock e ilha estilo Mac, menu Iniciar, Explorer, cantos, animações). Veja e atualize na aba Windhawk.
+    apps: [windhawk, windhawk-mods]
+
+  # After the launchers: Playnite imports the libraries of those stores.
+  - id: playnite
+    title: Playnite
+    description: O Playnite portable copiado do snapshot, já com biblioteca, capas, trailers, temas e extensões. Salve e confira o snapshot na aba Playnite.
+    apps: [playnite]
+
+  - id: retro
+    title: Emuladores
+    description: O RetroArch portable e os jogos copiados do snapshot, com cores, BIOS, saves e playlists apontando para os jogos. Salve e confira o snapshot na aba RetroArch.
+    apps: [retroarch]
+
+  - id: social
+    title: Comunicação e navegador
+    description: Voz, navegador e o que roda junto com os jogos.
+    apps: [discord, opera-gx]
+    optional: [brave, spotify, obs-studio]
+
+  - id: tuning
+    title: Otimizações
+    description: Políticas de grupo que cortam telemetria, sugestões e tarefas em segundo plano. Veja e ajuste cada uma na aba Políticas.
+    apps: []
+    optional: [group-policies]
+
+  # After the launchers on purpose: these are installed through Steam itself.
+  - id: steam-apps
+    title: Apps da Steam
+    description: Itens da sua biblioteca Steam. A Steam abre a janela de instalação de cada um.
+    apps: [wallpaper-engine]
+
+files: []

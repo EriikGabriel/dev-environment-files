@@ -1,0 +1,65 @@
+info:
+  name: extractionRunCreate
+  type: http
+  seq: 1
+  tags:
+    - ExtractionRun
+
+http:
+  method: POST
+  url: "{{baseUrl}}/v1/extraction-runs"
+  body:
+    type: json
+    data: |-
+      {
+        "baseVersionId": "",
+        "outputObjectId": "",
+        "pipelineFingerprint": "",
+        "pipelineVersions": {},
+        "status": ""
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+examples:
+  - name: 201 Response
+    description: Created
+    request:
+      url: "{{baseUrl}}/v1/extraction-runs"
+      method: POST
+      body:
+        type: json
+        data: |-
+          {
+            "baseVersionId": "",
+            "outputObjectId": "",
+            "pipelineFingerprint": "",
+            "pipelineVersions": {},
+            "status": ""
+          }
+    response:
+      status: 201
+      statusText: Created
+      headers:
+        - name: Content-Type
+          value: "*/*"
+      body:
+        type: text
+        data: |-
+          {
+            "baseVersionId": "",
+            "errorCode": "",
+            "finishedAt": "",
+            "id": "",
+            "outputObjectId": "",
+            "pipelineFingerprint": "",
+            "pipelineVersions": {},
+            "startedAt": "",
+            "status": ""
+          }
