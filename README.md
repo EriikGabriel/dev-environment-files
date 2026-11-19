@@ -1,4 +1,4 @@
-# dev-environment-files
+# envsetup
 
 O **envsetup** monta o meu ambiente numa máquina recém-formatada. Ele detecta o sistema, lê uma
 descrição do ambiente (apps, dotfiles, pastas e, no Windows, aparência e sistema) e aplica só o
@@ -74,7 +74,4 @@ Mapa do código, testes, o contrato entre o app e o motor e como os dados entram
 - [x] Salvar o RetroArch (`D:\envsetup`)
 - [x] Salvar o Playnite (`D:\envsetup`) e centralizar os jogos em `D:\Games`
 - [x] Aba Backup: passo a passo para formatar
-- [ ] Steam e Epic: biblioteca em `D:\Games` (adicionar de novo depois de formatar)
-- [ ] Terminar de configurar video do ET
-- [ ] Configurar aparencia geral com alguns tweaks temas e icones (pra dps jogar pro app)
 - [ ] Testar os scripts do GNOME numa sessão real
