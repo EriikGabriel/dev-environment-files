@@ -56,6 +56,11 @@ jobs:
             exit 1
           }
 
+      # dotfiles are symlinks on Linux: deleting the data folder must not break them
+      - name: Go tests (Linux symlinks)
+        if: runner.os == 'Linux'
+        run: go test ./internal/engine/ -run 'Detach|FileStep' -v
+
       - uses: actions/setup-node@v4
         with:
           node-version: 22

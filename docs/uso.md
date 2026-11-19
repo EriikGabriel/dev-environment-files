@@ -30,8 +30,22 @@ versão nova do app traz arquivos novos (perfis, ícones, scripts), "Atualizar d
 sua pasta **só o que ainda não existe nela**; nada que você editou é sobrescrito. Num clone git o
 botão não aparece: atualize com `git pull`.
 
-> Os dotfiles são implantados como symlink para a pasta de dados. Se você mover ou apagar a
-> pasta, os links quebram: aponte o app para o novo lugar e aplique de novo.
+> No Linux os dotfiles são implantados como symlink para a pasta de dados (no Windows, como
+> cópia). Se você mover a pasta, aponte o app para o novo lugar e aplique de novo.
+
+### Desinstalar o app depois de configurar
+
+Dá para usar o app só para formatar e depois se livrar dele. Os programas, as políticas, o
+RetroArch, o Playnite e os jogos não dependem da pasta de dados. A exceção são os symlinks do
+Linux, que ficam quebrados se a pasta sumir. Antes de apagar:
+
+1. Num clone, faça commit e push (aba Backup → "Enviar"), para não perder o que mudou.
+2. Na aba **Dotfiles**, clique em **"Desvincular da pasta de dados"** (ou rode
+   `envsetup detach`). Cada symlink, de todos os perfis, vira uma cópia do arquivo.
+3. Desinstale o app e apague a pasta de dados.
+
+Depois do passo 2, editar uma config da home não muda mais o repositório. Se você aplicar o perfil
+de novo, os symlinks voltam (o que estiver no lugar vira `.bak`).
 
 ## O app
 

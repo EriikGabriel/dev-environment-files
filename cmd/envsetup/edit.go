@@ -288,7 +288,34 @@ func editCommands(f *flags) []*cobra.Command {
 	removeApp.MarkFlagRequired("step")
 	removeApp.Flags().BoolVar(&f.json, "json", false, "machine-readable output")
 
-	return []*cobra.Command{add, show, setDirs, desktop, setDock, addApp, removeApp}
+	detach := withJSON(f)(&cobra.Command{
+		Use:   "detach",
+		Short: "Turn the symlinks into the data folder into real copies, so the folder can be deleted",
+		Long: "Every file a profile deployed as a symlink into the data folder becomes a copy of\n" +
+			"what it pointed to. After this, uninstalling the app or deleting the data folder\n" +
+			"breaks nothing. A later apply puts the links back.",
+		Args: cobra.NoArgs,
+		RunE: func(_ *cobra.Command, _ []string) error {
+			cfg, env, err := load(*f)
+			if err != nil {
+				return err
+			}
+			out := os.Stdout
+			if f.json {
+				out = os.Stderr
+			}
+			done, err := engine.Detach(cfg, env, out)
+			if f.json && err == nil {
+				return printJSON(os.Stdout, map[string]any{"detached": done})
+			}
+			if err == nil {
+				fmt.Printf("%d files detached; the data folder can be deleted\n", len(done))
+			}
+			return err
+		},
+	})
+
+	return []*cobra.Command{add, show, setDirs, desktop, setDock, addApp, removeApp, detach}
 }
 
 // backupFiles remembers the content of files about to be edited; the returned

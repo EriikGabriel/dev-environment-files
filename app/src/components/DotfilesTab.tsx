@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { open } from "@tauri-apps/plugin-dialog";
 import { homeDir } from "@tauri-apps/api/path";
 import { getCurrentWebview } from "@tauri-apps/api/webview";
-import { addFile, errorMessage } from "../api";
+import { addFile, detach, errorMessage } from "../api";
 import type { Plan } from "../types";
 import type { FileTarget } from "./FileDrawer";
 import { Help } from "./Help";
@@ -24,8 +24,33 @@ export function DotfilesTab({ root, profile, plan, busy, onChanged, onOpenFile }
   const [copy, setCopy] = useState(false);
   const [working, setWorking] = useState(false);
   const [outcomes, setOutcomes] = useState<Outcome[]>([]);
+  const [detached, setDetached] = useState<string | null>(null);
 
   const files = plan.steps.filter((s) => s.kind === "file");
+  const links = files.filter((f) => f.mode !== "copy").length;
+
+  const unlink = async () => {
+    if (
+      !window.confirm(
+        "Trocar os symlinks por cópias dos arquivos?\n\nDepois disso você pode desinstalar o app e apagar a pasta de dados sem quebrar nada. Editar os arquivos da home deixa de mudar o repositório; aplicar o perfil de novo volta os symlinks.",
+      )
+    )
+      return;
+    setWorking(true);
+    try {
+      const r = await detach(root);
+      setDetached(
+        r.detached.length === 0
+          ? "Nenhum symlink apontava para a pasta de dados: já dá para apagá-la."
+          : `${r.detached.length} ${r.detached.length === 1 ? "arquivo virou cópia" : "arquivos viraram cópias"}. A pasta de dados já pode ser apagada.`,
+      );
+    } catch (e) {
+      setDetached(`Falhou: ${errorMessage(e)}`);
+    } finally {
+      setWorking(false);
+      onChanged();
+    }
+  };
   const rel = (p?: string) => (p && p.startsWith(root) ? p.slice(root.length + 1) : (p ?? ""));
 
   const capture = useCallback(
@@ -149,6 +174,20 @@ export function DotfilesTab({ root, profile, plan, busy, onChanged, onOpenFile }
           </li>
         ))}
       </ul>
+
+      {links > 0 && (
+        <div className="row">
+          <button disabled={busy || working} onClick={unlink}>
+            Desvincular da pasta de dados
+          </button>
+          <Help title="Apagar a pasta de dados ou desinstalar o app">
+            Os symlinks apontam para a pasta de dados: se ela for apagada, essas configs somem da sua home. Este botão
+            troca cada symlink (de todos os perfis) por uma cópia do arquivo. Faça isso antes de desinstalar o app ou
+            apagar a pasta. Num clone, faça commit e push antes, para não perder mudanças.
+          </Help>
+          {detached && <span className="muted">{detached}</span>}
+        </div>
+      )}
     </section>
   );
 }

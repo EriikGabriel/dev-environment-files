@@ -31,6 +31,6 @@ linhas e cinco assuntos, e o `engine` misturando Linux e Windows sem indicar qua
 - Tudo o que está nas três pastas de dados vai para o instalador, inclusive o nome da conta do
   `autounattend.xml` e caminhos da home em alguns dotfiles.
 - Quem usa a cópia em Documentos não tem histórico das próprias mudanças; para isso, use um clone.
-- Os dotfiles são symlinks para a pasta de dados: mover a pasta quebra os links até aplicar de novo.
+- Os dotfiles são symlinks para a pasta de dados: mover a pasta quebra os links até aplicar de novo. Para apagá-la de vez, `envsetup detach` troca os links por cópias.
 - Caminhos de imagem escolhidos dentro da pasta de dados (overrides de ícones) passam a ser
   gravados relativos a ela, para valerem em outra máquina.

@@ -61,6 +61,20 @@ export const addApp = (root: string, profile: string, step: string, app: NewApp)
 export const removeApp = (root: string, profile: string, step: string, id: string) =>
   run<{ id: string; step: string }>(root, ["remove-app", "-p", profile, "--step", step, id]);
 
+/** A deployed symlink that became a copy of its target in the data folder. */
+export interface Detached {
+  dest: string;
+  src: string;
+  dir: boolean;
+}
+
+/**
+ * Turns every symlink into the data folder (of any profile) into a real copy,
+ * so the app can be uninstalled and the folder deleted without breaking the
+ * home. A later apply puts the links back.
+ */
+export const detach = (root: string) => run<{ detached: Detached[] }>(root, ["detach"]);
+
 export interface AddOptions {
   profile: string;
   group?: string;

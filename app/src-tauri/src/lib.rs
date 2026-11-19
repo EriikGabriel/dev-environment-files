@@ -26,6 +26,7 @@ const ALLOWED: &[&str] = &[
     "set-dock",
     "add-app",
     "remove-app",
+    "detach",
     "media",
     "set-ninite",
     "set-unattend",
