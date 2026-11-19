@@ -419,3 +419,17 @@ func SetChoice(path, id, choice string) error {
 	}
 	return fmt.Errorf("unknown policy %q", id)
 }
+
+// Key is the registry key the policy writes: of its own values, else of its
+// first option.
+func (p Policy) Key() string {
+	if len(p.Set) > 0 {
+		return p.Set[0].Key
+	}
+	for _, o := range p.Options {
+		if len(o.Set) > 0 {
+			return o.Set[0].Key
+		}
+	}
+	return ""
+}

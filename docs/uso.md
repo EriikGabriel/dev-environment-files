@@ -202,6 +202,20 @@ os jogos" na aba RetroArch, ou mova a pasta com "Trocar". Formatando também o H
   Windows não é copiada.
 - **Políticas.** Gravadas no `Registry.pol` (que o gpedit lê) e no registro, seguido de
   `gpupdate`. Algumas só valem depois de sair da sessão ou reiniciar.
+  - **Para mexer à mão**, cada política da aba Políticas tem dois botões:
+    - **Abrir no gpedit** abre o Editor de Política de Grupo e navega até a política: expande
+      Configuração do Computador > Modelos Administrativos > a pasta dela, seleciona e abre a
+      janela de edição. O gpedit não aceita caminho na linha de comando, então o app conduz a
+      janela dele (`windows/open-policy.ps1`, com UI Automation). Como o gpedit roda como
+      administrador, o Windows pede permissão uma vez.
+    - **Ver no registro** abre o Editor do Registro direto na chave que a política grava (ou na
+      parte dela que já existe, se ainda não foi aplicada). Feche o Editor do Registro antes,
+      porque ele só vai para uma chave quando abre.
+  - **Se a navegação no gpedit parar** (um nome diferente na sua versão do Windows), a janela
+    fica na última pasta encontrada e a mensagem diz o que falta. Se a pasta abrir mas a política
+    não for encontrada, o nome dela vai para a área de transferência, para você buscar. Na linha
+    de comando: `envsetup open-policy <id> [--registry]`.
+  - O gpedit só existe nas edições Pro, Enterprise e Education.
 - **Barra de tarefas e menu Iniciar.** A barra é escrita num `TaskbarLayout.xml` apontado pela
   política "Start layout"; o menu Iniciar é limpo por `ConfigureStartPins` e os ícones da área de
   trabalho por `HideIcons`.

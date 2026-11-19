@@ -1,3 +1,4 @@
+import { KeyRound, SquareArrowOutUpRight } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import * as api from "../../api";
 import { errorMessage } from "../../api";
@@ -153,7 +154,29 @@ export function PoliciesTab({ root, windows, onApplied }: Props) {
                     {data.readable && <span className={p.applied ? "badge ok" : "badge warn"}>{p.applied ? "aplicada" : "pendente"}</span>}
                     {p.choice !== "video" && <span className="chip">diferente do recomendado</span>}
                   </div>
-                  <span className="muted small-note">{p.path}</span>
+                  <div className="row policy-path">
+                    <span className="muted small-note grow">{p.path}</span>
+                    {windows && (
+                      <>
+                        <button
+                          className="link-btn"
+                          disabled={!!busy}
+                          title="Abre o Editor de Política de Grupo já nesta política (pede permissão de administrador)"
+                          onClick={() => act("open-" + p.id, async () => (await api.openPolicy(root, p.id, false)).message || "Política aberta no gpedit.")}
+                        >
+                          <SquareArrowOutUpRight size={13} /> {busy === "open-" + p.id ? "Abrindo…" : "Abrir no gpedit"}
+                        </button>
+                        <button
+                          className="link-btn"
+                          disabled={!!busy}
+                          title="Abre o Editor do Registro na chave que esta política grava"
+                          onClick={() => act("reg-" + p.id, async () => (await api.openPolicy(root, p.id, true)).message || "Chave aberta no Editor do Registro.")}
+                        >
+                          <KeyRound size={13} /> {busy === "reg-" + p.id ? "Abrindo…" : "Ver no registro"}
+                        </button>
+                      </>
+                    )}
+                  </div>
                   <p>{p.about}</p>
                   {p.caution && (
                     <p className="caution">

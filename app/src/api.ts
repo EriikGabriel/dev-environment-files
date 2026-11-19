@@ -275,3 +275,7 @@ export const role = (root: string) => run<Role>(root, ["role"]);
 /** Says the configuration is the user's (true), someone else's (false), or guesses again (null). */
 export const setRole = (root: string, owner: boolean | null) =>
   run<Role>(root, ["set-role", ...(owner === null ? ["--auto"] : [`--owner=${owner}`])]);
+
+/** Opens a group policy to change it by hand: in gpedit at the policy (elevated), or in the Registry Editor at its key. */
+export const openPolicy = (root: string, id: string, registry: boolean) =>
+  run<{ id: string; message: string }>(root, ["open-policy", id, ...(registry ? ["--registry"] : [])]);

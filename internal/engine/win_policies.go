@@ -72,3 +72,34 @@ func (e *Env) ApplyPolicies(ctx context.Context, out io.Writer) error {
 	}
 	return nil
 }
+
+// OpenPolicy opens a policy where it can be changed by hand: the Group
+// Policy editor at the policy (registry false) or the Registry Editor at the
+// key it writes (registry true). See windows/open-policy.ps1.
+func (e *Env) OpenPolicy(ctx context.Context, out io.Writer, id string, registry bool) error {
+	f, err := policy.Load(PoliciesPath(e.Root))
+	if err != nil {
+		return err
+	}
+	var p *policy.Policy
+	for i := range f.Policies {
+		if f.Policies[i].ID == id {
+			p = &f.Policies[i]
+		}
+	}
+	if p == nil {
+		return fmt.Errorf("unknown policy %q", id)
+	}
+	script := filepath.Join(e.Root, "windows", "open-policy.ps1")
+	var cmd string
+	if registry {
+		key := p.Key()
+		if key == "" {
+			return fmt.Errorf("%s writes no registry value", id)
+		}
+		cmd = fmt.Sprintf("& %s -Registry -Key %s", psQuote(script), psQuote(key))
+	} else {
+		cmd = fmt.Sprintf("& %s -Path %s -Title %s", psQuote(script), psQuote(p.Path), psQuote(p.Title))
+	}
+	return e.Runner.Run(ctx, out, e.script(cmd)...)
+}

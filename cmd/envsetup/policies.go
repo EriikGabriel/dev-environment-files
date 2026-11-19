@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"strings"
@@ -158,5 +159,38 @@ func policyCommands(f *flags) []*cobra.Command {
 		},
 	})
 
-	return []*cobra.Command{policies, setPolicy, applyPolicies}
+	var inRegistry bool
+	openPolicy := jsonFlag(&cobra.Command{
+		Use:   "open-policy <id>",
+		Short: "Open a policy to change it by hand: in the Group Policy editor (elevated), or with --registry in the Registry Editor at its key",
+		Long: "gpedit cannot be told where to open: its window is driven to the policy's folder and the policy is opened. " +
+			"When a step fails, the editor is left as far as it got and the message says what is left to do.",
+		Args: cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			_, env, err := load(*f)
+			if err != nil {
+				return err
+			}
+			if env.Info.OS != "windows" {
+				return fmt.Errorf("group policies only exist on Windows")
+			}
+			var report bytes.Buffer
+			err = env.OpenPolicy(cmd.Context(), &report, args[0], inRegistry)
+			msg := strings.TrimSpace(report.String())
+			if err != nil {
+				if msg != "" {
+					return fmt.Errorf("%s (%w)", msg, err)
+				}
+				return err
+			}
+			if f.json {
+				return printJSON(os.Stdout, map[string]any{"id": args[0], "message": msg})
+			}
+			fmt.Println(msg)
+			return nil
+		},
+	})
+	openPolicy.Flags().BoolVar(&inRegistry, "registry", false, "open the Registry Editor at the key the policy writes")
+
+	return []*cobra.Command{policies, setPolicy, applyPolicies, openPolicy}
 }

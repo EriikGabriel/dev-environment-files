@@ -34,6 +34,7 @@ const ALLOWED: &[&str] = &[
     "policies",
     "set-policy",
     "apply-policies",
+    "open-policy",
     "layout",
     "set-layout",
     "apply-layout",

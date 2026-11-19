@@ -745,3 +745,8 @@ button.card:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 14
 
 .role-card { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
 .role-card .segmented button { display: inline-flex; align-items: center; gap: 6px; }
+
+/* links to change a policy by hand */
+.policy-path { gap: 10px; flex-wrap: wrap; }
+.link-btn { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; font-size: .78rem; border-radius: 999px; background: transparent; border: 1px solid var(--line); color: var(--accent); }
+.link-btn:hover:not(:disabled) { border-color: var(--accent); }
