@@ -106,6 +106,22 @@ testes por um `httptest.Server`): `stable/<versão>/windows/x86_64/RetroArch.7z`
 cada core de `nightly/windows/x86_64/latest/<core>_libretro.dll.zip`, extraídos com
 `archive/zip`.
 
+## Publicar um release
+
+`.github/workflows/release.yml` compila o app no Windows e no Ubuntu e publica no release da tag:
+`envsetup_*_x64-setup.exe` e `.msi` (Windows); `.deb`, `.rpm` e `.AppImage` (Linux). Junta os
+scripts de uma linha `scripts/install.ps1` e `scripts/install.sh`, que baixam o instalador
+certo do último release. Os dados de `config/`, `dotfiles/` e `windows/` entram no instalador
+como estão no commit da tag.
+
+```bash
+# suba a versão em app/package.json, app/src-tauri/tauri.conf.json e Cargo.toml
+git tag v0.2.0 && git push origin v0.2.0
+```
+
+Ou em Actions > Release > Run workflow, informando a tag. Os testes de Go rodam só no Windows,
+porque conferem caminhos do Windows.
+
 ## Decisões
 
 O porquê de cada escolha está em [decisions/](decisions/README.md).

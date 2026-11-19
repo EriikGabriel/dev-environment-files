@@ -14,7 +14,9 @@
 #             patterns, the rest are folders relative to path
 # start_menu  after a restore, add Playnite to the Start menu and to
 #             Settings > Apps (windows/register-portable-app.ps1)
-# git         settings files of path kept in the repo (* matches one folder)
+# git         files of path kept in the repo (* matches one folder, ! leaves out)
+# version     the Playnite release downloaded when there is no store (written
+#             by a save)
 
 path: C:\Playnite
 store: D:\envsetup
@@ -28,3 +30,7 @@ git:
   - config.json
   - fullscreenConfig.json
   - ExtensionsData/*/config.json
+  - library/*.db
+  - library/database.json
+  - '!library/games.db'
+version: "10.64"

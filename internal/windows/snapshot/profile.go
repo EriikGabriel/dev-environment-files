@@ -67,25 +67,52 @@ func splitPattern(p string) []string {
 
 // MatchProfile tells whether rel (forward slashes) is one of the patterns
 // or inside a folder one of them names. Case does not matter (Windows).
+// A pattern that starts with "!" takes back what the others match
+// ("library/*.db", "!library/games.db").
 func MatchProfile(patterns []string, rel string) bool {
 	segs := strings.Split(strings.ToLower(rel), "/")
-	for _, p := range patterns {
+	match := func(p string) bool {
 		ps := splitPattern(strings.ToLower(p))
 		if len(ps) == 0 || len(ps) > len(segs) {
-			continue
+			return false
 		}
-		ok := true
 		for i, s := range ps {
 			if m, _ := path.Match(s, segs[i]); !m {
-				ok = false
-				break
+				return false
 			}
 		}
-		if ok {
-			return true
+		return true
+	}
+	found := false
+	for _, p := range patterns {
+		if strings.HasPrefix(p, "!") {
+			if match(p[1:]) {
+				return false
+			}
+		} else if match(p) {
+			found = true
 		}
 	}
-	return false
+	return found
+}
+
+// Without leaves out of patterns the ones under the folders given
+// ("library"): Import uses it to skip what the store already brought.
+func Without(patterns []string, folders ...string) []string {
+	var out []string
+	for _, p := range patterns {
+		ps := splitPattern(strings.TrimPrefix(p, "!"))
+		skip := false
+		for _, f := range folders {
+			if len(ps) > 1 && strings.EqualFold(ps[0], f) {
+				skip = true
+			}
+		}
+		if !skip {
+			out = append(out, p)
+		}
+	}
+	return out
 }
 
 // TopLevel are the first segments of the patterns that have no wildcard:
@@ -93,6 +120,9 @@ func MatchProfile(patterns []string, rel string) bool {
 func TopLevel(patterns []string) []string {
 	var out []string
 	for _, p := range patterns {
+		if strings.HasPrefix(p, "!") {
+			continue
+		}
 		ps := splitPattern(p)
 		if len(ps) == 1 && !strings.ContainsAny(ps[0], "*?[") {
 			out = append(out, ps[0])
@@ -176,6 +206,12 @@ func Export(src, dst string, patterns []string) (Exported, error) {
 // Import copies the files of the git folder src the patterns take to the
 // program folder dst and puts the secrets back in them.
 func Import(src, dst string, patterns []string, secrets []Secret) (Imported, error) {
+	return ImportWith(src, dst, patterns, secrets, false)
+}
+
+// ImportWith is Import; anonymous also blanks the account ids of the owner
+// (see Anonymize), for someone else using the same settings.
+func ImportWith(src, dst string, patterns []string, secrets []Secret, anonymous bool) (Imported, error) {
 	var res Imported
 	byFile := map[string][]Secret{}
 	for _, s := range secrets {
@@ -188,7 +224,11 @@ func Import(src, dst string, patterns []string, secrets []Secret) (Imported, err
 			return res, err
 		}
 		n := 0
-		raw, n = Unscrub(rel, raw, byFile[strings.ToLower(rel)])
+		if anonymous {
+			raw = Anonymize(rel, raw)
+		} else {
+			raw, n = Unscrub(rel, raw, byFile[strings.ToLower(rel)])
+		}
 		res.Secrets += n
 		res.Files++
 		to := filepath.Join(dst, filepath.FromSlash(rel))
@@ -359,7 +399,10 @@ func scrubJSON(rel string, raw []byte) ([]byte, []Secret) {
 // and returns, in order, the string values under a secret key: the value of
 // the key itself, or every string inside it when it is an object or array.
 // Working on the text keeps the rest of the file byte for byte.
-func jsonSecretSites(raw []byte) []site {
+func jsonSecretSites(raw []byte) []site { return jsonSites(raw, IsSecretKey) }
+
+// jsonSites is jsonSecretSites with the keys chosen by isKey.
+func jsonSites(raw []byte, isKey func(string) bool) []site {
 	type frame struct {
 		object bool
 		secret bool
@@ -373,7 +416,7 @@ func jsonSecretSites(raw []byte) []site {
 	valueSecret := func() (bool, string) {
 		f := top()
 		if f.object {
-			return f.secret || IsSecretKey(f.key), f.key
+			return f.secret || isKey(f.key), f.key
 		}
 		return f.secret, f.key
 	}
@@ -485,4 +528,42 @@ func DescribeGit(root, dir, src string, patterns []string) Git {
 		g.Pending = Pending(src, full, patterns)
 	}
 	return g
+}
+
+// identityKey names settings that hold who the owner is on a service: user
+// names and ids, account ids, nicknames, e-mail.
+var identityKey = regexp.MustCompile(`(?i)(user_?name|user_?id|account_?(id|name)|steam_?id(64)?|nick_?name|e_?mail|_user)$`)
+
+// IsIdentityKey tells whether a setting holds an account of the owner.
+func IsIdentityKey(k string) bool { return identityKey.MatchString(k) }
+
+// Anonymize blanks the account ids of a settings file (JSON, .cfg, .opt):
+// the text values of IsIdentityKey keys (not true or false), so someone else gets the settings without the owner's accounts.
+func Anonymize(rel string, raw []byte) []byte {
+	// switches like settings_show_user = "true" are settings, not accounts
+	keep := func(v string) bool { return v == "" || v == "true" || v == "false" }
+	switch strings.ToLower(path.Ext(rel)) {
+	case ".json":
+		var b bytes.Buffer
+		last := 0
+		for _, s := range jsonSites(raw, IsIdentityKey) {
+			if keep(string(raw[s.start:s.end])) {
+				continue
+			}
+			b.Write(raw[last:s.start])
+			last = s.end
+		}
+		b.Write(raw[last:])
+		return b.Bytes()
+	case ".cfg", ".opt":
+		lines := bytes.SplitAfter(raw, []byte("\n"))
+		for i, line := range lines {
+			k, v, ok := cfgLine(line)
+			if ok && IsIdentityKey(k) && !keep(v) {
+				lines[i] = []byte(strings.Replace(string(line), `"`+v+`"`, `""`, 1))
+			}
+		}
+		return bytes.Join(lines, nil)
+	}
+	return raw
 }

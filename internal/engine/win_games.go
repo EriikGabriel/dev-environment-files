@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/EriikGabriel/dev-environment-files/internal/config"
 	"github.com/EriikGabriel/dev-environment-files/internal/windows/playnite"
 	"github.com/EriikGabriel/dev-environment-files/internal/windows/retroarch"
 	"github.com/EriikGabriel/dev-environment-files/internal/windows/snapshot"
@@ -159,4 +160,36 @@ func missingCopies(src, dst string) []string {
 		return nil
 	})
 	return out
+}
+
+// withoutTop leaves out of patterns the ones naming the given top-level
+// folders.
+func withoutTop(patterns []string, folders ...string) []string {
+	var out []string
+	for _, p := range patterns {
+		skip := false
+		for _, f := range folders {
+			if strings.EqualFold(strings.Trim(p, "/"), f) {
+				skip = true
+			}
+		}
+		if !skip {
+			out = append(out, p)
+		}
+	}
+	return out
+}
+
+// becomeOwner records, after someone else saved their own setup, that the
+// configuration of this data folder is now theirs: restores no longer leave
+// their saves and accounts out.
+func (e *Env) becomeOwner(out io.Writer) {
+	if !e.Guest {
+		return
+	}
+	yes := true
+	if err := config.SaveLocal(e.Root, config.Local{Owner: &yes}); err == nil {
+		e.Guest = false
+		fmt.Fprintln(out, "this data folder now holds your own setup: local.yaml marks you as its owner")
+	}
 }

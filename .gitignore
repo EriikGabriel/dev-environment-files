@@ -38,3 +38,6 @@ app/src-tauri/gen
 *.wbfs
 *.xci
 *.nsp
+
+# choices of this machine (envsetup role)
+/local.yaml

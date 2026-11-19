@@ -61,6 +61,8 @@ const ALLOWED: &[&str] = &[
     "backup-push",
     "backup-pull",
     "backup-clone",
+    "role",
+    "set-role",
     "windhawk",
     "windhawk-export",
     "windhawk-import",

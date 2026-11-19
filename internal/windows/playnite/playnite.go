@@ -47,9 +47,12 @@ type Config struct {
 	// StartMenu registers the portable Playnite as an app of the user (Start
 	// menu shortcut and an entry in Installed apps) after a restore.
 	StartMenu bool `yaml:"start_menu" json:"start_menu"`
-	// Git are the settings files (relative to Path, * matches one folder)
-	// kept in the repo, in windows/playnite.
+	// Git are the settings files (relative to Path, * matches one folder, a
+	// leading ! leaves a file out) kept in the repo, in windows/playnite.
 	Git []string `yaml:"git" json:"git"`
+	// Version is the Playnite release a restore downloads when the store is
+	// not there (written by a save).
+	Version string `yaml:"version" json:"version"`
 }
 
 // Default is what a missing file means.
@@ -67,7 +70,18 @@ func Default() Config {
 var DefaultExclude = []string{"cache", "browsercache", "JITProfiles", "*.log"}
 
 // DefaultGit are the settings of Playnite and of its extensions.
-var DefaultGit = []string{"config.json", "fullscreenConfig.json", "ExtensionsData/*/config.json"}
+//
+// The library databases go too, but games.db: they hold the platforms, the
+// emulators (RetroArch), the game scanners, the filter presets, tags and
+// categories, a few hundred KB. games.db (the games, with play time,
+// favorites and notes) changes on every session and is megabytes of binary,
+// so it stays in the store; without the store the games are imported again
+// by the library extensions and the scanners.
+var DefaultGit = []string{"config.json", "fullscreenConfig.json", "ExtensionsData/*/config.json", "library/*.db", "library/database.json", "!library/games.db"}
+
+// LibraryDir is the folder of the databases: a restore from the store takes
+// them from there, not from git, so they always match games.db.
+const LibraryDir = "library"
 
 // GitDir is where the settings live in the repo.
 func GitDir(root string) string { return filepath.Join(root, "windows", "playnite") }
@@ -97,7 +111,9 @@ const header = `# The portable Playnite (Desktop and Fullscreen), kept as a snap
 #             patterns, the rest are folders relative to path
 # start_menu  after a restore, add Playnite to the Start menu and to
 #             Settings > Apps (windows/register-portable-app.ps1)
-# git         settings files of path kept in the repo (* matches one folder)
+# git         files of path kept in the repo (* matches one folder, ! leaves out)
+# version     the Playnite release downloaded when there is no store (written
+#             by a save)
 
 `
 
@@ -276,8 +292,7 @@ func readYAML(path string) (manifestYAML, error) {
 	if err != nil {
 		return m, err
 	}
-	raw = bytes.TrimPrefix(raw, []byte{0xEF, 0xBB, 0xBF})
-	err = yaml.Unmarshal(raw, &m)
+	err = yaml.Unmarshal(decodeText(raw), &m)
 	return m, err
 }
 

@@ -243,13 +243,38 @@ manifesto dentro (`E:\envsetup` virou `F:\envsetup`), o envsetup usa esse.
 | `store` | o HD: a cópia vai para `<store>\Playnite`, com o manifesto `<store>\envsetup-playnite.json` e as chaves tiradas do git |
 | `exclude` | o que nunca é copiado (padrão: `cache`, `browsercache`, `JITProfiles`, `*.log`): nomes com `*` ou ponto são padrões de arquivo; o resto, pastas relativas a `path` |
 | `start_menu` | depois de restaurar, põe o Playnite no menu Iniciar e em Configurações › Apps |
-| `git` | o que vai para `windows/playnite` (padrão: `config.json`, `fullscreenConfig.json`, `ExtensionsData/*/config.json`; `*` vale uma pasta) |
+| `git` | o que vai para `windows/playnite` (`*` vale uma pasta; `!` no começo tira um arquivo) |
+| `version` | a versão do Playnite baixada quando não há HD; gravada ao salvar |
 
-O HD guarda o programa, a biblioteca, as capas, os trailers, os temas e as extensões (~26 GB).
-Numa máquina nova, a etapa Playnite do perfil (ou `playnite-restore`) copia o HD de volta, põe
-as configurações do git por cima com as chaves de volta e corrige os caminhos das extensões se a
-pasta mudou. Restaurar o Playnite precisa do HD. A aba também mostra o que a pasta não leva
-(Windows Media Player para os trailers, programas externos) e corrige.
+### O que o GitHub garante do Playnite, e o que só o HD guarda
+
+Ao salvar, o envsetup grava no git (`windows/playnite`) tudo o que é pequeno e define *como* o
+seu Playnite é. Assim ele volta mesmo sem o HD:
+
+| No GitHub | Arquivo | O que volta com ele |
+|---|---|---|
+| A versão do programa | `version` em `config/playnite.yaml` | o Playnite portable é baixado dos releases oficiais |
+| A lista de temas e extensões | `windows/playnite/addons.yaml` | cada um é baixado do banco de add-ons do Playnite (api.playnite.link), na versão que você usava quando ela ainda existe |
+| As configurações do Playnite | `config.json`, `fullscreenConfig.json` | tema escolhido, layout, filtros, atalhos, modo tela cheia |
+| As configurações de cada extensão | `ExtensionsData/*/config.json` | tudo o que você ajustou nas extensões, **sem** chaves de API e tokens (ficam no HD) |
+| A estrutura da biblioteca | `library/*.db`, menos `games.db` | plataformas, **emuladores (o RetroArch)**, as **pastas escaneadas** de ROMs, presets de filtro, tags, categorias, status de conclusão |
+
+E fica **só no HD**, porque não faz sentido no GitHub:
+
+| Só no HD | Por quê | Sem o HD |
+|---|---|---|
+| `library/games.db`: a lista de jogos com tempo jogado, favoritos, notas, categorias de cada jogo, ocultos | muda a cada sessão e tem MBs binários: encheria o histórico do repositório | os jogos voltam pelas extensões de biblioteca (Steam, Epic, GOG…) e pelos scanners de ROM, mas **sem** tempo jogado, favoritos e notas |
+| `library/files`: capas, ícones e fundos (~700 MB) | grande e baixável | os metadados são baixados de novo na importação |
+| `ExtraMetadata`: trailers e logos (~22 GB) | enorme e lento de baixar | baixe de novo pelo Extra Metadata Loader |
+| `ExtensionsData` além dos `config.json`: conquistas, cache das extensões (~2 GB) | dados que as extensões refazem | refeitos pelas extensões (as conquistas sincronizam de novo) |
+| chaves de API e tokens | o repositório é público | entre de novo nas extensões (SteamGridDB, metadados por IA…) |
+| temas e extensões que não estão no banco de add-ons (hoje: **PS5reborn**) | não há de onde baixar | instale à mão; a restauração diz quais |
+
+**Com o HD**, a restauração copia tudo do HD e põe as configurações do git por cima; as bases da
+biblioteca vêm do HD (não do git), para combinar com o `games.db` dele. **Sem o HD**, o Playnite
+é baixado, os add-ons são instalados do banco e o git traz as configurações e a estrutura da
+biblioteca. Leva uns 2 minutos. A aba também mostra o que a pasta não leva (Windows Media Player
+para os trailers, programas externos) e corrige.
 
 ## `config/retroarch.yaml`: RetroArch portable e jogos (Windows)
 

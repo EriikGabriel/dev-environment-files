@@ -2,3 +2,6 @@
 # no line ending conversion (a save file is binary even when git guesses text).
 windows/retroarch/** -text
 windows/playnite/** -text
+
+# shell scripts run on Linux: always LF
+*.sh text eol=lf

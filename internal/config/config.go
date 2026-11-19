@@ -84,6 +84,10 @@ type App struct {
 	// GPU lists the kinds of graphics card the app is for (nvidia, amd,
 	// intel): on a machine without one of them it starts unselected.
 	GPU []string `yaml:"gpu"`
+	// Devices are texts of connected devices the app is for (a name such as
+	// "MCHOSE", or a USB id such as "VID_2DC8"): when none is connected it
+	// starts unselected.
+	Devices []string `yaml:"devices"`
 }
 
 // File is a config file to deploy.

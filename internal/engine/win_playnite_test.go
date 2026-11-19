@@ -2,7 +2,10 @@ package engine
 
 import (
 	"context"
+	"fmt"
 	"io"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"strings"
@@ -92,5 +95,72 @@ func TestPlayniteSaveSplitsGitAndStore(t *testing.T) {
 	}
 	if !strings.Contains(ranLines(fr), "'"+filepath.Join(dir, "browsercache")+"'") {
 		t.Errorf("the caches are not left out:\n%s", ranLines(fr))
+	}
+}
+
+func TestPlayniteRestoreWithoutTheStore(t *testing.T) {
+	root, dir := t.TempDir(), filepath.Join(t.TempDir(), "Playnite")
+	cfg := playnite.Default()
+	cfg.Path, cfg.Store, cfg.Version = dir, filepath.Join(t.TempDir(), "gone"), "10.64"
+	must(t, playnite.Save(playnite.Path(root), cfg))
+	git := playnite.GitDir(root)
+	for rel, body := range map[string]string{
+		"config.json":          `{"Theme": "Harmony"}`,
+		"library/emulators.db": "emu",
+		"library/games.db":     "never in git, but if it were it is skipped",
+	} {
+		p := filepath.Join(git, filepath.FromSlash(rel))
+		must(t, os.MkdirAll(filepath.Dir(p), 0o755))
+		must(t, os.WriteFile(p, []byte(body), 0o644))
+	}
+	must(t, playnite.WriteAddons(playnite.AddonsFile(root), playnite.AddonList{Playnite: "10.64", Addons: []playnite.Addon{
+		{ID: "Harmony_d49", Name: "Harmony", Version: "2.74", Kind: "desktop", Folder: "Themes/Desktop/Harmony_d49"},
+		{ID: "SteamLibrary", Name: "Steam", Kind: "extension", Folder: "Extensions/SteamLibrary_Builtin", Builtin: true},
+		{ID: "HandMade", Name: "Hand made", Kind: "extension", Folder: "Extensions/HandMade"},
+	}}))
+
+	var got []string
+	var srv *httptest.Server
+	srv = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		got = append(got, r.URL.Path)
+		switch r.URL.Path {
+		case "/releases/10.64/10.64.7z":
+			w.Write([]byte("7z"))
+		case "/api/addons":
+			fmt.Fprintf(w, `{"data":[{"addonId":"Harmony_d49","installerManifestUrl":"%s/manifest.yaml"}]}`, srv.URL)
+		case "/manifest.yaml":
+			fmt.Fprintf(w, "Packages:\n  - Version: 2.74\n    PackageUrl: %s/harmony.pthm\n", srv.URL)
+		case "/harmony.pthm":
+			w.Write(zipOf(t, map[string]string{"theme.yaml": "Id: Harmony_d49\nName: Harmony\nVersion: 2.74\n"}))
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	defer srv.Close()
+	oldR, oldA := playnite.Releases, playnite.AddonAPI
+	playnite.Releases, playnite.AddonAPI = srv.URL+"/releases", srv.URL+"/api/addons"
+	defer func() { playnite.Releases, playnite.AddonAPI = oldR, oldA }()
+
+	fr := &fakeRunner{}
+	env := &Env{Info: win, Root: root, Runner: fr}
+	var log strings.Builder
+	must(t, env.RestorePlaynite(context.Background(), &log, false))
+	if !strings.Contains(ranLines(fr), "tar.exe -xf") {
+		t.Errorf("the program was not extracted:\n%s", ranLines(fr))
+	}
+	if raw, err := os.ReadFile(filepath.Join(dir, "Themes", "Desktop", "Harmony_d49", "theme.yaml")); err != nil || !strings.Contains(string(raw), "2.74") {
+		t.Errorf("the theme was not installed: %v", err)
+	}
+	if raw, _ := os.ReadFile(filepath.Join(dir, "library", "emulators.db")); string(raw) != "emu" {
+		t.Error("the library databases did not come from git")
+	}
+	if exists(filepath.Join(dir, "library", "games.db")) {
+		t.Error("games.db must not come from git")
+	}
+	if !strings.Contains(log.String(), "install by hand: Hand made") {
+		t.Errorf("the add-on missing from the database is not reported:\n%s", log.String())
+	}
+	if exists(filepath.Join(dir, "Extensions", "SteamLibrary_Builtin")) {
+		t.Error("a builtin add-on was downloaded")
 	}
 }

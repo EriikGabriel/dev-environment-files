@@ -31,4 +31,6 @@ export interface Backup {
   store_git: StoreGit | null;
   playnite: Playnite;
   retroarch: RetroArch;
+  /** False when the configuration is someone else's: no GitHub steps, only their own HD. */
+  owner: boolean;
 }

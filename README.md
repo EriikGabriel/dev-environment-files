@@ -12,11 +12,16 @@ que falta. Tem um app desktop (Tauri + React) e uma linha de comando sobre o mes
 
 ## Começar
 
-1. **Instale o app** pelo instalador. Ele já traz o motor e os dados: não precisa de Go, Node,
-   Rust nem git.
+1. **Instale o app** pelo [último release](https://github.com/EriikGabriel/dev-environment-files/releases/latest).
+   Ele já traz o motor e os dados: não precisa de Go, Node, Rust nem git.
+   - Windows (PowerShell): `irm https://github.com/EriikGabriel/dev-environment-files/releases/latest/download/install.ps1 | iex`
+   - Ubuntu e Arch: `curl -fsSL https://github.com/EriikGabriel/dev-environment-files/releases/latest/download/install.sh | bash`
 2. **Na primeira execução**, escolha "Usar os dados incluídos" (uma cópia editável em
    `Documentos\envsetup` ou `~/envsetup`) ou "Escolher pasta…" para usar um clone deste repo.
 3. **Configurar**: revise as etapas do perfil, marque o que quer e clique em Aplicar.
+
+Não é o dono? Dá para usar com as configurações dele, sem os saves e as contas dele: veja
+[para outra pessoa](docs/formatacao.md#para-outra-pessoa-instalar-com-as-configurações-do-dono).
 
 Detalhes em **[docs/uso.md](docs/uso.md)**: as abas do app, a linha de comando, [como formatar o PC](docs/formatacao.md) (o que volta e o que não volta) e como cada
 recurso do Windows funciona.

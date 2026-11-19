@@ -468,6 +468,7 @@ export default function App() {
 						root={root}
 						onStep={goStep}
 						onApplyPending={requestApply}
+						onRoleChanged={() => void loadWizard(true)}
 					/>
 				) : tab === "install" && installMedia?.available ? (
 					<InstallTab

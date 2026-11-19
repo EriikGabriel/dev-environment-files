@@ -34,6 +34,10 @@
 # a machine whose cards are known and none is of that kind, the app starts
 # unselected (it can still be ticked). Used by the GPU drivers.
 #
+# `devices` marks software for a device: texts matched against the connected
+# devices (their name, or a USB id such as VID_2DC8). When none is connected,
+# the app starts unselected. Used by the peripherals.
+#
 # `repo` (Debian family, native method) registers a third-party apt repository
 # before installing: `key` is the signing key URL and `source` is the
 # "url suite components" part of the sources.list line.
@@ -577,6 +581,7 @@ apps:
 
   # Software of the peripherals: nothing to configure in them, only to install.
   mchose-hub:
+    devices: [MCHOSE]
     description: "MCHOSE HUB: EQ, voice effects and noise reduction of the MCHOSE V9 Pro headset (from cdn.mchose.com.cn)"
     method: { windows: script }
     check:
@@ -585,6 +590,7 @@ apps:
       windows: |
         & "$env:ENVSETUP_ROOT\windows\install-from-url.ps1" -Name 'MCHOSE HUB*' -Url 'https://cdn.mchose.com.cn/MCHOSE_HUB_installer.zip'
   attack-shark-driver:
+    devices: ["VID_3151&PID_503D", ATTACK SHARK]
     description: "Attack Shark Driver: DPI, polling rate, lift-off distance and macros of the Attack Shark X3 Pro mouse (from download.attackshark.pro)"
     method: { windows: script }
     check:
@@ -595,6 +601,7 @@ apps:
   signalrgb: { description: SignalRGB (one place for the RGB lighting of every device), names: { windows: WhirlwindFX.SignalRgb } }
   8bitdo-ultimate-software:
     description: 8BitDo Ultimate Software V2 (buttons, sticks, triggers and profiles of the 8BitDo Ultimate 2.4G controller)
+    devices: [VID_2DC8, 8BitDo]
     names: { windows: 8BitDo.UltimateSoftwareV2 }
   steam: { description: Steam, names: { windows: Valve.Steam } }
   epic-games: { description: Epic Games Launcher, names: { windows: EpicGames.EpicGamesLauncher } }

@@ -83,6 +83,10 @@ func Default() Config {
 // DefaultGit is the personal part of a RetroArch folder.
 var DefaultGit = []string{"retroarch.cfg", "retroarch-core-options.cfg", "config", "remaps", "playlists", "saves", "states", "thumbnails"}
 
+// OwnerOnly are the parts of git that are the owner's play, not settings:
+// someone else using the configuration does not get them.
+var OwnerOnly = []string{"saves", "states", "playlists"}
+
 // DefaultBundles are the asset packs the online updater of RetroArch offers.
 var DefaultBundles = []string{"assets", "autoconfig", "cheats", "database-rdb", "info", "overlays", "shaders_slang", "shaders_glsl"}
 

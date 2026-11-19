@@ -25,7 +25,8 @@ func load(f flags) (*config.Config, *engine.Env, error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	return cfg, &engine.Env{Info: platform.Detect(), Root: root, Home: home, Runner: backend.ExecRunner{}}, nil
+	owner, _ := config.IsOwner(root)
+	return cfg, &engine.Env{Info: platform.Detect(), Root: root, Home: home, Runner: backend.ExecRunner{}, Guest: !owner}, nil
 }
 
 // findRoot locates the repo root: the --root flag, else the nearest parent of

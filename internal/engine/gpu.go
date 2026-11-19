@@ -61,10 +61,14 @@ func gpuList(kinds []string) string {
 	return strings.Join(names, " ou ")
 }
 
-// Suggested tells whether an app should start selected on this machine: an
-// app for a kind of graphics card (config.App.GPU) only when the machine has
-// one. why explains the choice for the app's GPU apps ("" for the others).
+// Suggested tells whether an app should start selected on this machine:
+// an app for a kind of graphics card (config.App.GPU) only when the machine
+// has one, and an app for a device (config.App.Devices) only when it is
+// connected. why explains the choice for those apps ("" for the others).
 func (e *Env) Suggested(ctx context.Context, a config.App) (ok bool, why string) {
+	if len(a.Devices) > 0 {
+		return e.deviceSuggested(ctx, a.Devices)
+	}
 	if len(a.GPU) == 0 {
 		return true, ""
 	}
@@ -80,4 +84,53 @@ func (e *Env) Suggested(ctx context.Context, a config.App) (ok bool, why string)
 		}
 	}
 	return false, "para placas " + gpuList(a.GPU) + "; esta máquina tem " + gpuList(have)
+}
+
+// devicesScript lists the connected devices, one per line: the instance id,
+// the name Windows gives and, for USB devices, the name the device reports
+// ("MCHOSE V9 PRO", "2.4G Wireless Mouse").
+const devicesScript = "Get-PnpDevice -PresentOnly -ErrorAction SilentlyContinue | ForEach-Object { " +
+	"$d = ''; if ($_.InstanceId.StartsWith('USB')) { $d = (Get-PnpDeviceProperty -InstanceId $_.InstanceId -KeyName 'DEVPKEY_Device_BusReportedDeviceDesc' -ErrorAction SilentlyContinue).Data }; " +
+	"$_.InstanceId + ' | ' + $_.FriendlyName + ' | ' + $d }"
+
+// Devices lists the connected devices (see devicesScript); empty when they
+// cannot be read (Linux, or the query failed).
+func (e *Env) Devices(ctx context.Context) []string {
+	if e.devices != nil {
+		return *e.devices
+	}
+	found := []string{}
+	if e.Info.OS == "windows" {
+		if out, err := e.Runner.Output(ctx, e.script(devicesScript)...); err == nil {
+			for _, line := range strings.Split(out, "\n") {
+				if line = strings.TrimSpace(line); line != "" {
+					found = append(found, line)
+				}
+			}
+		}
+	}
+	e.devices = &found
+	return found
+}
+
+func (e *Env) deviceSuggested(ctx context.Context, want []string) (bool, string) {
+	have := e.Devices(ctx)
+	if len(have) == 0 {
+		return true, "aparelhos não verificados"
+	}
+	for _, w := range want {
+		for _, line := range have {
+			if !strings.Contains(strings.ToLower(line), strings.ToLower(w)) {
+				continue
+			}
+			// the name that matched (friendly or reported), else the id
+			for _, part := range strings.Split(line, "|")[1:] {
+				if part = strings.TrimSpace(part); strings.Contains(strings.ToLower(part), strings.ToLower(w)) {
+					return true, "conectado: " + part
+				}
+			}
+			return true, "conectado (" + w + ")"
+		}
+	}
+	return false, "o aparelho não está conectado"
 }

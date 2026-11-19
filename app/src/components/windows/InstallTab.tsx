@@ -44,6 +44,15 @@ export function InstallTab({ root, profile, media, onChanged, onOpenFile }: Prop
   };
 
   const u = media.unattend;
+  // the accounts the answer file creates, read from the generator link (AccountName0, AccountName1…)
+  const accounts = (() => {
+    try {
+      const q = new URL(u?.url ?? "").searchParams;
+      return [...q.keys()].filter((k) => /^AccountName\d+$/.test(k)).map((k) => q.get(k) ?? "").filter(Boolean);
+    } catch {
+      return [];
+    }
+  })();
   const importXml = async () => {
     const file = await open({ multiple: false, title: "Escolha o autounattend.xml baixado do gerador", filters: [{ name: "Arquivo de resposta", extensions: ["xml"] }] });
     if (typeof file !== "string") return;
@@ -90,6 +99,12 @@ export function InstallTab({ root, profile, media, onChanged, onOpenFile }: Prop
           <p className="banner bad">
             Este arquivo tem a senha de uma conta, legível por qualquer um (no XML e no link). Não faça commit dele num
             repositório público.
+          </p>
+        )}
+        {accounts.length > 0 && (
+          <p className="banner">
+            Este arquivo cria a conta <strong>{accounts.join(", ")}</strong> no Windows. Se a instalação não for para você, clique em
+            “Customizar no site”, troque o nome da conta, baixe o XML e use “Importar XML…”.
           </p>
         )}
         {u?.warnings?.map((w) => (

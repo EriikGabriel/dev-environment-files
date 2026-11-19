@@ -158,3 +158,38 @@ func TestExportImport(t *testing.T) {
 		t.Errorf("restored cfg: %q", raw)
 	}
 }
+
+func TestNegationAndWithout(t *testing.T) {
+	pats := []string{"config.json", "library/*.db", "library/database.json", "!library/games.db"}
+	for rel, want := range map[string]bool{
+		"library/emulators.db":  true,
+		"library/games.db":      false,
+		"Library/Games.DB":      false,
+		"library/database.json": true,
+		"library/files/x.jpg":   false,
+		"config.json":           true,
+	} {
+		if got := MatchProfile(pats, rel); got != want {
+			t.Errorf("MatchProfile(%q) = %v", rel, got)
+		}
+	}
+	if got := Without(pats, "library"); len(got) != 1 || got[0] != "config.json" {
+		t.Errorf("Without = %v", got)
+	}
+	if got := TopLevel(pats); len(got) != 1 || got[0] != "config.json" {
+		t.Errorf("TopLevel = %v", got)
+	}
+}
+
+func TestAnonymize(t *testing.T) {
+	j := `{"SteamUserId": "7656", "AccountId": "abc", "DisplayName": "Coluna", "UserScore": 5, "settings": {"UserId": ""}, "Show_user": "true"}`
+	got := string(Anonymize("x/config.json", []byte(j)))
+	want := `{"SteamUserId": "", "AccountId": "", "DisplayName": "Coluna", "UserScore": 5, "settings": {"UserId": ""}, "Show_user": "true"}`
+	if got != want {
+		t.Errorf("json:\n%s", got)
+	}
+	cfg := "cheevos_username = \"Me\"\nnetplay_nickname = \"Me\"\nsettings_show_user = \"true\"\n"
+	if got := string(Anonymize("retroarch.cfg", []byte(cfg))); got != "cheevos_username = \"\"\nnetplay_nickname = \"\"\nsettings_show_user = \"true\"\n" {
+		t.Errorf("cfg:\n%s", got)
+	}
+}

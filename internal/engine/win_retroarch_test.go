@@ -12,6 +12,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/EriikGabriel/dev-environment-files/internal/config"
 	"github.com/EriikGabriel/dev-environment-files/internal/windows/retroarch"
 	"github.com/EriikGabriel/dev-environment-files/internal/windows/snapshot"
 )
@@ -262,5 +263,43 @@ func TestMoveRetroArchGames(t *testing.T) {
 	}
 	if !exists(dest) {
 		t.Error("the games were deleted after an incomplete copy")
+	}
+}
+
+func TestRetroArchRestoreForSomeoneElse(t *testing.T) {
+	root := t.TempDir()
+	cfg := raFixture(t)
+	cfg.Store = ""
+	must(t, retroarch.Save(retroarch.Path(root), cfg))
+	git := retroarch.GitDir(root)
+	for rel, body := range map[string]string{
+		"retroarch.cfg":         "video_driver = \"vulkan\"\ncheevos_username = \"Owner\"\n",
+		"saves/Snes9x/Mine.srm": "owner's save",
+		"playlists/SNES.lpl":    "{}",
+		"config/Snes9x/x.opt":   "snes9x_region = \"auto\"\n",
+	} {
+		p := filepath.Join(git, filepath.FromSlash(rel))
+		must(t, os.MkdirAll(filepath.Dir(p), 0o755))
+		must(t, os.WriteFile(p, []byte(body), 0o644))
+	}
+	must(t, os.RemoveAll(filepath.Join(cfg.Path, "saves")))
+	env := &Env{Info: win, Root: root, Runner: &fakeRunner{}, Guest: true}
+	must(t, env.RestoreRetroArch(context.Background(), io.Discard, false))
+	raw, _ := os.ReadFile(filepath.Join(cfg.Path, "retroarch.cfg"))
+	if string(raw) != "video_driver = \"vulkan\"\ncheevos_username = \"\"\n" {
+		t.Errorf("cfg: %q", raw)
+	}
+	if exists(filepath.Join(cfg.Path, "saves", "Snes9x", "Mine.srm")) || exists(filepath.Join(cfg.Path, "playlists", "SNES.lpl")) {
+		t.Error("the owner's saves or playlists were copied")
+	}
+	if !exists(filepath.Join(cfg.Path, "config", "Snes9x", "x.opt")) {
+		t.Error("the core options were left out")
+	}
+
+	// saving makes the folder theirs
+	_, err := env.SaveRetroArch(context.Background(), io.Discard)
+	must(t, err)
+	if owner, explicit := config.IsOwner(root); !owner || !explicit || env.Guest {
+		t.Errorf("after a save: owner=%v explicit=%v guest=%v", owner, explicit, env.Guest)
 	}
 }

@@ -742,3 +742,6 @@ button.card:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 14
 .backup-action { align-self: center; display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
 .ok-banner { border-color: #4ade80; color: #4ade80; }
 .spin { animation: spin 1s linear infinite; }
+
+.role-card { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.role-card .segmented button { display: inline-flex; align-items: center; gap: 6px; }

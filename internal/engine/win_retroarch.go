@@ -78,6 +78,7 @@ func (e *Env) SaveRetroArch(ctx context.Context, out io.Writer) (retroarch.Manif
 		return retroarch.Manifest{}, fmt.Errorf("copy the settings to %s: %w", retroarch.GitDir(e.Root), err)
 	}
 	reportExport(out, "windows/retroarch", git)
+	e.becomeOwner(out)
 
 	host, _ := os.Hostname()
 	m := retroarch.Manifest{
@@ -213,7 +214,13 @@ func (e *Env) RestoreRetroArch(ctx context.Context, out io.Writer, mirror bool) 
 				return err
 			}
 		}
-		res, err := snapshot.Import(gitDir, cfg.Path, cfg.Git, secrets)
+		patterns := cfg.Git
+		if e.Guest {
+			// someone else: the settings, not the owner's saves and history
+			patterns = withoutTop(patterns, retroarch.OwnerOnly...)
+			fmt.Fprintf(out, "configuration of someone else: %s and account names are left out\n", strings.Join(retroarch.OwnerOnly, ", "))
+		}
+		res, err := snapshot.ImportWith(gitDir, cfg.Path, patterns, secrets, e.Guest)
 		if err != nil {
 			return fmt.Errorf("copy the settings from %s: %w", gitDir, err)
 		}

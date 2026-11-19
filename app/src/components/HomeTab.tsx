@@ -2,6 +2,7 @@ import { ArrowRight, Box, CircleCheck, Cpu, FileCode, FolderOpen, HardDrive, Mem
 import { motion } from "motion/react";
 import type { Plan, Profile, SystemInfo, Wizard } from "../types";
 import { Help } from "./Help";
+import { RoleCard } from "./RoleCard";
 import { CountUp } from "./ui/CountUp";
 
 interface Props {
@@ -12,6 +13,8 @@ interface Props {
   root: string;
   onStep: (index: number) => void;
   onApplyPending: () => void;
+  /** Called when the role changed what the profile would do. */
+  onRoleChanged?: () => void;
 }
 
 const DISTRO_COLOR: Record<string, string> = {
@@ -24,7 +27,7 @@ const DISTRO_COLOR: Record<string, string> = {
 
 export const ENV_LABEL = { dev: "Ambiente de desenvolvimento", gaming: "Ambiente de jogos", "": "Ambiente não identificado" } as const;
 
-export function HomeTab({ info, profile, wizard, plan, root, onStep, onApplyPending }: Props) {
+export function HomeTab({ info, profile, wizard, plan, root, onStep, onApplyPending, onRoleChanged }: Props) {
   const env = profile?.environment ?? (info?.os === "windows" ? "gaming" : "");
   const name = info?.name || info?.id || "Sistema";
   const color = DISTRO_COLOR[info?.id ?? ""] ?? DISTRO_COLOR[info?.family ?? ""] ?? "#6ea8fe";
@@ -90,6 +93,8 @@ export function HomeTab({ info, profile, wizard, plan, root, onStep, onApplyPend
           </div>
         )}
       </div>
+
+      <RoleCard root={root} onChanged={onRoleChanged} />
 
       <div className="card">
         <dl className="facts">

@@ -71,6 +71,29 @@ func (e *Env) SavePlaynite(ctx context.Context, out io.Writer) (playnite.Manifes
 		return playnite.Manifest{}, fmt.Errorf("copy the settings to %s: %w", playnite.GitDir(e.Root), err)
 	}
 	reportExport(out, "windows/playnite", git)
+	e.becomeOwner(out)
+
+	// what a restore without the store downloads: the program and the add-ons
+	if v, err := e.Runner.Output(ctx, e.script(fmt.Sprintf("(Get-Item -LiteralPath %s).VersionInfo.FileVersion", psQuote(filepath.Join(cfg.Path, "Playnite.dll"))))...); err == nil && playnite.ParseVersion(v) != "" {
+		cfg.Version = playnite.ParseVersion(v)
+		saved, _, err := playnite.Load(playnite.Path(e.Root))
+		if err != nil {
+			return playnite.Manifest{}, err
+		}
+		if saved.Version != cfg.Version {
+			saved.Version = cfg.Version
+			if err := playnite.Save(playnite.Path(e.Root), saved); err != nil {
+				return playnite.Manifest{}, err
+			}
+		}
+	} else if cfg.Version == "" {
+		fmt.Fprintln(out, "warning: the version of Playnite could not be read; set version in config/playnite.yaml or a restore without the HD cannot download it")
+	}
+	addons := playnite.ScanAddons(cfg.Path)
+	if err := playnite.WriteAddons(playnite.AddonsFile(e.Root), playnite.AddonList{Playnite: cfg.Version, Addons: addons}); err != nil {
+		return playnite.Manifest{}, err
+	}
+	fmt.Fprintf(out, "Playnite %s and %d themes and extensions listed in windows/playnite/addons.yaml\n", cfg.Version, len(addons))
 	host, _ := os.Hostname()
 	m := playnite.Manifest{SavedAt: time.Now().UTC().Truncate(time.Second), Source: cfg.Path, Computer: host, Extensions: []string{}, Secrets: len(git.Secrets)}
 	if ra, ok, err := e.RetroArchConfig(); err == nil && ok {
@@ -118,63 +141,166 @@ func (e *Env) SavePlaynite(ctx context.Context, out io.Writer) (playnite.Manifes
 	return m, playnite.WriteManifest(cfg.Store, m)
 }
 
-// RestorePlaynite copies the snapshot to the Playnite folder, fixes the
-// paths when the folder is not the one it was saved from and registers it in
-// the Start menu. mirror also deletes what the snapshot does not have.
+// RestorePlaynite puts Playnite back.
+//
+// With the store (the HD): its copy goes to the Playnite folder (program,
+// library, media, themes, extensions), the settings of git on top with the
+// keys of the store, and the paths are fixed when the folders moved.
+//
+// Without it (no store set, the drive is not there or has no snapshot):
+// the program is downloaded at the version of config/playnite.yaml, the
+// add-ons of windows/playnite/addons.yaml come from the Playnite add-on
+// database, and git brings the settings and the library databases (but the
+// games, imported again by the library extensions and the scanners).
+//
+// mirror also deletes from the folder what the store copy does not have.
 func (e *Env) RestorePlaynite(ctx context.Context, out io.Writer, mirror bool) error {
 	cfg, _, err := e.PlayniteConfig()
 	if err != nil {
 		return err
 	}
-	if cfg.Store == "" {
-		return fmt.Errorf("choose the folder of the snapshot first (store in config/playnite.yaml)")
-	}
-	m, err := playnite.ReadManifest(cfg.Store)
-	if err != nil {
-		return err
-	}
-	if m == nil {
-		return fmt.Errorf("%s has no snapshot (%s is missing): save one with playnite-save", cfg.Store, playnite.ManifestFile)
-	}
-	if _, err := os.Stat(filepath.Join(cfg.Snapshot(), playnite.Exe)); err != nil {
-		return fmt.Errorf("the snapshot in %s is incomplete: %s is missing", cfg.Snapshot(), playnite.Exe)
+	var m *playnite.Manifest
+	if cfg.Store != "" {
+		if m, err = playnite.ReadManifest(cfg.Store); err != nil {
+			return err
+		}
+		if m != nil && !exists(filepath.Join(cfg.Snapshot(), playnite.Exe)) {
+			return fmt.Errorf("the snapshot in %s is incomplete: %s is missing", cfg.Snapshot(), playnite.Exe)
+		}
 	}
 	if err := e.playniteClosed(ctx); err != nil {
 		return err
 	}
-	fmt.Fprintf(out, "copying the snapshot of %s (%s) to %s\n", m.SavedAt.Local().Format("2006-01-02 15:04"), m.Computer, cfg.Path)
-	if err := e.robocopy(ctx, out, playnite.RobocopyArgs(cfg.Snapshot(), cfg.Path, cfg.StoreExclude(), mirror)); err != nil {
-		return err
-	}
-	if gitDir := playnite.GitDir(e.Root); len(snapshot.ProfileFiles(gitDir, cfg.Git)) > 0 {
-		secrets, err := snapshot.ReadSecrets(snapshot.SecretsFile(cfg.Store, playnite.Program))
-		if err != nil {
+	gitDir := playnite.GitDir(e.Root)
+	patterns := cfg.Git
+	var secrets []snapshot.Secret
+	if m != nil {
+		fmt.Fprintf(out, "copying the snapshot of %s (%s) to %s\n", m.SavedAt.Local().Format("2006-01-02 15:04"), m.Computer, cfg.Path)
+		if err := e.robocopy(ctx, out, playnite.RobocopyArgs(cfg.Snapshot(), cfg.Path, cfg.StoreExclude(), mirror)); err != nil {
 			return err
 		}
-		res, err := snapshot.Import(gitDir, cfg.Path, cfg.Git, secrets)
+		// the databases of the store match its games.db: git does not overwrite them
+		patterns = snapshot.Without(cfg.Git, playnite.LibraryDir)
+		if secrets, err = snapshot.ReadSecrets(snapshot.SecretsFile(cfg.Store, playnite.Program)); err != nil {
+			return err
+		}
+	} else {
+		if cfg.Store == "" {
+			fmt.Fprintln(out, "no store is set: Playnite is installed from the internet and git")
+		} else {
+			fmt.Fprintf(out, "%s has no Playnite snapshot (the drive is not there?): Playnite is installed from the internet and git\n", cfg.Store)
+		}
+		if err := e.installPlayniteFresh(ctx, out, cfg); err != nil {
+			return err
+		}
+	}
+	if len(snapshot.ProfileFiles(gitDir, patterns)) > 0 {
+		if e.Guest {
+			fmt.Fprintln(out, "configuration of someone else: account ids are left out of the settings")
+		}
+		res, err := snapshot.ImportWith(gitDir, cfg.Path, patterns, secrets, e.Guest)
 		if err != nil {
 			return fmt.Errorf("copy the settings from %s: %w", gitDir, err)
 		}
-		fmt.Fprintf(out, "settings from git: %d files, %d updated, %d keys or tokens put back\n", res.Files, res.Changed, res.Secrets)
+		fmt.Fprintf(out, "from git: %d files, %d updated, %d keys or tokens put back\n", res.Files, res.Changed, res.Secrets)
 	}
-	changed, err := playnite.RewritePaths(cfg.Path, m.Source, cfg.Path)
-	if err != nil {
-		return fmt.Errorf("point the settings at %s: %w", cfg.Path, err)
-	}
-	if len(changed) > 0 {
-		fmt.Fprintf(out, "%s replaced by %s in %d settings files\n", m.Source, cfg.Path, len(changed))
-	}
-	// the library keeps full paths to RetroArch and its games
-	if ra, ok, err := e.RetroArchConfig(); err == nil && ok {
-		if err := e.RelocatePlaynite(ctx, out, m.RetroArch, ra.Path); err != nil {
-			return err
+	if m != nil {
+		changed, err := playnite.RewritePaths(cfg.Path, m.Source, cfg.Path)
+		if err != nil {
+			return fmt.Errorf("point the settings at %s: %w", cfg.Path, err)
 		}
-		if err := e.RelocatePlaynite(ctx, out, m.RetroGames, ra.Games); err != nil {
-			return err
+		if len(changed) > 0 {
+			fmt.Fprintf(out, "%s replaced by %s in %d settings files\n", m.Source, cfg.Path, len(changed))
+		}
+		// the library keeps full paths to RetroArch and its games
+		if ra, ok, err := e.RetroArchConfig(); err == nil && ok {
+			if err := e.RelocatePlaynite(ctx, out, m.RetroArch, ra.Path); err != nil {
+				return err
+			}
+			if err := e.RelocatePlaynite(ctx, out, m.RetroGames, ra.Games); err != nil {
+				return err
+			}
 		}
 	}
 	if cfg.StartMenu {
 		return e.registerPlaynite(ctx, out, cfg)
+	}
+	return nil
+}
+
+// installPlayniteFresh downloads the portable Playnite and the add-ons of
+// windows/playnite/addons.yaml. Add-ons the database does not have are
+// listed at the end: they were installed by hand.
+func (e *Env) installPlayniteFresh(ctx context.Context, out io.Writer, cfg playnite.Config) error {
+	list, err := playnite.ReadAddons(playnite.AddonsFile(e.Root))
+	if err != nil {
+		return err
+	}
+	version := cfg.Version
+	if version == "" {
+		version = list.Playnite
+	}
+	if !exists(filepath.Join(cfg.Path, playnite.Exe)) {
+		if version == "" {
+			return fmt.Errorf("config/playnite.yaml has no version to download: save once with Playnite installed, or set it by hand")
+		}
+		tmp, err := os.MkdirTemp("", "envsetup-playnite-")
+		if err != nil {
+			return err
+		}
+		defer os.RemoveAll(tmp)
+		archive := filepath.Join(tmp, "Playnite.7z")
+		fmt.Fprintf(out, "downloading Playnite %s\n", version)
+		if err := snapshot.Download(ctx, playnite.ProgramURL(version), archive, out); err != nil {
+			return err
+		}
+		if err := os.MkdirAll(cfg.Path, 0o755); err != nil {
+			return err
+		}
+		// the bsdtar of Windows reads 7z (Git's tar does not)
+		tar := filepath.Join(os.Getenv("SystemRoot"), "System32", "tar.exe")
+		if !exists(tar) {
+			tar = "tar"
+		}
+		if err := e.Runner.Run(ctx, out, tar, "-xf", archive, "-C", cfg.Path); err != nil {
+			return fmt.Errorf("extract %s: %w", archive, err)
+		}
+	}
+	var todo []playnite.Addon
+	for _, a := range list.Addons {
+		if !a.Builtin && !exists(filepath.Join(cfg.Path, filepath.FromSlash(a.Folder))) {
+			todo = append(todo, a)
+		}
+	}
+	if len(todo) == 0 {
+		return nil
+	}
+	catalog, err := playnite.Catalog(ctx)
+	if err != nil {
+		return err
+	}
+	fmt.Fprintf(out, "installing %d themes and extensions from the Playnite add-on database\n", len(todo))
+	var manual []string
+	for _, a := range todo {
+		url := catalog[strings.ToLower(a.ID)]
+		if url == "" {
+			manual = append(manual, a.Name)
+			continue
+		}
+		got, err := playnite.InstallAddon(ctx, a, url, cfg.Path, out)
+		if err != nil {
+			fmt.Fprintf(out, "  %s: %v\n", a.Name, err)
+			manual = append(manual, a.Name)
+			continue
+		}
+		note := ""
+		if got != a.Version {
+			note = fmt.Sprintf(" (was %s)", a.Version)
+		}
+		fmt.Fprintf(out, "  %s %s%s\n", a.Name, got, note)
+	}
+	if len(manual) > 0 {
+		fmt.Fprintf(out, "not in the add-on database, install by hand: %s\n", strings.Join(manual, ", "))
 	}
 	return nil
 }

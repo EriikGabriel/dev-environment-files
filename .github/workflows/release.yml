@@ -1,0 +1,107 @@
+# Builds the desktop app (Tauri, with the envsetup sidecar and the data of
+# config/, dotfiles/ and windows/) for Windows and Linux and publishes the
+# installers on the GitHub release of the tag, with the one-line install
+# scripts of scripts/.
+#
+#   git tag v0.2.0 && git push origin v0.2.0
+#
+# or run it by hand (Actions > Release > Run workflow) with a tag name.
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to publish (it is created on the chosen branch if missing), e.g. v0.2.0"
+        required: true
+
+permissions:
+  contents: write
+
+env:
+  TAG: ${{ github.event.inputs.tag || github.ref_name }}
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+          - os: ubuntu-22.04
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      # the tests check Windows paths (robocopy, the tar.exe of System32)
+      - name: Go tests
+        if: runner.os == 'Windows'
+        run: go test ./...
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: app/src-tauri
+
+      - name: Linux libraries for Tauri
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libfuse2
+
+      - name: Install the app dependencies
+        working-directory: app
+        run: npm ci
+
+      # beforeBuildCommand (tauri.conf.json) builds the Go sidecar for this
+      # runner and the frontend; the action creates the release if needed
+      # and uploads the bundles.
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          projectPath: app
+          tagName: ${{ env.TAG }}
+          releaseName: "envsetup ${{ env.TAG }}"
+          releaseBody: |
+            Instaladores do envsetup (o app de configurar e formatar o PC).
+
+            **Windows** (PowerShell):
+            ```powershell
+            irm https://github.com/${{ github.repository }}/releases/latest/download/install.ps1 | iex
+            ```
+            ou baixe o `envsetup_*_x64-setup.exe` abaixo.
+
+            **Ubuntu / Debian e Arch** (terminal):
+            ```bash
+            curl -fsSL https://github.com/${{ github.repository }}/releases/latest/download/install.sh | bash
+            ```
+            ou baixe o `.deb` (Ubuntu) ou o `.AppImage` (Arch e outros) abaixo.
+
+            O que o app faz numa instalação limpa: [docs/formatacao.md](https://github.com/${{ github.repository }}/blob/${{ env.TAG }}/docs/formatacao.md).
+          releaseDraft: false
+          prerelease: false
+
+  scripts:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Attach the install scripts
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "$TAG" scripts/install.sh scripts/install.ps1 --clobber --repo "${{ github.repository }}"

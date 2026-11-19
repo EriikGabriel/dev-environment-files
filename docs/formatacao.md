@@ -23,7 +23,7 @@ Termos usados:
 | Situação | O que acontece |
 |---|---|
 | Formatou só o C:, salvou e enviou tudo antes | Tudo da tabela "O que volta" abaixo volta. Você refaz só a lista "O que fica por sua conta". |
-| Sem o HD (perdido, formatado ou desconectado) | Os programas, drivers, lojas, Windhawk e o RetroArch (com configurações e saves) voltam. O Playnite **não** volta. Os jogos, a BIOS e as senhas se perdem. |
+| Sem o HD (perdido, formatado ou desconectado) | Os programas, drivers, lojas, Windhawk, o RetroArch (com configurações e saves) e o Playnite (com temas, extensões, configurações, emuladores e pastas de ROM) voltam. Os jogos, a BIOS, as senhas e, no Playnite, o tempo jogado, os favoritos e os trailers se perdem. |
 | HD presente, mas o GitHub ficou para trás (esqueceu de enviar) | Volta tudo, mas as configurações e os saves voltam **na versão do último envio**. |
 | Usou só os dados do instalador, sem clonar | Igual ao anterior, com a versão da época em que o instalador foi gerado. |
 | Sem internet | Quase nada: só as cópias que vêm do HD funcionam. |
@@ -43,7 +43,7 @@ registrada e as seguintes **continuam**.
 | **Periféricos** | MCHOSE HUB, Attack Shark Driver, SignalRGB, 8BitDo Ultimate Software V2 | site do fabricante, winget | não |
 | **Lojas e launchers** | Steam, Epic Games, Hydra Launcher / GOG Galaxy, EA app, Ubisoft Connect, Battle.net | winget | não |
 | **Aparência** | Windhawk e os mods de `windows/windhawk/backup.json`, com as configurações (dock, ilha, menu Iniciar, Explorer…) | winget e o repositório de mods do Windhawk | não |
-| **Playnite** | o Playnite portable em `C:\Playnite`: biblioteca, capas, trailers, temas, extensões e configurações | HD (`D:\envsetup\Playnite`) e GitHub (`windows/playnite`) | **sim** |
+| **Playnite** | o Playnite portable em `C:\Playnite`: biblioteca, capas, trailers, temas, extensões e configurações | HD (`D:\envsetup\Playnite`) e GitHub (`windows/playnite`); sem o HD, o programa e os add-ons vêm da internet | só a biblioteca de jogos e as mídias |
 | **Emuladores** | o RetroArch portable em `C:\Emuladores\RetroArch`: programa, 7 cores, configurações, saves, estados, playlists e BIOS | buildbot.libretro.com, GitHub (`windows/retroarch`) e HD (BIOS) | só a BIOS e as senhas |
 | **Comunicação e navegador** | Discord, Opera GX / Brave, Spotify, OBS Studio | winget | não |
 | **Otimizações** | — / políticas de grupo (`config/policies.yaml`) | registro do Windows | não |
@@ -59,6 +59,10 @@ registrada e as seguintes **continuam**.
     corrigidos.
   - No fim, entra no menu Iniciar e o Windows Media Player é instalado (ele toca os trailers).
   - Os caches (`cache`, `browsercache`) não são guardados: o Playnite refaz sozinho.
+  - **Sem o HD**, o Playnite é baixado (versão de `config/playnite.yaml`), os temas e extensões
+    de `windows/playnite/addons.yaml` vêm do banco de add-ons do Playnite e o GitHub traz as
+    configurações e a estrutura da biblioteca. O que só o HD guarda está em
+    [configuracao.md](configuracao.md#o-que-o-github-garante-do-playnite-e-o-que-só-o-hd-guarda).
 - **RetroArch.**
   - Baixa o RetroArch na versão gravada em `config/retroarch.yaml` (hoje a 1.22.2), os pacotes
     de assets e os 7 cores.
@@ -160,7 +164,7 @@ Tudo o que vem do GitHub e da internet continua funcionando.
 | Item | Sem o HD |
 |---|---|
 | Programas, drivers, periféricos, lojas, Hydra, Windhawk, Discord, Raycast… | voltam normalmente |
-| **Playnite** | **não volta**: a etapa falha ("has no snapshot") e as seguintes continuam. As configurações estão no GitHub, mas a biblioteca, as capas, os trailers, os temas e as extensões estavam só no HD. Instale o Playnite de novo e refaça a biblioteca. |
+| **Playnite** | volta da internet e do GitHub: o programa, os temas e extensões (menos os que não estão no banco de add-ons, hoje o PS5reborn), as configurações, os emuladores e as pastas de ROM. Os jogos são importados de novo pelas lojas e scanners, **sem** tempo jogado, favoritos e notas; capas e trailers são baixados de novo. |
 | **RetroArch** | volta: programa e cores baixados, configurações, saves, estados e playlists do GitHub |
 | BIOS do RetroArch | **perdida**: jogos de PlayStation (Beetle PSX HW) não abrem até você pôr a BIOS na pasta `system` |
 | Senha do RetroAchievements e chaves de API do Playnite | **perdidas**: entre de novo nos programas |
@@ -170,8 +174,7 @@ Tudo o que vem do GitHub e da internet continua funcionando.
 configurações do GitHub):
 - Esvazie o `store` antes de aplicar, com `envsetup set-retroarch --store ""` e
   `envsetup set-playnite --store ""`, ou escolha outra pasta na aba Backup.
-- Desmarque a etapa **Playnite**.
-- O RetroArch volta só com o que está no GitHub e na internet.
+- O RetroArch e o Playnite voltam só com o que está no GitHub e na internet.
 
 **Para não restaurar nada do Playnite e do RetroArch:** desmarque as etapas **Playnite** e
 **Emuladores** na aba Configurar. O resto do perfil não depende delas.
@@ -230,6 +233,52 @@ as playlists e a biblioteca do Playnite passam a apontar para a letra nova
 
 Copie `D:\envsetup` e `D:\Games` para outro disco antes e use o cenário 7 para apontar para lá.
 Sem isso, é o cenário 2.
+
+---
+
+## Para outra pessoa: instalar com as configurações do dono
+
+O app foi feito para o dono do repositório, mas qualquer pessoa pode usá-lo para formatar o PC
+com as mesmas escolhas, ligando e desligando o que quiser.
+
+**Instalar o app.** Pela página de releases do GitHub:
+
+- **Windows** (PowerShell):
+  `irm https://github.com/EriikGabriel/dev-environment-files/releases/latest/download/install.ps1 | iex`,
+  ou baixe o `envsetup_*_x64-setup.exe`.
+- **Ubuntu / Debian e Arch** (terminal):
+  `curl -fsSL https://github.com/EriikGabriel/dev-environment-files/releases/latest/download/install.sh | bash`.
+  Instala o `.deb` no Ubuntu e o `.AppImage` no Arch (com o `fuse2`).
+
+Na primeira execução, escolha **Usar dados incluídos**: o app copia as configurações que vieram
+no instalador para `Documentos\envsetup`.
+
+**De quem é a configuração.** A tela Início pergunta "De quem é esta configuração?". Quem instalou
+pelo instalador já começa em **De outra pessoa**; o dono, que usa um clone do Git, em **É minha**.
+A escolha fica em `local.yaml`, que nunca vai para o git.
+
+| | Dono | Outra pessoa |
+|---|---|---|
+| Programas, drivers, lojas, Windhawk, políticas, barra de tarefas | tudo, já marcado | tudo, já marcado; desmarque o que não quiser |
+| Driver de vídeo | o da placa detectada | o da placa detectada |
+| Programas dos periféricos (MCHOSE, Attack Shark, 8BitDo) | marcados se o aparelho estiver conectado | idem: sem o aparelho, vêm desmarcados |
+| Playnite: temas, extensões, configurações, emuladores, pastas de ROM | sim | sim, **sem** as contas do dono (Steam ID, IDs de usuário) |
+| Playnite: biblioteca de jogos, tempo jogado, mídias | do HD do dono | não (cada um tem a sua; os jogos vêm das suas lojas) |
+| RetroArch: programa, cores, configurações, opções dos cores, capas | sim | sim, **sem** o usuário do RetroAchievements e o apelido do netplay |
+| RetroArch: saves, estados, playlists e histórico | sim | **não** |
+| Aba Backup: enviar e baixar do GitHub | sim | não (o backup de quem não é o dono é o próprio HD) |
+
+**Ao salvar a sua própria configuração** (Salvar nas abas Playnite e RetroArch), a pasta de dados
+passa a guardar o que é seu e o app passa a tratar você como dono. Assim, uma restauração futura
+não deixa de fora os seus saves.
+
+**Antes de instalar o Windows pelo pendrive:** o `autounattend.xml` cria a conta com o nome do
+dono. A aba Instalação mostra o nome; para trocar, use **Customizar no site**, mude a conta,
+baixe o XML e use **Importar XML…**.
+
+**O que cada um ajusta.** As pastas (`D:\Games`, `C:\Emuladores`), o HD, as etapas e os itens se
+mudam nas abas, sem editar arquivos. O que o dono deixa como padrão está em `config/`; veja
+[configuracao.md](configuracao.md).
 
 ---
 

@@ -1,6 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
-import type { AddResult, Backup, ApplyEvent, CopyReport, DataInfo, DesktopPreview, FileView, IconPackPage, Icons, IconsConfig, Layout, LayoutChoice, InstallMedia, NewApp, Plan, Playnite, PlayniteConfig, PlayniteManifest, RetroArch, RetroArchConfig, RetroArchManifest, Policies, Windhawk, Profile, Selection, SystemInfo, VentoyDrive, Wizard, Written } from "./types";
+import type { AddResult, Backup, Role, ApplyEvent, CopyReport, DataInfo, DesktopPreview, FileView, IconPackPage, Icons, IconsConfig, Layout, LayoutChoice, InstallMedia, NewApp, Plan, Playnite, PlayniteConfig, PlayniteManifest, RetroArch, RetroArchConfig, RetroArchManifest, Policies, Windhawk, Profile, Selection, SystemInfo, VentoyDrive, Wizard, Written } from "./types";
 
 const run = <T>(root: string, args: string[]) => invoke<T>("envsetup", { root, args });
 
@@ -268,3 +268,10 @@ export const closePlaynite = (root: string) => run<{ closed: boolean }>(root, ["
 
 /** Moves the RetroArch games to another folder and points the playlists and the Playnite library at it. */
 export const moveRetroArchGames = (root: string, folder: string) => run<{ games: string }>(root, ["retroarch-move-games", folder]);
+
+/** Whose configuration the data folder holds (local.yaml). */
+export const role = (root: string) => run<Role>(root, ["role"]);
+
+/** Says the configuration is the user's (true), someone else's (false), or guesses again (null). */
+export const setRole = (root: string, owner: boolean | null) =>
+  run<Role>(root, ["set-role", ...(owner === null ? ["--auto"] : [`--owner=${owner}`])]);

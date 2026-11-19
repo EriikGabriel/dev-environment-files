@@ -32,10 +32,16 @@ type Env struct {
 	Fetch    install.Fetch
 	// WindhawkCLI replaces windhawk-cli.exe in tests.
 	WindhawkCLI string
+	// Guest is set when the configuration is someone else's (local.yaml,
+	// config.IsOwner): restores leave out the owner's saves, play history
+	// and account ids.
+	Guest bool
 
 	refreshed map[string]bool
 	// gpus caches GPUs; nil until read.
 	gpus *[]string
+	// devices caches Devices; nil until read.
+	devices *[]string
 }
 
 // refresh updates a backend's metadata at most once per run.

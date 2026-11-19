@@ -235,3 +235,12 @@ export interface CopyReport {
   added: number;
   kept: number;
 }
+
+/** `envsetup role --json`: whose configuration the data folder holds. */
+export interface Role {
+  /** True when the configuration is the user's; someone else's restores leave out the owner's saves, play history and accounts. */
+  owner: boolean;
+  /** Set in local.yaml; false when guessed (a git clone is the owner's, the installer's copy someone else's). */
+  explicit: boolean;
+  clone: boolean;
+}

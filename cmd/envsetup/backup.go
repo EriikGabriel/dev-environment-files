@@ -12,6 +12,8 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/EriikGabriel/dev-environment-files/internal/config"
+
 	"github.com/EriikGabriel/dev-environment-files/internal/engine"
 	"github.com/EriikGabriel/dev-environment-files/internal/windows/snapshot"
 )
@@ -58,6 +60,9 @@ type backupJSON struct {
 	StoreGit  *storeGit     `json:"store_git"`
 	Playnite  playniteJSON  `json:"playnite"`
 	RetroArch retroarchJSON `json:"retroarch"`
+	// Owner is false when the configuration is someone else's: there is no
+	// GitHub backup for them, only their own store.
+	Owner bool `json:"owner"`
 }
 
 // gitExe is git, also right after winget installed it (PATH is not updated
@@ -138,6 +143,7 @@ func backupCommands(f *flags) []*cobra.Command {
 				return err
 			}
 			b := backupJSON{Root: root, Git: gitStatus(root, fetch)}
+			b.Owner, _ = config.IsOwner(root)
 			if b.Playnite, err = describePlaynite(cmd, *f, false); err != nil {
 				return err
 			}

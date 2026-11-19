@@ -305,7 +305,9 @@ export function BackupTab({ root, onNavigate, onChanged }: Props) {
     },
   ];
 
-  const steps = mode === "after" ? after : before;
+  // someone else's configuration: their backup is their HD, the GitHub steps are the owner's
+  const ownerOnly = new Set(["git", "clone"]);
+  const steps = (mode === "after" ? after : before).filter((s) => data.owner || !ownerOnly.has(s.id));
   const required = steps.filter((s) => s.state !== "optional");
   const done = required.filter((s) => s.state === "ok").length;
   const next = steps.find((s) => s.state === "todo" || s.state === "warn");
@@ -313,6 +315,12 @@ export function BackupTab({ root, onNavigate, onChanged }: Props) {
   return (
     <section className="backup">
       {error && <p className="banner bad">{error}</p>}
+      {!data.owner && (
+        <p className="banner">
+          Você está usando a configuração de outra pessoa (veja em Início). O seu backup é o seu HD: salve o Playnite e o RetroArch nele. O
+          GitHub fica com o dono.
+        </p>
+      )}
       {note && <p className="banner">{note}</p>}
 
       <div className="card backup-hero">

@@ -43,6 +43,7 @@ func newRoot() *cobra.Command {
 		playniteCommands(f),  // playnite.go
 		retroarchCommands(f), // retroarch.go
 		backupCommands(f),    // backup.go: what a format needs, git push and pull
+		roleCommands(f),      // role.go: whose configuration this is
 	} {
 		root.AddCommand(group...)
 	}
