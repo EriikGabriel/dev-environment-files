@@ -657,14 +657,24 @@ apps:
   opera-gx: { description: Opera GX browser, names: { windows: Opera.OperaGX } }
   brave: { description: Brave browser, names: { windows: Brave.Brave } }
   # Dia is not on winget: its site hands out an MSIX through an .appinstaller,
-  # installed for the user (no elevation) and kept up to date by Windows.
+  # installed for the user (no elevation) and kept up to date by Windows. An
+  # MSIX app has no shortcut, so windows/msix-shortcut.ps1 makes one in the
+  # Start menu: the icons step can then give it the pack's icon, and the
+  # taskbar pins it like the other apps.
   dia:
-    description: 'Dia, the browser of The Browser Company (MSIX from diabrowser.com, installed for the user; updates itself)'
+    description: 'Dia, the browser of The Browser Company (MSIX from diabrowser.com, installed for the user; updates itself), with a Start menu shortcut so it gets the icon of the pack'
     method: { windows: script }
     check:
-      windows: 'if (-not (Get-AppxPackage -Name ''TheBrowserCompany.Dia'')) { exit 1 }'
+      windows: |
+        if (-not (Get-AppxPackage -Name 'TheBrowserCompany.Dia')) { exit 1 }
+        & "$env:ENVSETUP_ROOT\windows\msix-shortcut.ps1" -Name 'Dia' -Check; exit $LASTEXITCODE
     source:
-      windows: '$a = if ($env:PROCESSOR_ARCHITECTURE -eq ''ARM64'') { ''arm64'' } else { ''x64'' }; Add-AppxPackage -AppInstallerFile "https://releases.diabrowser.com/windows/release/Dia.$a.appinstaller"'
+      windows: |
+        if (-not (Get-AppxPackage -Name 'TheBrowserCompany.Dia')) {
+          $a = if ($env:PROCESSOR_ARCHITECTURE -eq 'ARM64') { 'arm64' } else { 'x64' }
+          Add-AppxPackage -AppInstallerFile "https://releases.diabrowser.com/windows/release/Dia.$a.appinstaller"
+        }
+        & "$env:ENVSETUP_ROOT\windows\msix-shortcut.ps1" -Package 'TheBrowserCompany.Dia' -Name 'Dia'
   obs-studio: { description: OBS Studio (recording and streaming), names: { windows: OBSProject.OBSStudio } }
   wallpaper-engine:
     description: Wallpaper Engine, bought on Steam (AppID 431960). Steam opens its install dialog
@@ -692,7 +702,7 @@ apps:
   ninite:
     description: "Ninite: one installer for the apps picked in the Instalação tab (it installs and updates them, with no questions)"
     method: { windows: ninite }
-    names: { windows: brave discord steam epic git spotify powertoys adoptjavax21 node.js24 }
+    names: { windows: discord steam epic git spotify powertoys adoptjavax21 node.js24 }
   group-policies:
     description: "Group policies from config/policies.yaml (telemetry, suggestions, widgets, Windows Update...); review them in the Políticas tab"
     method: { windows: policies }

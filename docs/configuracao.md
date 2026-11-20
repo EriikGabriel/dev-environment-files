@@ -200,7 +200,7 @@ vem o atalho fixado. O item fica pendente de novo quando o arquivo muda. Uma lis
 barra como está; um app que não está instalado fica de fora.
 
 `browser` é o navegador da máquina: o navegador padrão do Windows (quem abre links https), ou,
-se ele for o Edge, o primeiro instalado entre Dia, Brave, Opera GX, Chrome, Firefox, Vivaldi e Opera. O Dia é um app MSIX, sem atalho no menu Iniciar: ele é fixado pelo id do app (`TheBrowserCompany.Dia_…!Dia`).
+se ele for o Edge, o primeiro instalado entre Dia, Brave, Opera GX, Chrome, Firefox, Vivaldi e Opera. O Dia é um app MSIX, que não tem atalho no menu Iniciar: o item `dia` cria um (`windows/msix-shortcut.ps1`), que abre o app pelo id dele (`TheBrowserCompany.Dia_…!Dia`) e é o que vai fixado na barra e recebe o ícone do pack. Sem esse atalho, ele é fixado pelo id do app.
 Assim quem escolhe outro navegador mantém a mesma ordem. Se o mesmo atalho aparecer duas vezes
 (`browser` e `brave`, por exemplo), ele só é fixado uma vez.
 
@@ -233,6 +233,12 @@ Tudo isso se muda no cartão Ícones da aba Preview: "Escanear atalhos" mostra o
 Imagens escolhidas dentro da pasta de dados são guardadas com caminho relativo, então continuam
 valendo em outra máquina. Para trocar o ícone de um app sem override, ponha um arquivo com o
 nome dele no pack (`discord.png`); `envsetup icon-pack --query nome` mostra o nome que o pack usa.
+
+Os ícones que o MacTahoe não tem, ou desenha errado, foram escolhidos no
+[macosicons.com](https://macosicons.com) e ficam em `windows/icons/macosicons/` (Dia, Playnite e
+RetroArch); `go run ./cmd/iconpack` copia essa pasta por cima do pack, então eles aparecem na
+biblioteca do cartão Ícones como os outros. O Hydra Launcher fica com o ícone padrão (o original
+numa placa arredondada).
 
 ## Onde fica cada parte dos programas portáteis
 

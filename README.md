@@ -78,6 +78,12 @@ Mapa do código, testes, o contrato entre o app e o motor e como os dados entram
 
 ## Tempo de execução das etapas
 
-- Instalação da ISO do Windows: 12 min
-- Instalação dos drivers e updates do Windows (depende do tamanho do update): ~30 min
-- Configuração do sistema através do app: ~6 min
+Quanto leva cada passo de um PC formatado até o ambiente pronto (cerca de 1h10 a 1h15 no total):
+
+| Passo | Tempo | O que acontece |
+|---|---|---|
+| Instalar a ISO do Windows | 15 a 20 min | o pendrive Ventoy com o `autounattend.xml` instala o Windows sozinho, sem perguntas, e roda o Ninite no primeiro login |
+| Windows Update e drivers | ~30 min | atualizações do Windows e drivers; varia com o tamanho do update da vez |
+| Configurações no app | ~25 min | as etapas do perfil (programas, Playnite, RetroArch, Windhawk, políticas, barra de tarefas) e os ícones na aba Preview; a maior parte é download |
+
+Detalhes do passo a passo em [docs/formatacao.md](docs/formatacao.md).
