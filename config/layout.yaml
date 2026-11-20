@@ -14,7 +14,7 @@ taskbar:
     - browser
     - playnite
     - retroarch
-    - steam
+    - hydra
 clear_start: true
 hide_desktop_icons: true
 taskbar_autohide: true

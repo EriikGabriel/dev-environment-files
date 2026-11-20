@@ -45,17 +45,41 @@ function FindLink($names) {
 $esc = { param($s) [System.Security.SecurityElement]::Escape($s) }
 $pins = New-Object System.Collections.ArrayList
 $seen = @{}
+# What each pin starts, for the sign-in guard to tell whether the pins are there.
+$expected = New-Object System.Collections.ArrayList
+$startApps = @(try { Get-StartApps } catch { })
+$wsh = New-Object -ComObject WScript.Shell
 function PinId($name, $id) {
   [void]$pins.Add('        <taskbar:DesktopApp DesktopApplicationID="' + (& $esc $id) + '" />')
   Write-Output ('pinned: ' + $name)
+}
+# How a shortcut goes in the layout. An app with an id of its own (Brave,
+# com.squirrel.Discord.Discord) is pinned by that id, which is what Windows
+# matches pins by when it applies the layout at sign-in; a shortcut written as
+# a plain path was dropped there, leaving the taskbar almost empty. An app
+# known only by its path (a portable one) keeps the shortcut, written with
+# %APPDATA% or %ALLUSERSPROFILE% as the layout format expects.
+function PinXml($p) {
+  $base = [IO.Path]::GetFileNameWithoutExtension($p)
+  $app = $startApps | Where-Object { $_.Name -ieq $base -and $_.AppID -and $_.AppID -notmatch '[\\/:]' } | Select-Object -First 1
+  if ($app) { return '        <taskbar:DesktopApp DesktopApplicationID="' + (& $esc $app.AppID) + '" />' }
+  $v = $p
+  foreach ($pair in @(@($env:APPDATA, '%APPDATA%'), @($env:ProgramData, '%ALLUSERSPROFILE%'))) {
+    if ($pair[0] -and $p.StartsWith($pair[0] + '\', [StringComparison]::OrdinalIgnoreCase)) { $v = $pair[1] + $p.Substring($pair[0].Length); break }
+  }
+  '        <taskbar:DesktopApp DesktopApplicationLinkPath="' + (& $esc $v) + '" />'
 }
 function PinLink($name, $names) {
   $p = FindLink $names
   if (-not $p) { Write-Output ('not found in the Start menu, left out: ' + $name + ' (install it first)'); return }
   if ($seen[$p]) { Write-Output ('already pinned, left out: ' + $name + ' (' + [IO.Path]::GetFileNameWithoutExtension($p) + ')'); return }
   $seen[$p] = $true
-  [void]$pins.Add('        <taskbar:DesktopApp DesktopApplicationLinkPath="' + (& $esc $p) + '" />')
-  Write-Output ('pinned: ' + $name + ' (' + [IO.Path]::GetFileNameWithoutExtension($p) + ')')
+  $line = PinXml $p
+  [void]$pins.Add($line)
+  $t = $wsh.CreateShortcut($p).TargetPath
+  if ($t) { [void]$expected.Add($t) }
+  $how = if ($line -match 'DesktopApplicationID="([^"]+)"') { 'app id ' + $Matches[1] } else { 'shortcut' }
+  Write-Output ('pinned: ' + $name + ' (' + [IO.Path]::GetFileNameWithoutExtension($p) + ', by ' + $how + ')')
 }
 # The default browser (the program that opens https links) comes first; Edge,
 # or no choice yet, falls back to the first browser of the list installed.
@@ -96,9 +120,83 @@ $xml = @(
   '</LayoutModificationTemplate>'
 )
 [IO.File]::WriteAllText((Join-Path $dir ` + psQuote(XMLFile) + `), (($xml -join [Environment]::NewLine) + [Environment]::NewLine), (New-Object System.Text.UTF8Encoding $false))
+[IO.File]::WriteAllText((Join-Path $dir ` + psQuote(PinsFile) + `), (($expected -join [Environment]::NewLine) + [Environment]::NewLine), (New-Object System.Text.UTF8Encoding $false))
+$guard = @'
+` + GuardScript + `'@
+[IO.File]::WriteAllText((Join-Path $dir ` + psQuote(GuardFile) + `), $guard, (New-Object System.Text.UTF8Encoding $false))
 `)
 	return b.String()
 }
+
+// The sign-in guard: what the pins start (one target per line) and the
+// script that checks them, next to the layout file.
+const (
+	PinsFile  = `taskbar-pins.txt`
+	GuardFile = `taskbar-guard.ps1`
+	// RunValue is the HKCU\...\Run value that starts the guard at sign-in.
+	RunValue = `envsetup-taskbar`
+)
+
+// GuardScript runs at every sign-in of the user who applied the layout. When
+// the taskbar comes up with most of the pins missing (Windows re-reading the
+// layout at sign-in and failing to resolve them), it hands Windows the layout
+// again: newer file, Taskband reset, Explorer restarted. A pin the user took
+// off by hand stays off, since most of the others are still there. If the
+// repair does not bring the pins back it is not tried again for this layout,
+// so the shell is never restarted at every sign-in for nothing.
+const GuardScript = `# envsetup: puts the taskbar pins back when a sign-in leaves the taskbar
+# (almost) empty. Written by envsetup apply-layout, started at sign-in by the
+# HKCU Run value "` + RunValue + `". Its log is %LOCALAPPDATA%\envsetup\taskbar-guard.log.
+$ErrorActionPreference = 'SilentlyContinue'
+$dir = Join-Path $env:ProgramData '` + XMLDir + `'
+$xml = Join-Path $dir '` + XMLFile + `'
+$list = Join-Path $dir '` + PinsFile + `'
+if (-not (Test-Path -LiteralPath $xml) -or -not (Test-Path -LiteralPath $list)) { return }
+$want = @(Get-Content -LiteralPath $list | Where-Object { $_.Trim() })
+if ($want.Count -eq 0) { return }
+$stateDir = Join-Path $env:LOCALAPPDATA 'envsetup'
+$state = Join-Path $stateDir 'taskbar-guard.txt'
+$log = Join-Path $stateDir 'taskbar-guard.log'
+New-Item -ItemType Directory -Force -Path $stateDir | Out-Null
+function Log($m) { Add-Content -LiteralPath $log -Value ((Get-Date -Format 's') + ' ' + $m) }
+$sum = (Get-FileHash -LiteralPath $list -Algorithm SHA256).Hash
+if ((Get-Content -LiteralPath $state -Raw) -match $sum) { return }
+$tb = 'Registry::HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\Taskband'
+$pinned = Join-Path $env:APPDATA 'Microsoft\Internet Explorer\Quick Launch\User Pinned'
+# the targets of the shortcuts that are on the taskbar now: pinned shortcuts
+# whose name (long or 8.3) is in the taskbar's own list
+function Get-Missing {
+  $fav = (Get-ItemProperty -LiteralPath $tb).Favorites
+  if (-not $fav) { return $want }
+  $text = [Text.Encoding]::Unicode.GetString($fav) + [Text.Encoding]::ASCII.GetString($fav)
+  $sh = New-Object -ComObject WScript.Shell
+  $fso = New-Object -ComObject Scripting.FileSystemObject
+  $have = @{}
+  foreach ($l in @(Get-ChildItem -LiteralPath $pinned -Recurse -Filter *.lnk)) {
+    $short = $fso.GetFile($l.FullName).ShortName
+    if ($text.IndexOf($l.Name, [StringComparison]::OrdinalIgnoreCase) -lt 0 -and (-not $short -or $text.IndexOf($short, [StringComparison]::OrdinalIgnoreCase) -lt 0)) { continue }
+    $t = $sh.CreateShortcut($l.FullName).TargetPath
+    if ($t) { $have[$t.ToLowerInvariant()] = $true }
+  }
+  @($want | Where-Object { -not $have[$_.ToLowerInvariant()] })
+}
+for ($i = 0; $i -lt 120 -and -not (Get-Process -Name explorer); $i++) { Start-Sleep -Seconds 1 }
+Start-Sleep -Seconds 20
+$miss = @(Get-Missing)
+if ($miss.Count * 2 -le $want.Count) { return }
+Log ('pins missing after sign-in: ' + ($miss -join '; ') + ' - applying the layout again')
+(Get-Item -LiteralPath $xml).LastWriteTime = Get-Date
+Remove-Item -LiteralPath $tb -Recurse -Force
+Stop-Process -Name explorer -Force
+Start-Sleep -Seconds 30
+$miss = @(Get-Missing)
+if ($miss.Count * 2 -gt $want.Count) {
+  Log ('still missing: ' + ($miss -join '; ') + ' - not trying again for this layout')
+  Set-Content -LiteralPath $state -Value $sum
+} else {
+  Log 'pins are back'
+}
+`
 
 // AdminScript runs elevated: the policies it sets are under HKLM. The
 // taskbar layout is handed to Windows through the "Start layout" policy, the
@@ -157,8 +255,17 @@ func FinishScript(c Config) string {
 $v = (Get-ItemProperty -LiteralPath $sr -ErrorAction SilentlyContinue).Settings
 if ($v -and $v.Length -gt 8) { $v[8] = %d; Set-ItemProperty -LiteralPath $sr -Name 'Settings' -Value ([byte[]]$v) -Type Binary }
 `, autohide)
+	b.WriteString("$run = 'Registry::HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run'\n")
 	if len(Pinned(c.Taskbar)) > 0 {
 		b.WriteString("Remove-Item -LiteralPath 'Registry::HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Taskband' -Recurse -Force -ErrorAction SilentlyContinue\n")
+		// the guard checks the pins at every sign-in; a new layout gets its
+		// chances to repair again
+		fmt.Fprintf(&b, `$guard = Join-Path $env:ProgramData %s
+Set-ItemProperty -LiteralPath $run -Name %s -Value ('powershell.exe -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File "' + $guard + '"')
+Remove-Item -LiteralPath (Join-Path $env:LOCALAPPDATA 'envsetup\taskbar-guard.txt') -Force -ErrorAction SilentlyContinue
+`, psQuote(XMLDir+`\`+GuardFile), psQuote(RunValue))
+	} else {
+		fmt.Fprintf(&b, "Remove-ItemProperty -LiteralPath $run -Name %s -ErrorAction SilentlyContinue\n", psQuote(RunValue))
 	}
 	if c.ClearStart {
 		b.WriteString(`$state = Join-Path $env:LOCALAPPDATA 'Packages\Microsoft.Windows.StartMenuExperienceHost_cw5n1h2txyewy\LocalState'

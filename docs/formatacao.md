@@ -67,7 +67,7 @@ registrada e as seguintes **continuam**.
 | **Comunicação e navegador** | Discord, Opera GX / Brave, Spotify, OBS Studio | winget | não |
 | **Otimizações** | compressão de memória desligada (`Disable-MMAgent -MemoryCompression`; pede elevação e vale depois de reiniciar) / políticas de grupo (`config/policies.yaml`) | o próprio Windows | não |
 | **Apps da Steam** | Wallpaper Engine | a Steam (você precisa estar logado) | não |
-| **Barra de tarefas** | a barra (a dock do Windhawk): Explorador, Spotify, Discord, o seu navegador, Playnite, RetroArch e Steam; escondida automaticamente; menu Iniciar e área de trabalho limpos (`config/layout.yaml`) | o próprio Windows | não |
+| **Barra de tarefas** | a barra (a dock do Windhawk): Explorador, Spotify, Discord, o seu navegador, Playnite, RetroArch e Hydra Launcher; escondida automaticamente; menu Iniciar e área de trabalho limpos (`config/layout.yaml`) | o próprio Windows | não |
 
 ### Detalhes do que cada etapa restaura
 
@@ -100,6 +100,8 @@ Windows sem perguntas e já faz isto:
 - idioma pt-BR e a conta configurada no arquivo;
 - remove os apps que vêm de fábrica (Copilot, OneDrive, Teams…) e desliga widgets e sugestões;
 - liga o plano de energia Desempenho Máximo;
+- tira a Galeria do painel do Explorador de Arquivos;
+- deixa o Windows e os apps no modo escuro (vale para toda conta criada);
 - roda o Ninite no primeiro login.
 
 O mesmo arquivo pode ser aberto no gerador do schneegans.de pela aba Instalação.

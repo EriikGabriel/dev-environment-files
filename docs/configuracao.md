@@ -185,7 +185,7 @@ gpedit), `video` (o estado do vídeo), `about`, `caution` (ressalvas), os valore
 ## `config/layout.yaml`: barra de tarefas e área de trabalho (Windows)
 
 ```yaml
-taskbar: [explorer, spotify, discord, browser, playnite, retroarch, steam]   # da esquerda para a direita
+taskbar: [explorer, spotify, discord, browser, playnite, retroarch, hydra]   # da esquerda para a direita
 clear_start: true          # tira os apps fixados do menu Iniciar
 hide_desktop_icons: true
 taskbar_autohide: true     # esconde a barra automaticamente (a dock do Windhawk se esconde junto)
@@ -195,7 +195,7 @@ Os ids são os que a aba Preview mostra na "bandeja de apps" (os da lista do Nin
 `autounattend.xml` instala e os marcados em Configurar). Monte arrastando na Preview
 (`envsetup set-layout`) e aplique com o botão, com `envsetup apply-layout` ou pela etapa
 **Barra de tarefas**, a última do perfil de jogos (item `taskbar-layout`, método `layout`). Ela é
-a última para que Playnite, RetroArch e Steam já estejam instalados e no menu Iniciar, de onde
+a última para que Playnite, RetroArch e Hydra Launcher já estejam instalados e no menu Iniciar, de onde
 vem o atalho fixado. O item fica pendente de novo quando o arquivo muda. Uma lista vazia deixa a
 barra como está; um app que não está instalado fica de fora.
 
@@ -203,6 +203,19 @@ barra como está; um app que não está instalado fica de fora.
 se ele for o Edge, o primeiro instalado entre Brave, Opera GX, Chrome, Firefox, Vivaldi e Opera.
 Assim quem escolhe outro navegador mantém a mesma ordem. Se o mesmo atalho aparecer duas vezes
 (`browser` e `brave`, por exemplo), ele só é fixado uma vez.
+
+Os fixados são entregues ao Windows pela política "Layout de Início" (`StartLayoutFile`), que
+o Windows relê no login. Para que eles resistam ao login:
+- um app com id próprio (Brave, Discord, Explorador) é fixado pelo id que `Get-StartApps`
+  mostra, que é como o Windows reconhece um fixado;
+- um app só conhecido pelo caminho (o Playnite e o RetroArch portáteis) é fixado pelo atalho,
+  escrito com `%APPDATA%` / `%ALLUSERSPROFILE%`;
+- um guarda (`%ProgramData%\envsetup\taskbar-guard.ps1`, iniciado no login pelo valor
+  `envsetup-taskbar` de `HKCU\...\Run`) confere a barra uns 20 s depois do login. Se a maior
+  parte dos fixados sumiu, ele entrega o layout de novo e reinicia o Explorer. Um app que você
+  desafixou à mão continua desafixado. Se o reparo não resolver, ele desiste daquele layout e
+  anota o motivo em `%LOCALAPPDATA%\envsetup\taskbar-guard.log`. Uma lista `taskbar` vazia
+  desliga o guarda.
 
 ## `config/icons.yaml`: ícones no estilo macOS (Windows)
 

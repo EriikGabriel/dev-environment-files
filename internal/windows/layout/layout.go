@@ -175,7 +175,7 @@ var table = []known{
 	{id: "git", name: "Git Bash", ninite: []string{"git"}, match: []string{"Git Bash"}, glyph: "G", color: "#f05032"},
 	{id: "nvidia-app", name: "NVIDIA app", apps: []string{"nvidia-app"}, match: []string{"NVIDIA app"}, glyph: "N", color: "#76b900", desktop: true},
 	{id: "amd-software", name: "AMD Software", apps: []string{"amd-software"}, match: []string{"AMD Software"}, glyph: "A", color: "#ed1c24"},
-	{id: "hydra", name: "Hydra", github: []string{"hydra"}, match: []string{"Hydra"}, glyph: "H", color: "#1c9ad6", desktop: true},
+	{id: "hydra", name: "Hydra Launcher", github: []string{"hydra"}, match: []string{"Hydra Launcher", "Hydra"}, glyph: "H", color: "#1c9ad6", desktop: true},
 	{id: "obs-studio", name: "OBS Studio", apps: []string{"obs-studio"}, match: []string{"OBS Studio"}, glyph: "◉", color: "#302e31", desktop: true},
 	{id: "gog-galaxy", name: "GOG Galaxy", apps: []string{"gog-galaxy"}, match: []string{"GOG GALAXY"}, glyph: "G", color: "#8f3ad0"},
 	{id: "ea-app", name: "EA app", apps: []string{"ea-app"}, match: []string{"EA"}, glyph: "EA", color: "#ff4747"},

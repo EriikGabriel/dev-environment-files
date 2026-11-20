@@ -82,7 +82,7 @@ steps:
   # made from the Start menu shortcut).
   - id: desktop
     title: Barra de tarefas
-    description: "Fixa os apps na barra (a dock do Windhawk mostra eles): Explorador, Spotify, Discord, o seu navegador, Playnite, RetroArch e Steam. Esconde a barra automaticamente e limpa o menu Iniciar e os ícones da área de trabalho. Mude a ordem na aba Preview."
+    description: "Fixa os apps na barra (a dock do Windhawk mostra eles): Explorador, Spotify, Discord, o seu navegador, Playnite, RetroArch e Hydra Launcher. Esconde a barra automaticamente e limpa o menu Iniciar e os ícones da área de trabalho. Mude a ordem na aba Preview."
     apps: [taskbar-layout]
 
 files: []

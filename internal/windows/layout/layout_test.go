@@ -170,14 +170,51 @@ func TestBrowserRetroArchAndAutoHide(t *testing.T) {
 	}
 }
 
+// Pins that Windows drops at sign-in: apps with an id of their own go by it,
+// the others by a shortcut written with the variables the layout expects, and
+// a guard started at sign-in puts the layout back when the taskbar comes up
+// almost empty.
+func TestPinsSurviveTheSignIn(t *testing.T) {
+	c := Config{Taskbar: []string{"explorer", "browser", "playnite", "retroarch", "hydra"}}
+	prep := PrepareScript(c)
+	for _, want := range []string{
+		"Get-StartApps",
+		`DesktopApplicationID="' + (& $esc $app.AppID)`,
+		"'%APPDATA%'", "'%ALLUSERSPROFILE%'",
+		"PinLink 'Hydra Launcher' @('Hydra Launcher', 'Hydra')",
+		"'" + PinsFile + "'", "'" + GuardFile + "'",
+		"$guard = @'\n# envsetup: puts the taskbar pins back",
+		"\n'@\n",
+	} {
+		if !strings.Contains(prep, want) {
+			t.Errorf("prepare script misses %q", want)
+		}
+	}
+	if strings.Contains(GuardScript, "\n'@") || strings.Contains(GuardScript, "`") {
+		t.Error("the guard must fit in a single-quoted here-string")
+	}
+	for _, want := range []string{"Favorites", "User Pinned", "LastWriteTime = Get-Date", "Stop-Process -Name explorer", "$miss.Count * 2 -le $want.Count", "not trying again for this layout"} {
+		if !strings.Contains(GuardScript, want) {
+			t.Errorf("guard misses %q", want)
+		}
+	}
+	fin := FinishScript(c)
+	if !strings.Contains(fin, "-Name '"+RunValue+"'") || !strings.Contains(fin, GuardFile) || !strings.Contains(fin, "taskbar-guard.txt") {
+		t.Errorf("finish must start the guard at sign-in and give it a fresh start:\n%s", fin)
+	}
+	if off := FinishScript(Config{}); !strings.Contains(off, "Remove-ItemProperty -LiteralPath $run -Name '"+RunValue+"'") {
+		t.Errorf("no pins, no guard:\n%s", off)
+	}
+}
+
 func TestRepoLayoutPinsTheLaunchersAfterTheBrowser(t *testing.T) {
 	cfg, exists, err := Load(filepath.Join("..", "..", "..", "config", "layout.yaml"))
 	if err != nil || !exists {
 		t.Fatalf("config/layout.yaml: %v %v", exists, err)
 	}
 	got := strings.Join(cfg.Taskbar, ",")
-	if !strings.Contains(got, "browser,playnite,retroarch,steam") || strings.Contains(got, "epic") {
-		t.Errorf("the default dock is the browser, then Playnite, RetroArch and Steam, without Epic: %s", got)
+	if !strings.HasSuffix(got, "browser,playnite,retroarch,hydra") || strings.Contains(got, "epic") || strings.Contains(got, "steam") {
+		t.Errorf("the default dock ends with the browser, then Playnite, RetroArch and Hydra Launcher, without Epic or Steam: %s", got)
 	}
 	if !cfg.TaskbarAutoHide {
 		t.Error("the taskbar hides by default")

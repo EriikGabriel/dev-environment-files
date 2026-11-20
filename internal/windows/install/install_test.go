@@ -57,8 +57,24 @@ func TestReadUnattendOfTheRepo(t *testing.T) {
 	if ov.HasPassword {
 		t.Error("the account has no password")
 	}
-	if len(ov.Scripts) != 5 {
-		t.Errorf("want 5 scripts (1 system, 4 first logon), got %d", len(ov.Scripts))
+	if len(ov.Scripts) != 7 {
+		t.Errorf("want 7 scripts (2 system, 1 default user, 4 first logon), got %d", len(ov.Scripts))
+	}
+	// the Gallery leaves the Explorer and the new accounts start in dark mode;
+	// the generator's link carries them too, so a round trip keeps them
+	var gallery, dark bool
+	for _, s := range ov.Scripts {
+		gallery = gallery || strings.Contains(s.Body, `NameSpace_41040327\{e88865ea-0e1c-4e20-9aa6-edcd0212c87c}`)
+		dark = dark || (s.Phase == phaseLabels["DefaultUser"] && strings.Contains(s.Body, "AppsUseLightTheme /t REG_DWORD /d 0") && strings.Contains(s.Body, "SystemUsesLightTheme /t REG_DWORD /d 0"))
+	}
+	if !gallery || !dark {
+		t.Errorf("gallery removed %v, dark mode %v", gallery, dark)
+	}
+	raw := string(repoFile(t, "windows/autounattend.xml"))
+	for _, want := range []string{`unattend-06.ps1`, `unattend-07.ps1`} {
+		if strings.Count(raw, want) != 2 {
+			t.Errorf("%s must be written and run", want)
+		}
 	}
 	flat := map[string][]string{}
 	for _, s := range ov.Sections {
