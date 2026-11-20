@@ -76,7 +76,7 @@ Mapa do código, testes, o contrato entre o app e o motor e como os dados entram
 - [x] Aba Backup: passo a passo para formatar
 - [ ] Testar os scripts do GNOME numa sessão real
 
-### Tempo de execução das etapas
+## Tempo de execução das etapas
 
 - Instalação da ISO do Windows: 12 min
 - Instalação dos drivers e updates do Windows (depende do tamanho do update): ~30 min
