@@ -179,7 +179,7 @@ func TestPinsSurviveTheSignIn(t *testing.T) {
 	prep := PrepareScript(c)
 	for _, want := range []string{
 		"Get-StartApps",
-		`DesktopApplicationID="' + (& $esc $app.AppID)`,
+		"[IO.Path]::GetFileName($p) + '|' + $aumid",
 		"'%APPDATA%'", "'%ALLUSERSPROFILE%'",
 		"PinLink 'Hydra Launcher' @('Hydra Launcher', 'Hydra')",
 		"'" + PinsFile + "'", "'" + GuardFile + "'",
@@ -190,10 +190,16 @@ func TestPinsSurviveTheSignIn(t *testing.T) {
 			t.Errorf("prepare script misses %q", want)
 		}
 	}
+	// on a fresh machine the apps given by app id were gone after signing in
+	// again, the shortcuts written with %APPDATA% stayed: only Explorer, which
+	// has no shortcut, goes by id
+	if i := strings.Index(prep, "function PinXml"); i < 0 || strings.Contains(prep[i:strings.Index(prep, "function PinLink")], "DesktopApplicationID") {
+		t.Error("the apps must be pinned by their shortcut")
+	}
 	if strings.Contains(GuardScript, "\n'@") || strings.Contains(GuardScript, "`") {
 		t.Error("the guard must fit in a single-quoted here-string")
 	}
-	for _, want := range []string{"Favorites", "User Pinned", "LastWriteTime = Get-Date", "Stop-Process -Name explorer", "$miss.Count * 2 -le $want.Count", "not trying again for this layout"} {
+	for _, want := range []string{"Favorites", "User Pinned", "[regex]::Escape($f[2])", "GetString($fav, 1, $fav.Length - 1)", "$text.IndexOf($target", "LastWriteTime = Get-Date", "Stop-Process -Name explorer", "$miss.Count * 2 -le $want.Count", "not trying again for this layout"} {
 		if !strings.Contains(GuardScript, want) {
 			t.Errorf("guard misses %q", want)
 		}

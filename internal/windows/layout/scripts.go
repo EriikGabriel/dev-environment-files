@@ -53,16 +53,13 @@ function PinId($name, $id) {
   [void]$pins.Add('        <taskbar:DesktopApp DesktopApplicationID="' + (& $esc $id) + '" />')
   Write-Output ('pinned: ' + $name)
 }
-# How a shortcut goes in the layout. An app with an id of its own (Brave,
-# com.squirrel.Discord.Discord) is pinned by that id, which is what Windows
-# matches pins by when it applies the layout at sign-in; a shortcut written as
-# a plain path was dropped there, leaving the taskbar almost empty. An app
-# known only by its path (a portable one) keeps the shortcut, written with
-# %APPDATA% or %ALLUSERSPROFILE% as the layout format expects.
+# How a shortcut goes in the layout: by its path, written with %APPDATA% or
+# %ALLUSERSPROFILE% as the layout format expects. Windows re-reads the layout
+# at sign-in; there a shortcut written as a plain C:\Users\... path was
+# dropped, and so were the apps given by their app id (Brave,
+# com.squirrel.Discord.Discord), while the shortcuts written with the
+# variables stayed.
 function PinXml($p) {
-  $base = [IO.Path]::GetFileNameWithoutExtension($p)
-  $app = $startApps | Where-Object { $_.Name -ieq $base -and $_.AppID -and $_.AppID -notmatch '[\\/:]' } | Select-Object -First 1
-  if ($app) { return '        <taskbar:DesktopApp DesktopApplicationID="' + (& $esc $app.AppID) + '" />' }
   $v = $p
   foreach ($pair in @(@($env:APPDATA, '%APPDATA%'), @($env:ProgramData, '%ALLUSERSPROFILE%'))) {
     if ($pair[0] -and $p.StartsWith($pair[0] + '\', [StringComparison]::OrdinalIgnoreCase)) { $v = $pair[1] + $p.Substring($pair[0].Length); break }
@@ -74,12 +71,14 @@ function PinLink($name, $names) {
   if (-not $p) { Write-Output ('not found in the Start menu, left out: ' + $name + ' (install it first)'); return }
   if ($seen[$p]) { Write-Output ('already pinned, left out: ' + $name + ' (' + [IO.Path]::GetFileNameWithoutExtension($p) + ')'); return }
   $seen[$p] = $true
-  $line = PinXml $p
-  [void]$pins.Add($line)
+  [void]$pins.Add((PinXml $p))
+  # target|shortcut name|app id: any of them in the taskbar's list tells the pin is there
   $t = $wsh.CreateShortcut($p).TargetPath
-  if ($t) { [void]$expected.Add($t) }
-  $how = if ($line -match 'DesktopApplicationID="([^"]+)"') { 'app id ' + $Matches[1] } else { 'shortcut' }
-  Write-Output ('pinned: ' + $name + ' (' + [IO.Path]::GetFileNameWithoutExtension($p) + ', by ' + $how + ')')
+  $base = [IO.Path]::GetFileNameWithoutExtension($p)
+  $app = $startApps | Where-Object { $_.Name -ieq $base -and $_.AppID -and $_.AppID -notmatch '[\\/:]' } | Select-Object -First 1
+  $aumid = if ($app) { $app.AppID } else { '' }
+  if ($t) { [void]$expected.Add($t + '|' + [IO.Path]::GetFileName($p) + '|' + $aumid) }
+  Write-Output ('pinned: ' + $name + ' (' + $base + ')')
 }
 # The default browser (the program that opens https links) comes first; Edge,
 # or no choice yet, falls back to the first browser of the list installed.
@@ -163,12 +162,15 @@ $sum = (Get-FileHash -LiteralPath $list -Algorithm SHA256).Hash
 if ((Get-Content -LiteralPath $state -Raw) -match $sum) { return }
 $tb = 'Registry::HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\Taskband'
 $pinned = Join-Path $env:APPDATA 'Microsoft\Internet Explorer\Quick Launch\User Pinned'
-# the targets of the shortcuts that are on the taskbar now: pinned shortcuts
-# whose name (long or 8.3) is in the taskbar's own list
+# Each line is target|shortcut name|app id. A pin is there when the taskbar's
+# own list (Taskband\Favorites) names it in any of the ways Windows stores a
+# pin: a pinned shortcut (long or 8.3 name) that starts the target, the
+# target itself, the Start menu shortcut, or the app id.
 function Get-Missing {
   $fav = (Get-ItemProperty -LiteralPath $tb).Favorites
-  if (-not $fav) { return $want }
-  $text = [Text.Encoding]::Unicode.GetString($fav) + [Text.Encoding]::ASCII.GetString($fav)
+  if (-not $fav) { return @($want | ForEach-Object { ($_ -split '\|')[0] }) }
+  # names are UTF-16 starting at even or odd offsets, 8.3 names are ASCII
+  $text = [Text.Encoding]::Unicode.GetString($fav) + ' ' + [Text.Encoding]::Unicode.GetString($fav, 1, $fav.Length - 1) + ' ' + [Text.Encoding]::ASCII.GetString($fav)
   $sh = New-Object -ComObject WScript.Shell
   $fso = New-Object -ComObject Scripting.FileSystemObject
   $have = @{}
@@ -178,7 +180,14 @@ function Get-Missing {
     $t = $sh.CreateShortcut($l.FullName).TargetPath
     if ($t) { $have[$t.ToLowerInvariant()] = $true }
   }
-  @($want | Where-Object { -not $have[$_.ToLowerInvariant()] })
+  foreach ($w in $want) {
+    $f = $w -split '\|'
+    $target = $f[0]
+    $there = $have[$target.ToLowerInvariant()] -or $text.IndexOf($target, [StringComparison]::OrdinalIgnoreCase) -ge 0
+    if (-not $there -and $f.Count -gt 1 -and $f[1]) { $there = $text.IndexOf($f[1], [StringComparison]::OrdinalIgnoreCase) -ge 0 }
+    if (-not $there -and $f.Count -gt 2 -and $f[2]) { $there = $text -match ('(?i)(^|[^A-Za-z0-9.])' + [regex]::Escape($f[2]) + '($|[^A-Za-z0-9.])') }
+    if (-not $there) { $target }
+  }
 }
 for ($i = 0; $i -lt 120 -and -not (Get-Process -Name explorer); $i++) { Start-Sleep -Seconds 1 }
 Start-Sleep -Seconds 20

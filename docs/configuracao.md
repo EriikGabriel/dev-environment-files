@@ -206,10 +206,9 @@ Assim quem escolhe outro navegador mantém a mesma ordem. Se o mesmo atalho apar
 
 Os fixados são entregues ao Windows pela política "Layout de Início" (`StartLayoutFile`), que
 o Windows relê no login. Para que eles resistam ao login:
-- um app com id próprio (Brave, Discord, Explorador) é fixado pelo id que `Get-StartApps`
-  mostra, que é como o Windows reconhece um fixado;
-- um app só conhecido pelo caminho (o Playnite e o RetroArch portáteis) é fixado pelo atalho,
-  escrito com `%APPDATA%` / `%ALLUSERSPROFILE%`;
+- cada app é fixado pelo atalho do menu Iniciar escrito com `%APPDATA%` / `%ALLUSERSPROFILE%`
+  (com o caminho `C:\Users\...` por extenso, ou pelo id do app, eles sumiam no login); só o
+  Explorador, que não tem atalho, vai pelo id;
 - um guarda (`%ProgramData%\envsetup\taskbar-guard.ps1`, iniciado no login pelo valor
   `envsetup-taskbar` de `HKCU\...\Run`) confere a barra uns 20 s depois do login. Se a maior
   parte dos fixados sumiu, ele entrega o layout de novo e reinicia o Explorer. Um app que você
