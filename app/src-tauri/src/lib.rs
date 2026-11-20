@@ -27,6 +27,8 @@ const ALLOWED: &[&str] = &[
     "add-app",
     "remove-app",
     "detach",
+    "windhawk-island",
+    "ensure-deno",
     "media",
     "set-ninite",
     "set-unattend",

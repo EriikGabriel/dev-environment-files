@@ -57,16 +57,17 @@ registrada e as seguintes **continuam**.
 
 | Etapa | Itens (marcados / opcionais) | De onde vem | Precisa do HD? |
 |---|---|---|---|
-| **Essenciais** | 7-Zip, Visual C++, DirectX, Windows Media Player, Raycast / Scoop, PowerToys, Ninite | winget (o Raycast vem da Microsoft Store) | não |
+| **Essenciais** | 7-Zip, Visual C++, DirectX, Windows Media Player, Raycast e as extensões dele (`windows/raycast/extensions.txt`) / Scoop, PowerToys, Ninite | winget (o Raycast vem da Microsoft Store; cada extensão abre na loja do Raycast para um clique em Install) | não |
 | **Drivers e hardware** | o software da sua placa de vídeo (NVIDIA App ou AMD Adrenalin, escolhido pela placa detectada) / MSI Afterburner, HWiNFO | site da NVIDIA ou da AMD, winget | não |
 | **Periféricos** | MCHOSE HUB, Attack Shark Driver, SignalRGB, 8BitDo Ultimate Software V2 | site do fabricante, winget | não |
 | **Lojas e launchers** | Steam, Epic Games, Hydra Launcher / GOG Galaxy, EA app, Ubisoft Connect, Battle.net | winget | não |
-| **Aparência** | Windhawk e os mods de `windows/windhawk/backup.json`, com as configurações (dock, ilha, menu Iniciar, Explorer…) | o instalador do Windhawk 2 no GitHub (a versão mais recente, pré-release inclusa) e o repositório de mods dele | não |
+| **Aparência** | Windhawk e os mods de `windows/windhawk/backup.json`, com as configurações (dock, menu Iniciar, Explorer…), e as opções da ilha do "Ilha e Dock estilo Mac" (`windows/windhawk/mac-island-dock.txt`) | o instalador do Windhawk 2 no GitHub (a versão mais recente, pré-release inclusa) e o repositório de mods dele | não |
 | **Playnite** | o Playnite portable em `C:\Playnite`: biblioteca, capas, trailers, temas, extensões e configurações | HD (`D:\envsetup\Playnite`) e GitHub (`windows/playnite`); sem o HD, o programa e os add-ons vêm da internet | só a biblioteca de jogos e as mídias |
 | **Emuladores** | o RetroArch portable em `C:\Emuladores\RetroArch`: programa, 7 cores, configurações, saves, estados, playlists e BIOS | buildbot.libretro.com, GitHub (`windows/retroarch`) e HD (BIOS) | só a BIOS e as senhas |
 | **Comunicação e navegador** | Discord, Opera GX / Brave, Spotify, OBS Studio | winget | não |
 | **Otimizações** | compressão de memória desligada (`Disable-MMAgent -MemoryCompression`; pede elevação e vale depois de reiniciar) / políticas de grupo (`config/policies.yaml`) | o próprio Windows | não |
 | **Apps da Steam** | Wallpaper Engine | a Steam (você precisa estar logado) | não |
+| **Barra de tarefas** | a barra (a dock do Windhawk): Explorador, Spotify, Discord, o seu navegador, Playnite, RetroArch e Steam; escondida automaticamente; menu Iniciar e área de trabalho limpos (`config/layout.yaml`) | o próprio Windows | não |
 
 ### Detalhes do que cada etapa restaura
 
@@ -127,7 +128,9 @@ Isto **não** é guardado nem refeito pelo envsetup. Confira antes de formatar.
 - **NVIDIA App** e **AMD Adrenalin** (filtros, perfis de jogo, overlay).
 - **SignalRGB** (efeitos e layouts).
 - **MCHOSE HUB** (equalização do headset).
-- **Raycast** (atalhos e extensões; a conta Raycast pode sincronizar parte).
+- **Raycast**: os atalhos e as configurações das extensões (a conta Raycast pode sincronizar parte).
+  As extensões em si voltam pela lista `windows/raycast/extensions.txt`, com um clique em
+  Install em cada uma.
 - **Discord** e **OBS** (cenas, perfis).
 - **PowerToys**.
 - A configuração do **mouse Attack Shark** e do **controle 8BitDo** fica gravada nos próprios
@@ -141,9 +144,8 @@ Isto **não** é guardado nem refeito pelo envsetup. Confira antes de formatar.
   baixados de novo.
 
 **Partes do Windows que não estão no perfil**
-- **Barra de tarefas, menu Iniciar e ícones** (`config/layout.yaml` e `config/icons.yaml`) não
-  são etapas do perfil. Aplique pela aba **Preview** depois que os programas estiverem
-  instalados.
+- **Ícones** (`config/icons.yaml`) não são uma etapa do perfil: aplique pela aba **Preview**
+  depois que os programas estiverem instalados. A barra de tarefas é a última etapa do perfil.
 - **Políticas de grupo**: na etapa Otimizações, só a compressão de memória vem marcada; as
   políticas vêm **desmarcadas**. Marque, ou aplique pela aba Políticas.
 - **Reiniciar** depois de aplicar o perfil: a compressão de memória só desliga após o reinício.

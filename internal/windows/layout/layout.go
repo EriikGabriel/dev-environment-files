@@ -29,6 +29,9 @@ type Config struct {
 	ClearStart bool `yaml:"clear_start" json:"clear_start"`
 	// HideDesktopIcons hides every icon on the desktop.
 	HideDesktopIcons bool `yaml:"hide_desktop_icons" json:"hide_desktop_icons"`
+	// TaskbarAutoHide turns "Automatically hide the taskbar" on (the dock of
+	// the Windhawk mod hides with it) or off.
+	TaskbarAutoHide bool `yaml:"taskbar_autohide" json:"taskbar_autohide"`
 }
 
 // Path is where the layout lives in the repo.
@@ -81,6 +84,7 @@ const header = `# How the Windows desktop is laid out, edited in the app's Previ
 #                    taskbar as it is. Ids are the ones the Preview tab shows.
 # clear_start        remove the apps pinned to the Start menu
 # hide_desktop_icons hide every icon on the desktop
+# taskbar_autohide   hide the taskbar automatically (the Windhawk dock hides with it)
 `
 
 // Save writes the layout, replacing the file.
@@ -129,6 +133,9 @@ type Item struct {
 	// a built-in app; the apply script resolves them on the machine.
 	Match []string `json:"-"`
 	AUMID string   `json:"-"`
+	// Browser pins the default browser of the machine, or the first of Match
+	// that is installed when the default is Edge or unknown.
+	Browser bool `json:"-"`
 }
 
 type known struct {
@@ -141,12 +148,16 @@ type known struct {
 	glyph    string
 	color    string
 	desktop  bool
+	browser  bool
 }
 
 // The apps the preview knows how to draw and pin. Anything else that is
 // installed still shows up, in grey.
 var table = []known{
 	{id: "explorer", name: "Explorador de Arquivos", aumid: "Microsoft.Windows.Explorer", glyph: "🗂", color: "#f2b632"},
+	// Whatever browser the machine uses: someone who picks Opera GX instead of
+	// Brave keeps the same layout.
+	{id: "browser", name: "Navegador padrão", match: BrowserNames, glyph: "🌐", color: "#3b82f6", browser: true},
 	{id: "edge", name: "Microsoft Edge", aumid: "MSEdge", ninite: []string{"edge"}, glyph: "e", color: "#0f7cc0"},
 	{id: "chrome", name: "Chrome", ninite: []string{"chrome"}, apps: []string{"google-chrome"}, match: []string{"Google Chrome"}, glyph: "C", color: "#4285f4", desktop: true},
 	{id: "firefox", name: "Firefox", ninite: []string{"firefox"}, match: []string{"Firefox"}, glyph: "F", color: "#ff7139", desktop: true},
@@ -157,6 +168,7 @@ var table = []known{
 	{id: "discord", name: "Discord", ninite: []string{"discord"}, apps: []string{"discord"}, match: []string{"Discord"}, glyph: "D", color: "#5865f2", desktop: true},
 	{id: "steam", name: "Steam", ninite: []string{"steam"}, apps: []string{"steam"}, match: []string{"Steam"}, glyph: "S", color: "#1b2838", desktop: true},
 	{id: "playnite", name: "Playnite", apps: []string{"playnite"}, match: []string{"Playnite"}, glyph: "P", color: "#7b2fbe"},
+	{id: "retroarch", name: "RetroArch", apps: []string{"retroarch"}, match: []string{"RetroArch"}, glyph: "R", color: "#3d3d3d"},
 	{id: "epic", name: "Epic Games Launcher", ninite: []string{"epic"}, apps: []string{"epic-games"}, match: []string{"Epic Games Launcher"}, glyph: "E", color: "#2a2a2a", desktop: true},
 	{id: "spotify", name: "Spotify", ninite: []string{"spotify"}, apps: []string{"spotify"}, match: []string{"Spotify"}, glyph: "♫", color: "#1db954"},
 	{id: "powertoys", name: "PowerToys", ninite: []string{"powertoys"}, apps: []string{"powertoys"}, match: []string{"PowerToys"}, glyph: "P", color: "#f2c811"},
@@ -175,7 +187,11 @@ var table = []known{
 }
 
 // windowsItems are always on offer.
-var windowsItems = []string{"explorer", "edge"}
+var windowsItems = []string{"explorer", "browser", "edge"}
+
+// BrowserNames are the Start menu shortcuts of the browsers, in the order the
+// item "browser" falls back to when the default browser is Edge or unknown.
+var BrowserNames = []string{"Brave", "Opera GX", "Google Chrome", "Firefox", "Vivaldi", "Opera"}
 
 // noWindow tells the Ninite apps that install nothing to open.
 func noWindow(slug, category string) bool {
@@ -193,7 +209,7 @@ func noWindow(slug, category string) bool {
 
 func (k known) item(sources []string) Item {
 	return Item{ID: k.id, Name: k.name, Sources: sources, Pinnable: true, Desktop: k.desktop,
-		Glyph: k.glyph, Color: k.color, Match: k.match, AUMID: k.aumid}
+		Glyph: k.glyph, Color: k.color, Match: k.match, AUMID: k.aumid, Browser: k.browser}
 }
 
 // Inputs are what decides which apps the machine will have.

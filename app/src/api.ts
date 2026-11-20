@@ -156,7 +156,7 @@ export const layout = (root: string, profile: string, apps: string[]) => run<Lay
 
 /** Saves the layout in config/layout.yaml. */
 export const setLayout = (root: string, profile: string, c: LayoutChoice) =>
-  run<LayoutChoice>(root, ["set-layout", "-p", profile, `--taskbar=${c.taskbar.join(",")}`, `--clear-start=${c.clear_start}`, `--hide-icons=${c.hide_desktop_icons}`]);
+  run<LayoutChoice>(root, ["set-layout", "-p", profile, `--taskbar=${c.taskbar.join(",")}`, `--clear-start=${c.clear_start}`, `--hide-icons=${c.hide_desktop_icons}`, `--autohide=${c.taskbar_autohide}`]);
 
 /** The icon style; `scan` looks for the shortcuts of this machine (slow), `cached` redraws the last scan. */
 export const icons = (root: string, mode: "none" | "cached" | "scan") =>
@@ -262,6 +262,13 @@ export const exportWindhawk = (root: string) => run<{ mods: number }>(root, ["wi
 
 /** Installs the mods of the export with their settings; Windows asks for elevation once. */
 export const importWindhawk = (root: string) => run<{ imported: boolean }>(root, ["windhawk-import"]);
+
+/** Installs Deno with winget when it is missing (Windows only; elsewhere it only says where it is). */
+export const ensureDeno = (root: string) => run<{ path: string; installed: boolean }>(root, ["ensure-deno"]);
+
+/** Puts a backup made by the mod Ilha e Dock estilo Mac (its own export) in the repo, without the personal options. */
+export const windhawkIsland = (root: string, file: string) =>
+  run<{ values: number; personal: number; path: string }>(root, ["windhawk-island", file]);
 
 /** What a format needs: Playnite and RetroArch saved, the store reachable, git committed and pushed. */
 export const backup = (root: string, fetch = false) => run<Backup>(root, ["backup", ...(fetch ? ["--fetch"] : [])]);

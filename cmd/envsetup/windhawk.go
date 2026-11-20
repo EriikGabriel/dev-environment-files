@@ -29,6 +29,25 @@ type windhawkJSON struct {
 	Mods               []windhawk.ModStatus `json:"mods"`
 	Pending            bool                 `json:"pending"`
 	Warnings           []string             `json:"warnings"`
+	// Island is the backup of the options the mod Ilha e Dock estilo Mac
+	// keeps outside Windhawk's export.
+	Island islandJSON `json:"island"`
+}
+
+type islandJSON struct {
+	// Path is the backup, relative to the repo.
+	Path   string `json:"path"`
+	Exists bool   `json:"exists"`
+	// Values is how many options an import writes; Differ how many of them
+	// this machine has otherwise and Missing how many it does not have at all
+	// (the mod only stores what was changed from its default), when Read.
+	Values  int    `json:"values"`
+	Differ  int    `json:"differ"`
+	Missing int    `json:"missing"`
+	Read   bool   `json:"read"`
+	Error  string `json:"error,omitempty"`
+	// Personal are the options that stay on each machine.
+	Personal []string `json:"personal"`
 }
 
 func describeWindhawk(cmd *cobra.Command, f flags) (windhawkJSON, error) {
@@ -57,6 +76,21 @@ func describeWindhawk(cmd *cobra.Command, f flags) (windhawkJSON, error) {
 	}
 	out.Mods, out.AppSettingsChanged = windhawk.Compare(want, have)
 	out.Pending = windhawk.Pending(out.Mods)
+
+	irel, _ := filepath.Rel(env.Root, windhawk.IslandPath(env.Root))
+	out.Island = islandJSON{Path: filepath.ToSlash(irel), Personal: windhawk.IslandPersonal}
+	if out.Windows {
+		st, err := env.IslandStatus(cmd.Context())
+		out.Island.Values, out.Island.Differ, out.Island.Missing, out.Island.Exists = st.Values, st.Differ, st.Missing, st.Exists
+		if err != nil {
+			out.Island.Error = err.Error()
+		} else if st.Exists {
+			out.Island.Read = true
+			out.Pending = out.Pending || st.Pending()
+		}
+	} else if _, err := os.Stat(windhawk.IslandPath(env.Root)); err == nil {
+		out.Island.Exists = true
+	}
 	return out, nil
 }
 
@@ -92,6 +126,14 @@ func windhawkCommands(f *flags) []*cobra.Command {
 			for _, w := range d.Warnings {
 				fmt.Println("warning:", w)
 			}
+			switch {
+			case !d.Island.Exists:
+				fmt.Printf("island options: %s is missing (windhawk-island <backup of the mod>)\n", d.Island.Path)
+			case d.Island.Error != "":
+				fmt.Println("island options:", d.Island.Error)
+			case d.Island.Read:
+				fmt.Printf("island options: %d in %s; on this machine %d different, %d not stored (the mod uses its default)\n", d.Island.Values, d.Island.Path, d.Island.Differ, d.Island.Missing)
+			}
 			return nil
 		},
 	})
@@ -109,10 +151,21 @@ func windhawkCommands(f *flags) []*cobra.Command {
 			if err != nil {
 				return err
 			}
+			// the island's own options, when the repo keeps them
+			island, ierr := env.ExportIsland(cmd.Context())
 			if f.json {
-				return printJSON(os.Stdout, map[string]any{"mods": len(b.Mods)})
+				res := map[string]any{"mods": len(b.Mods), "island_changed": island}
+				if ierr != nil {
+					res["island_error"] = ierr.Error()
+				}
+				return printJSON(os.Stdout, res)
 			}
 			fmt.Printf("%d mods exported to %s\n", len(b.Mods), windhawk.BackupPath(env.Root))
+			if ierr != nil {
+				fmt.Println("island options not saved:", ierr)
+			} else if _, err := os.Stat(windhawk.IslandPath(env.Root)); err == nil {
+				fmt.Printf("island options: %d changed in %s\n", island, windhawk.IslandPath(env.Root))
+			}
 			return nil
 		},
 	})
@@ -172,5 +225,30 @@ func windhawkCommands(f *flags) []*cobra.Command {
 	})
 	taskbarDock.Flags().BoolVar(&dockRestore, "restore", false, "put back the taskbar mode the mod had before")
 
-	return []*cobra.Command{status, export, imp, taskbarDock}
+	island := jsonFlag(&cobra.Command{
+		Use:   "windhawk-island <backup>",
+		Short: "Put a backup made by the mod Ilha e Dock estilo Mac (its settings window, export) in the repo, without the personal options",
+		Long: "The mod keeps the island's options (the bar, its widgets and their order, profiles) outside\n" +
+			"Windhawk's export. Its own backup replaces windows/windhawk/" + windhawk.DockMod + ".txt; the place of\n" +
+			"the weather, notes, tasks, events, agendas and alarms are left out and stay on each machine.\n" +
+			"windhawk-import writes it to the mod; windhawk-export updates it from this machine.",
+		Args: cobra.ExactArgs(1),
+		RunE: func(_ *cobra.Command, args []string) error {
+			_, env, err := load(*f)
+			if err != nil {
+				return err
+			}
+			values, personal, err := env.SaveIslandBackup(args[0])
+			if err != nil {
+				return err
+			}
+			if f.json {
+				return printJSON(os.Stdout, map[string]any{"values": values, "personal": personal, "path": windhawk.IslandPath(env.Root)})
+			}
+			fmt.Printf("%d options saved in %s (%d personal ones left out)\n", values, windhawk.IslandPath(env.Root), personal)
+			return nil
+		},
+	})
+
+	return []*cobra.Command{status, export, imp, taskbarDock, island}
 }

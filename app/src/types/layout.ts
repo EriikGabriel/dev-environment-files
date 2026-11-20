@@ -33,6 +33,8 @@ export interface Layout {
   taskbar: string[];
   clear_start: boolean;
   hide_desktop_icons: boolean;
+  /** "Automatically hide the taskbar" (the Windhawk dock hides with it). */
+  taskbar_autohide: boolean;
   /** config/layout.yaml exists. */
   saved: boolean;
   shell: Shell;
@@ -43,4 +45,6 @@ export interface LayoutChoice {
   taskbar: string[];
   clear_start: boolean;
   hide_desktop_icons: boolean;
+  /** "Automatically hide the taskbar" (the Windhawk dock hides with it). */
+  taskbar_autohide: boolean;
 }

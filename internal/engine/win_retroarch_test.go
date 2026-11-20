@@ -303,3 +303,32 @@ func TestRetroArchRestoreForSomeoneElse(t *testing.T) {
 		t.Errorf("after a save: owner=%v explicit=%v guest=%v", owner, explicit, env.Guest)
 	}
 }
+
+// RetroArch already in its folder, without the Start menu entry (it was copied
+// there by hand, or the restore stopped before): the item is pending and only
+// registers it, so Windows search finds it and the taskbar can pin it.
+func TestRetroArchInPlaceOnlyGetsRegistered(t *testing.T) {
+	t.Setenv("APPDATA", t.TempDir()) // no Start menu entry yet
+	root := t.TempDir()
+	cfg := raFixture(t)
+	cfg.StartMenu = true
+	must(t, retroarch.Save(retroarch.Path(root), cfg))
+
+	fr := &fakeRunner{}
+	env := &Env{Info: win, Root: root, Home: t.TempDir(), Runner: fr, StateDir: t.TempDir()}
+	if env.retroarchInstalled() {
+		t.Fatal("without the Start menu entry the item is pending")
+	}
+	must(t, env.retroarchInstall(context.Background(), io.Discard))
+	ran := ranLines(fr)
+	if !strings.Contains(ran, "register-portable-app.ps1") || !strings.Contains(ran, "-Name 'RetroArch'") || strings.Contains(ran, "robocopy") {
+		t.Errorf("only the registration must run:\n%s", ran)
+	}
+
+	link := retroarch.StartMenuLink()
+	must(t, os.MkdirAll(filepath.Dir(link), 0o755))
+	must(t, os.WriteFile(link, nil, 0o644))
+	if !env.retroarchInstalled() {
+		t.Error("with the folder and the entry it is done")
+	}
+}

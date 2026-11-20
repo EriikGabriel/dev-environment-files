@@ -27,4 +27,22 @@ export interface Windhawk {
   mods: WindhawkMod[];
   pending: boolean;
   warnings: string[];
+  /** The options the mod Ilha e Dock estilo Mac keeps outside Windhawk's export. */
+  island: WindhawkIsland;
+}
+
+export interface WindhawkIsland {
+  /** The mod's own backup, relative to the repo. */
+  path: string;
+  exists: boolean;
+  /** How many options an import writes. */
+  values: number;
+  /** Options this machine has otherwise. */
+  differ: number;
+  /** Options this machine has not stored (the mod uses its default for them). */
+  missing: number;
+  read: boolean;
+  error?: string;
+  /** Options that stay on each machine (the weather's place, notes, tasks...). */
+  personal: string[];
 }

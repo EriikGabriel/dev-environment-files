@@ -370,10 +370,21 @@ func (e *Env) retroarchInstalled() bool {
 	if err != nil {
 		return false
 	}
-	return exists(filepath.Join(cfg.Path, retroarch.Exe))
+	if !exists(filepath.Join(cfg.Path, retroarch.Exe)) {
+		return false
+	}
+	// an app of the system: found by Windows search and pinnable to the taskbar
+	return !cfg.StartMenu || exists(retroarch.StartMenuLink())
 }
 
-// retroarchInstall restores RetroArch (it fixes the playlists too).
+// retroarchInstall restores RetroArch (it fixes the playlists too). When it
+// is already in its folder and only the Start menu entry is missing, it only
+// adds that.
 func (e *Env) retroarchInstall(ctx context.Context, out io.Writer) error {
+	if cfg, _, err := e.RetroArchConfig(); err == nil && cfg.StartMenu &&
+		exists(filepath.Join(cfg.Path, retroarch.Exe)) && !exists(retroarch.StartMenuLink()) {
+		fmt.Fprintf(out, "RetroArch is in %s: adding it to the Start menu and to Installed apps\n", cfg.Path)
+		return e.registerRetroArch(ctx, out, cfg)
+	}
 	return e.RestoreRetroArch(ctx, out, false)
 }

@@ -27,10 +27,29 @@ func TestWindhawkImportRunsElevated(t *testing.T) {
 	must(t, err)
 	must(t, os.MkdirAll(filepath.Dir(windhawk.BackupPath(root)), 0o755))
 	must(t, os.WriteFile(windhawk.BackupPath(root), raw, 0o644))
-	must(t, env.ImportWindhawk(context.Background(), io.Discard))
+	var msg strings.Builder
+	must(t, env.ImportWindhawk(context.Background(), &msg))
 	ran := ranLines(fr)
 	if !strings.Contains(ran, "-Verb RunAs") || !strings.Contains(ran, "windhawk.ps1") {
 		t.Errorf("the import must run elevated:\n%s", ran)
+	}
+	if strings.Contains(msg.String(), "island") {
+		t.Errorf("no island backup in this root, nothing about it: %s", msg.String())
+	}
+
+	// with the island's own options in the repo, the same elevated script
+	// writes them to the mod
+	island, err := os.ReadFile(windhawk.IslandPath(testutil.RepoRoot(t)))
+	must(t, err)
+	must(t, os.WriteFile(windhawk.IslandPath(root), island, 0o644))
+	msg.Reset()
+	before := len(fr.ran)
+	must(t, env.ImportWindhawk(context.Background(), &msg))
+	if !strings.Contains(msg.String(), "options of the island and dock") {
+		t.Errorf("the island options must go with the import: %s", msg.String())
+	}
+	if n := len(fr.ran) - before; n != 1 {
+		t.Errorf("still one elevated script (one UAC prompt), ran %d commands", n)
 	}
 
 	// the step is pending while the machine cannot be read

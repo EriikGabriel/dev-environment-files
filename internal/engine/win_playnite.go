@@ -381,13 +381,26 @@ func (e *Env) playniteInstalled() bool {
 	if err != nil {
 		return false
 	}
-	_, err = os.Stat(filepath.Join(cfg.Path, playnite.Exe))
-	return err == nil
+	if _, err = os.Stat(filepath.Join(cfg.Path, playnite.Exe)); err != nil {
+		return false
+	}
+	// an app of the system: found by Windows search and pinnable to the taskbar
+	_, err = os.Stat(playnite.ThisHost().StartMenuLink())
+	return !cfg.StartMenu || err == nil
 }
 
 // playniteInstall restores the snapshot and fixes what the folder does not
-// carry and can be fixed without questions.
+// carry and can be fixed without questions. When Playnite is already in its
+// folder and only the Start menu entry is missing, it only adds that.
 func (e *Env) playniteInstall(ctx context.Context, out io.Writer) error {
+	if cfg, _, err := e.PlayniteConfig(); err == nil && cfg.StartMenu {
+		_, errExe := os.Stat(filepath.Join(cfg.Path, playnite.Exe))
+		_, errLink := os.Stat(playnite.ThisHost().StartMenuLink())
+		if errExe == nil && errLink != nil {
+			fmt.Fprintf(out, "Playnite is in %s: adding it to the Start menu and to Installed apps\n", cfg.Path)
+			return e.registerPlaynite(ctx, out, cfg)
+		}
+	}
 	if err := e.RestorePlaynite(ctx, out, false); err != nil {
 		return err
 	}

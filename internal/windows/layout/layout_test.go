@@ -134,3 +134,52 @@ func TestScripts(t *testing.T) {
 		t.Errorf("icons must come back and the taskbar must be left alone:\n%s", f)
 	}
 }
+
+func TestBrowserRetroArchAndAutoHide(t *testing.T) {
+	items := Candidates(Inputs{Apps: []string{"retroarch", "playnite"}})
+	if it := find(items, "browser"); it == nil || !it.Pinnable || it.Sources[0] != SourceWindows {
+		t.Errorf("the default browser is always on offer: %v", ids(items))
+	}
+	if find(items, "retroarch") == nil {
+		t.Errorf("RetroArch must be offered when the profile has it: %v", ids(items))
+	}
+
+	c := Config{Taskbar: []string{"explorer", "browser", "playnite", "retroarch", "steam"}, TaskbarAutoHide: true}
+	prep := PrepareScript(c)
+	for _, want := range []string{
+		"PinBrowser 'Navegador padrão' @('Brave', 'Opera GX', 'Google Chrome', 'Firefox', 'Vivaldi', 'Opera')",
+		`UrlAssociations\https\UserChoice`,
+		"PinLink 'RetroArch' @('RetroArch')",
+		"already pinned, left out",
+	} {
+		if !strings.Contains(prep, want) {
+			t.Errorf("prepare script misses %s", want)
+		}
+	}
+	order := []string{"PinBrowser 'Navegador", "PinLink 'Playnite'", "PinLink 'RetroArch'", "PinLink 'Steam'"}
+	for i := 1; i < len(order); i++ {
+		if strings.Index(prep, order[i-1]) > strings.Index(prep, order[i]) {
+			t.Errorf("%s must come before %s", order[i-1], order[i])
+		}
+	}
+	if f := FinishScript(c); !strings.Contains(f, "StuckRects3") || !strings.Contains(f, "$v[8] = 3") {
+		t.Errorf("auto-hide on must set byte 8 to 3:\n%s", f)
+	}
+	if f := FinishScript(Config{}); !strings.Contains(f, "$v[8] = 2") {
+		t.Errorf("auto-hide off must set byte 8 to 2:\n%s", f)
+	}
+}
+
+func TestRepoLayoutPinsTheLaunchersAfterTheBrowser(t *testing.T) {
+	cfg, exists, err := Load(filepath.Join("..", "..", "..", "config", "layout.yaml"))
+	if err != nil || !exists {
+		t.Fatalf("config/layout.yaml: %v %v", exists, err)
+	}
+	got := strings.Join(cfg.Taskbar, ",")
+	if !strings.Contains(got, "browser,playnite,retroarch,steam") || strings.Contains(got, "epic") {
+		t.Errorf("the default dock is the browser, then Playnite, RetroArch and Steam, without Epic: %s", got)
+	}
+	if !cfg.TaskbarAutoHide {
+		t.Error("the taskbar hides by default")
+	}
+}

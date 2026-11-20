@@ -37,12 +37,15 @@ const (
 	// MethodWindhawk imports windows/windhawk/backup.json into Windhawk 2
 	// (Windows).
 	MethodWindhawk = "windhawk"
+	// MethodLayout applies config/layout.yaml: taskbar pins, Start menu,
+	// desktop icons (Windows).
+	MethodLayout = "layout"
 )
 
 var validMethods = map[string]bool{
 	MethodNative: true, MethodAUR: true, MethodDebURL: true,
 	MethodFlatpak: true, MethodScript: true,
-	MethodWinget: true, MethodScoop: true, MethodSteam: true, MethodNinite: true, MethodPolicies: true, MethodPlaynite: true, MethodRetroArch: true, MethodWindhawk: true,
+	MethodWinget: true, MethodScoop: true, MethodSteam: true, MethodNinite: true, MethodPolicies: true, MethodPlaynite: true, MethodRetroArch: true, MethodWindhawk: true, MethodLayout: true,
 }
 
 // Repo is a third-party apt repository an app needs before it can be

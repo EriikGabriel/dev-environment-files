@@ -71,6 +71,7 @@ export function WindowsPreviewTab({ root, profile, apps, windows }: Props) {
   const [taskbar, setTaskbar] = useState<string[]>([]);
   const [clearStart, setClearStart] = useState(false);
   const [hideIcons, setHideIcons] = useState(false);
+  const [autoHide, setAutoHide] = useState(false);
   const [showStart, setShowStart] = useState(true);
   const [dragId, setDragId] = useState<string | null>(null);
   const [overIndex, setOverIndex] = useState<number | null>(null);
@@ -92,6 +93,7 @@ export function WindowsPreviewTab({ root, profile, apps, windows }: Props) {
       setTaskbar(d.taskbar);
       setClearStart(d.clear_start);
       setHideIcons(d.hide_desktop_icons);
+      setAutoHide(d.taskbar_autohide);
     } catch (e) {
       setError(errorMessage(e));
     }
@@ -105,7 +107,7 @@ export function WindowsPreviewTab({ root, profile, apps, windows }: Props) {
   if (!data) return error ? <p className="banner bad">{error}</p> : <p className="banner">Lendo o layout…</p>;
 
   const shell = data.shell;
-  const dirty = !sameList(taskbar, data.taskbar) || clearStart !== data.clear_start || hideIcons !== data.hide_desktop_icons || !data.saved;
+  const dirty = !sameList(taskbar, data.taskbar) || clearStart !== data.clear_start || hideIcons !== data.hide_desktop_icons || autoHide !== data.taskbar_autohide || !data.saved;
   const startEmpty = clearStart || shell.start_pins_empty;
 
   // Moves an app to a position of the taskbar (or appends it); an app that is already there is moved.
@@ -143,7 +145,7 @@ export function WindowsPreviewTab({ root, profile, apps, windows }: Props) {
       setBusy("");
     }
   };
-  const choice = { taskbar, clear_start: clearStart, hide_desktop_icons: hideIcons };
+  const choice = { taskbar, clear_start: clearStart, hide_desktop_icons: hideIcons, taskbar_autohide: autoHide };
   const save = () => act("save", async () => {
     await api.setLayout(root, profile, choice);
     await load();
@@ -214,6 +216,10 @@ export function WindowsPreviewTab({ root, profile, apps, windows }: Props) {
         <label className="check">
           <input type="checkbox" checked={hideIcons} onChange={(e) => setHideIcons(e.target.checked)} /> Ocultar os ícones da área de trabalho
           <span className="chip">clique direito › Exibir mostra de novo</span>
+        </label>
+        <label className="check">
+          <input type="checkbox" checked={autoHide} onChange={(e) => setAutoHide(e.target.checked)} /> Esconder a barra de tarefas automaticamente
+          <span className="chip">a dock do Windhawk se esconde junto</span>
         </label>
         <label className="check">
           <input type="checkbox" checked={showStart} onChange={(e) => setShowStart(e.target.checked)} /> Mostrar o menu Iniciar aberto no preview

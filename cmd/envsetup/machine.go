@@ -120,5 +120,38 @@ func machineCommands(f *flags) []*cobra.Command {
 	}
 	steps.Flags().BoolVar(&f.json, "json", false, "machine-readable output")
 
-	return []*cobra.Command{detect, info, profiles, steps}
+	ensureDeno := withJSON(f)(&cobra.Command{
+		Use:   "ensure-deno",
+		Short: "Install Deno when it is missing (Windows, with winget, no questions); elsewhere only say where it is",
+		Long:  "The desktop app runs this in the background when it opens on Windows.",
+		Args:  cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			_, env, err := load(*f)
+			if err != nil {
+				return err
+			}
+			out := os.Stdout
+			if f.json {
+				out = os.Stderr // keep stdout for the JSON answer
+			}
+			path, installed, err := env.EnsureDeno(cmd.Context(), out)
+			if err != nil {
+				return err
+			}
+			if f.json {
+				return printJSON(os.Stdout, map[string]any{"path": path, "installed": installed})
+			}
+			switch {
+			case installed:
+				fmt.Println("Deno installed:", path)
+			case path != "":
+				fmt.Println("Deno is already installed:", path)
+			default:
+				fmt.Println("Deno is not installed (only installed by itself on Windows)")
+			}
+			return nil
+		},
+	})
+
+	return []*cobra.Command{detect, info, profiles, steps, ensureDeno}
 }

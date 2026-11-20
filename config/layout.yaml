@@ -5,14 +5,16 @@
 #                    taskbar as it is. Ids are the ones the Preview tab shows.
 # clear_start        remove the apps pinned to the Start menu
 # hide_desktop_icons hide every icon on the desktop
+# taskbar_autohide   hide the taskbar automatically (the Windhawk dock hides with it)
 
 taskbar:
     - explorer
     - spotify
     - discord
-    - brave
+    - browser
+    - playnite
+    - retroarch
     - steam
-    - epic
-    - hydra
 clear_start: true
 hide_desktop_icons: true
+taskbar_autohide: true

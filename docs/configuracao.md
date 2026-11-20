@@ -69,7 +69,8 @@ chave. A busca vai do ID exato (`ubuntu`, `cachyos`) para a família (`debian`, 
 | `ninite` | Windows | a lista de programas do ninite.com |
 | `policies` | Windows | não usa: aplica `config/policies.yaml` |
 | `playnite` | Windows | não usa: restaura o snapshot de `config/playnite.yaml` |
-| `windhawk` | Windows | não usa: importa `windows/windhawk/backup.json` |
+| `windhawk` | Windows | não usa: importa `windows/windhawk/backup.json` e as opções da ilha (`mac-island-dock.txt`) |
+| `layout` | Windows | não usa: aplica `config/layout.yaml` (barra de tarefas, menu Iniciar, área de trabalho) |
 
 **Scripts.** `source`, `check` e `post` rodam com `sh` no Linux (com `$SUDO` valendo `sudo`) e
 com PowerShell no Windows. Eles recebem `$ENVSETUP_ROOT` (a pasta de dados) e um
@@ -184,15 +185,24 @@ gpedit), `video` (o estado do vídeo), `about`, `caution` (ressalvas), os valore
 ## `config/layout.yaml`: barra de tarefas e área de trabalho (Windows)
 
 ```yaml
-taskbar: [explorer, brave, steam, discord]   # apps fixados, da esquerda para a direita
-clear_start: true                            # tira os apps fixados do menu Iniciar
-hide_desktop_icons: false
+taskbar: [explorer, spotify, discord, browser, playnite, retroarch, steam]   # da esquerda para a direita
+clear_start: true          # tira os apps fixados do menu Iniciar
+hide_desktop_icons: true
+taskbar_autohide: true     # esconde a barra automaticamente (a dock do Windhawk se esconde junto)
 ```
 
 Os ids são os que a aba Preview mostra na "bandeja de apps" (os da lista do Ninite, os que o
 `autounattend.xml` instala e os marcados em Configurar). Monte arrastando na Preview
-(`envsetup set-layout`) e aplique com o botão ou `envsetup apply-layout`. Uma lista vazia deixa a
-barra como está; um app só entra na barra depois de instalado.
+(`envsetup set-layout`) e aplique com o botão, com `envsetup apply-layout` ou pela etapa
+**Barra de tarefas**, a última do perfil de jogos (item `taskbar-layout`, método `layout`). Ela é
+a última para que Playnite, RetroArch e Steam já estejam instalados e no menu Iniciar, de onde
+vem o atalho fixado. O item fica pendente de novo quando o arquivo muda. Uma lista vazia deixa a
+barra como está; um app que não está instalado fica de fora.
+
+`browser` é o navegador da máquina: o navegador padrão do Windows (quem abre links https), ou,
+se ele for o Edge, o primeiro instalado entre Brave, Opera GX, Chrome, Firefox, Vivaldi e Opera.
+Assim quem escolhe outro navegador mantém a mesma ordem. Se o mesmo atalho aparecer duas vezes
+(`browser` e `brave`, por exemplo), ele só é fixado uma vez.
 
 ## `config/icons.yaml`: ícones no estilo macOS (Windows)
 
@@ -346,6 +356,27 @@ máquina" na aba Windhawk (`envsetup windhawk-export`). "Aplicar backup"
 (`envsetup windhawk-import`, ou a etapa Aparência do perfil) instala os mods que faltam e grava
 as configurações. A dock da barra de tarefas é a do mod "Ilha e Dock estilo Mac": liga e desliga
 no cartão da aba Preview (`envsetup taskbar-dock`, `--restore`).
+
+## `windows/windhawk/mac-island-dock.txt`: a ilha do "Ilha e Dock estilo Mac"
+
+O mod guarda a maior parte das opções dele (a ilha, os widgets e a ordem deles, os perfis) fora
+das configurações do Windhawk, no registro
+(`HKLM\SOFTWARE\Windhawk\Engine\ModsWritable\mac-island-dock\LocalStorage`), e o export do
+Windhawk não leva isso. Este arquivo é o backup que o próprio mod exporta (janela de
+configurações do mod), no formato dele: `i<nome>=<número>` ou `s<nome>=<texto>`. Por isso
+ele também pode ser importado pela janela do mod.
+
+- **Trazer:** "Trazer backup do mod…" na aba Windhawk (`envsetup windhawk-island <arquivo>`)
+  troca o arquivo do repo pelo export do mod.
+- **Salvar desta máquina** (`windhawk-export`) atualiza os valores a partir do registro.
+- **Aplicar backup** (`windhawk-import`, ou a etapa Aparência) grava as opções no mod, no mesmo
+  pedido de elevação do resto: o mod é desligado, as opções gravadas e o mod ligado de novo (ele
+  lê as opções quando liga e as grava quando desliga).
+- **Fica em cada máquina:** o lugar do clima (cidade e coordenadas), as notas, tarefas, eventos,
+  agendas e alarmes da ilha. Eles saem vazios do arquivo, e aplicar não mexe nos da máquina.
+- O mod só grava no registro uma opção que foi mudada do padrão. A aba conta as opções
+  "diferentes" e as "nunca gravadas" nesta máquina; o item fica pendente enquanto houver
+  qualquer uma.
 
 ## `dotfiles/`
 

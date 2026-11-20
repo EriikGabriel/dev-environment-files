@@ -29,6 +29,9 @@
 #            (Windows), copied back from their snapshot; no `names`
 #   windhawk the Windhawk 2 export windows/windhawk/backup.json (mods, their
 #            settings and Windhawk's), imported with windhawk-cli; no `names`
+#   layout   the desktop of config/layout.yaml (taskbar pins, Start menu,
+#            desktop icons, taskbar auto-hide), applied once per version of
+#            the file (Windows); no `names`
 #
 # `gpu` (nvidia, amd, intel) marks software for one kind of graphics card: on
 # a machine whose cards are known and none is of that kind, the app starts
@@ -554,6 +557,15 @@ apps:
   powertoys: { description: Microsoft PowerToys, names: { windows: Microsoft.PowerToys } }
   # Microsoft Store package (Raycast Technologies): not in the winget community source.
   raycast: { description: "Raycast (command bar: launch apps, search files, clipboard history, extensions)", names: { windows: 9PFXXSHC64H3 } }
+  # Raycast's sync does not bring the store extensions to another Windows
+  # machine, and they can only be installed with a click in the store.
+  raycast-extensions:
+    description: 'The Raycast extensions of windows/raycast/extensions.txt: Raycast opens the store page of each missing one, click Install (refresh the list with windows\raycast-extensions.ps1 -Save)'
+    method: { windows: script }
+    check:
+      windows: '& "$env:ENVSETUP_ROOT\windows\raycast-extensions.ps1" -Check'
+    source:
+      windows: '& "$env:ENVSETUP_ROOT\windows\raycast-extensions.ps1" -Install'
   scoop:
     description: scoop, a command-line installer (needed by items that use the scoop method)
     method: { windows: script }
@@ -666,3 +678,6 @@ apps:
   group-policies:
     description: "Group policies from config/policies.yaml (telemetry, suggestions, widgets, Windows Update...); review them in the Políticas tab"
     method: { windows: policies }
+  taskbar-layout:
+    description: "The desktop of config/layout.yaml: the apps pinned to the taskbar (the Windhawk dock shows them), the taskbar hidden automatically, the Start menu pins and the desktop icons cleared. Edit it in the Preview tab. Asks for elevation; the taskbar restarts"
+    method: { windows: layout }

@@ -216,10 +216,33 @@ func CLI() string {
 // ProgramData), so the output can only come back through files: call n
 // writes log.n (stdout) and log.n.err (stderr); see ReadLogs.
 func ElevatedScript(cli, log string, calls ...[]string) string {
+	steps := make([]Step, len(calls))
+	for i, c := range calls {
+		steps[i] = Step{Args: c}
+	}
+	return ElevatedSteps(cli, log, steps...)
+}
+
+// Step is one thing the elevated script does: a windhawk-cli call (Args) or
+// PowerShell (PS), such as writing the mod's local storage.
+type Step struct {
+	Args []string
+	PS   string
+}
+
+// ElevatedSteps is ElevatedScript with PowerShell steps among the calls. A
+// PowerShell step that fails writes its error where the call would have
+// (log.n.err) and stops the script.
+func ElevatedSteps(cli, log string, steps ...Step) string {
 	q := func(s string) string { return "'" + strings.ReplaceAll(s, "'", "''") + "'" }
 	var b strings.Builder
 	b.WriteString("$ErrorActionPreference = 'Stop'\n")
-	for n, args := range calls {
+	for n, s := range steps {
+		if s.PS != "" {
+			fmt.Fprintf(&b, "try {\n%s\n} catch { ($_ | Out-String) | Set-Content -LiteralPath %s -Encoding UTF8; exit 1 }\n", s.PS, q(fmt.Sprintf("%s.%d.err", log, n)))
+			continue
+		}
+		args := s.Args
 		parts := make([]string, len(args))
 		for i, a := range args {
 			// Start-Process joins the arguments with spaces: quote the ones that have any

@@ -49,6 +49,10 @@ de novo, os symlinks voltam (o que estiver no lugar vira `.bak`).
 
 ## O app
 
+A versão que está rodando aparece ao lado do nome, na barra lateral; clicar nela (ou "Sobre o
+envsetup" na busca, Ctrl K) mostra a versão, o sistema e a pasta de dados. A release de mesmo
+nome no GitHub é a que tem o instalador dessa versão.
+
 | Aba | Para quê |
 |---|---|
 | **Início** | o sistema detectado, o perfil, o que está pendente e um botão para aplicar |
@@ -130,6 +134,14 @@ envsetup backup-clone --dir=... --url=... --branch=...  # máquina nova: instala
 - **Essenciais.** Runtimes dos jogos (Visual C++, DirectX), o 7-Zip, o Windows Media Player e o
   Raycast. O Raycast vem da Microsoft Store (ID `9PFXXSHC64H3` no winget), porque não está no
   repositório comum do winget.
+- **Extensões do Raycast.** A sincronização do Raycast não traz as extensões da loja para outro
+  Windows, e elas só se instalam com um clique. A lista fica em `windows/raycast/extensions.txt`
+  (`autor/nome`); o item `raycast-extensions` abre no Raycast a página de cada uma que falta e
+  espera você clicar em Install. Atualize a lista com `windows\raycast-extensions.ps1 -Save`.
+- **Deno.** No Windows, o app instala o Deno sozinho, em segundo plano, quando abre e não o
+  encontra (`winget install DenoLand.Deno`, só para o usuário, sem perguntas). Uma falha (sem
+  internet, sem winget) só vai para o console, e o app tenta de novo na próxima vez
+  (`envsetup ensure-deno`).
 - **Lojas e launchers.** Steam, Epic Games e Hydra Launcher marcados; GOG, EA, Ubisoft e Battle.net
   opcionais. Configure a pasta de instalação de cada um para `D:\Games\<loja>`.
 - **Placa de vídeo.** A etapa Drivers traz o NVIDIA App e o AMD Software (Adrenalin). Vem
@@ -232,7 +244,10 @@ os jogos" na aba RetroArch, ou mova a pasta com "Trocar". Formatando também o H
   - O gpedit só existe nas edições Pro, Enterprise e Education.
 - **Barra de tarefas e menu Iniciar.** A barra é escrita num `TaskbarLayout.xml` apontado pela
   política "Start layout"; o menu Iniciar é limpo por `ConfigureStartPins` e os ícones da área de
-  trabalho por `HideIcons`.
+  trabalho por `HideIcons`. "Esconder automaticamente" é o byte 8 de `StuckRects3`. O Playnite e
+  o RetroArch são portables: o envsetup registra os dois como apps do usuário (atalho no menu
+  Iniciar e entrada em Aplicativos instalados), o que permite fixar e achar pela pesquisa. Se o
+  programa já está na pasta e só falta o registro, o item faz só isso.
 - **Ícones.** O Windows não tem tema de ícones; o envsetup troca o ícone dos atalhos (área de
   trabalho, menu Iniciar, barra) e, se o pack tiver, os de Este Computador, Lixeira, Usuário e
   Rede. Um app com arquivo no pack recebe esse arquivo; os outros recebem o ícone original numa

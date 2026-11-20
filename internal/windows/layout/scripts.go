@@ -44,18 +44,27 @@ function FindLink($names) {
 }
 $esc = { param($s) [System.Security.SecurityElement]::Escape($s) }
 $pins = New-Object System.Collections.ArrayList
+$seen = @{}
 function PinId($name, $id) {
   [void]$pins.Add('        <taskbar:DesktopApp DesktopApplicationID="' + (& $esc $id) + '" />')
   Write-Output ('pinned: ' + $name)
 }
 function PinLink($name, $names) {
   $p = FindLink $names
-  if ($p) {
-    [void]$pins.Add('        <taskbar:DesktopApp DesktopApplicationLinkPath="' + (& $esc $p) + '" />')
-    Write-Output ('pinned: ' + $name)
-  } else {
-    Write-Output ('not found in the Start menu, left out: ' + $name + ' (install it first)')
-  }
+  if (-not $p) { Write-Output ('not found in the Start menu, left out: ' + $name + ' (install it first)'); return }
+  if ($seen[$p]) { Write-Output ('already pinned, left out: ' + $name + ' (' + [IO.Path]::GetFileNameWithoutExtension($p) + ')'); return }
+  $seen[$p] = $true
+  [void]$pins.Add('        <taskbar:DesktopApp DesktopApplicationLinkPath="' + (& $esc $p) + '" />')
+  Write-Output ('pinned: ' + $name + ' (' + [IO.Path]::GetFileNameWithoutExtension($p) + ')')
+}
+# The default browser (the program that opens https links) comes first; Edge,
+# or no choice yet, falls back to the first browser of the list installed.
+function PinBrowser($name, $names) {
+  $prog = (Get-ItemProperty -LiteralPath 'Registry::HKEY_CURRENT_USER\Software\Microsoft\Windows\Shell\Associations\UrlAssociations\https\UserChoice' -ErrorAction SilentlyContinue).ProgId
+  $byProg = [ordered]@{ 'BraveHTML' = 'Brave'; 'ChromeHTML' = 'Google Chrome'; 'FirefoxURL' = 'Firefox'; 'Opera GX' = 'Opera GX'; 'OperaGX' = 'Opera GX'; 'OperaStable' = 'Opera'; 'VivaldiHTM' = 'Vivaldi' }
+  $first = @()
+  foreach ($k in $byProg.Keys) { if ($prog -and $prog.StartsWith($k, [StringComparison]::OrdinalIgnoreCase)) { $first += $byProg[$k] } }
+  PinLink $name (@($first) + @($names))
 }
 `)
 	for _, it := range Pinned(c.Taskbar) {
@@ -67,7 +76,11 @@ function PinLink($name, $names) {
 		for i, m := range it.Match {
 			names[i] = psQuote(m)
 		}
-		fmt.Fprintf(&b, "PinLink %s @(%s)\n", psQuote(it.Name), strings.Join(names, ", "))
+		fn := "PinLink"
+		if it.Browser {
+			fn = "PinBrowser"
+		}
+		fmt.Fprintf(&b, "%s %s @(%s)\n", fn, psQuote(it.Name), strings.Join(names, ", "))
 	}
 	b.WriteString(`if ($pins.Count -eq 0) { throw 'none of the chosen apps was found in the Start menu: install them first, then apply again' }
 $xml = @(
@@ -134,6 +147,16 @@ func FinishScript(c Config) string {
 		hide = 1
 	}
 	fmt.Fprintf(&b, "Set-ItemProperty -LiteralPath 'Registry::HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced' -Name 'HideIcons' -Value %d -Type DWord\n", hide)
+	// "Automatically hide the taskbar" is byte 8 of StuckRects3: 3 hides, 2 shows.
+	// Explorer reads it when it starts, which the end of this script makes it do.
+	autohide := 2
+	if c.TaskbarAutoHide {
+		autohide = 3
+	}
+	fmt.Fprintf(&b, `$sr = 'Registry::HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\StuckRects3'
+$v = (Get-ItemProperty -LiteralPath $sr -ErrorAction SilentlyContinue).Settings
+if ($v -and $v.Length -gt 8) { $v[8] = %d; Set-ItemProperty -LiteralPath $sr -Name 'Settings' -Value ([byte[]]$v) -Type Binary }
+`, autohide)
 	if len(Pinned(c.Taskbar)) > 0 {
 		b.WriteString("Remove-Item -LiteralPath 'Registry::HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Taskband' -Recurse -Force -ErrorAction SilentlyContinue\n")
 	}

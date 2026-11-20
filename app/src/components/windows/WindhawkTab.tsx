@@ -1,4 +1,4 @@
-import { ask } from "@tauri-apps/plugin-dialog";
+import { ask, open } from "@tauri-apps/plugin-dialog";
 import { useCallback, useEffect, useState } from "react";
 import * as api from "../../api";
 import { errorMessage } from "../../api";
@@ -58,6 +58,16 @@ export function WindhawkTab({ root, onChanged }: Props) {
   const pending = inRepo.filter((m) => m.state === "missing" || m.state === "changed");
   const extra = data.mods.filter((m) => m.state === "extra");
   const canRun = data.windows && !!data.cli;
+
+  // A backup made by the mod itself (its settings window, export) replaces the repo's.
+  const bringIsland = async () => {
+    const file = await open({ title: "Backup do Ilha e Dock estilo Mac", multiple: false, filters: [{ name: "Backup do mod", extensions: ["txt"] }] });
+    if (typeof file !== "string") return;
+    await act("island", async () => {
+      const r = await api.windhawkIsland(root, file);
+      return `${r.values} opções da ilha salvas em ${data.island.path}${r.personal ? ` (${r.personal} pessoais ficaram de fora)` : ""}. Faça commit para guardar.`;
+    });
+  };
 
   return (
     <section className="policies windhawk">
@@ -126,6 +136,8 @@ export function WindhawkTab({ root, onChanged }: Props) {
         </button>
       </div>
 
+      <IslandCard data={data} busy={busy} canRun={canRun} onBring={() => bringIsland()} />
+
       {inRepo.length > 0 && (
         <ModList title={`No backup (${inRepo.length})`} mods={inRepo} read={data.read} />
       )}
@@ -184,6 +196,42 @@ function ModList({ title, note, mods, read }: { title: string; note?: string; mo
           );
         })}
       </ul>
+    </div>
+  );
+}
+
+/** The island's own options: the mod keeps them outside Windhawk's export. */
+function IslandCard({ data, busy, canRun, onBring }: { data: Windhawk; busy: string; canRun: boolean; onBring: () => void }) {
+  const is = data.island;
+  const pending = is.differ + is.missing;
+  return (
+    <div className="card row cta">
+      <div className="grow-col">
+        <strong>
+          Ilha e Dock estilo Mac: opções do próprio mod
+          <Help title="Por que um arquivo à parte">
+            O mod guarda a ilha (a barra de cima, os widgets e a ordem deles, os perfis) fora das configurações do Windhawk, então o backup
+            do Windhawk não leva isso. O repo guarda o backup do próprio mod em {is.path}, no formato dele (dá para importar também pela janela
+            de configurações do mod). “Aplicar backup” grava essas opções no mod, com ele desligado por um instante, no mesmo pedido de
+            elevação. “Salvar desta máquina” atualiza o arquivo com o que o mod tem agora. O lugar do clima, as notas, tarefas, eventos, agendas
+            e alarmes não vão para o repo: cada máquina fica com os seus.
+          </Help>
+        </strong>
+        <span className="muted">
+          {!is.exists
+            ? `Ainda não há backup em ${is.path}: exporte pela janela do mod e traga o arquivo.`
+            : is.error
+              ? is.error
+              : !is.read
+                ? `${is.values} opções no backup.`
+                : pending
+                  ? `${is.values} opções no backup; nesta máquina ${is.differ} estão diferentes e ${is.missing} nunca foram gravadas (o mod usa o padrão).`
+                  : `As ${is.values} opções do backup estão iguais nesta máquina.`}
+        </span>
+      </div>
+      <button disabled={!!busy || !canRun} title="Troca o arquivo do repo por um backup exportado pela janela de configurações do mod" onClick={onBring}>
+        {busy === "island" ? "Salvando…" : "Trazer backup do mod…"}
+      </button>
     </div>
   );
 }

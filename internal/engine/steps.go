@@ -45,7 +45,7 @@ func (s *appStep) backend() (backend.Backend, error) {
 		return backend.Winget{}, nil
 	case config.MethodScoop:
 		return backend.Scoop{}, nil
-	case config.MethodScript, config.MethodSteam, config.MethodNinite, config.MethodPolicies, config.MethodPlaynite, config.MethodRetroArch, config.MethodWindhawk:
+	case config.MethodScript, config.MethodSteam, config.MethodNinite, config.MethodPolicies, config.MethodPlaynite, config.MethodRetroArch, config.MethodWindhawk, config.MethodLayout:
 		return nil, nil
 	default: // native and deb-url both end up in the distro manager
 		return backend.Native(s.env.Info)
@@ -72,6 +72,8 @@ func (s *appStep) installed(ctx context.Context) bool {
 		return s.env.retroarchInstalled()
 	case config.MethodWindhawk:
 		return s.env.windhawkApplied(ctx)
+	case config.MethodLayout:
+		return s.env.layoutApplied()
 	}
 	b, err := s.backend()
 	if err != nil {
@@ -106,6 +108,8 @@ func (s *appStep) describeInstall() string {
 		return "download RetroArch and its cores, copy the BIOS from the store and the settings and saves from git, point the playlists at the games and register it in the Start menu"
 	case config.MethodWindhawk:
 		return "install the Windhawk mods of windows/windhawk/backup.json with their settings (asks for elevation)"
+	case config.MethodLayout:
+		return "pin the apps of config/layout.yaml to the taskbar, clear the Start menu and hide the desktop icons; the taskbar restarts (asks for elevation)"
 	case config.MethodNinite:
 		return fmt.Sprintf("download and run the Ninite installer for %d apps (%s)", len(strings.Fields(s.res.Name)), strings.Join(strings.Fields(s.res.Name), ", "))
 	default:
@@ -153,6 +157,8 @@ func (s *appStep) install(ctx context.Context, out io.Writer) error {
 		return s.env.retroarchInstall(ctx, out)
 	case config.MethodWindhawk:
 		return s.env.ImportWindhawk(ctx, out)
+	case config.MethodLayout:
+		return s.env.ApplyLayout(ctx, out)
 	}
 	b, err := s.backend()
 	if err != nil {

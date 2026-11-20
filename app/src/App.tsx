@@ -25,6 +25,7 @@ import { BackupTab } from "./components/windows/BackupTab";
 import { ApplyView } from "./components/ApplyView";
 import { DotfilesTab } from "./components/DotfilesTab";
 import { DataFolder } from "./components/DataFolder";
+import { AboutDrawer, useAppVersion } from "./components/AboutDrawer";
 import { Drawer } from "./components/Drawer";
 import { FileDrawer, type FileTarget } from "./components/FileDrawer";
 import { ENV_LABEL, HomeTab } from "./components/HomeTab";
@@ -90,6 +91,8 @@ export default function App() {
 	const planSeq = useRef(0);
 	const [openFile, setOpenFile] = useState<FileTarget | null>(null);
 	const [helpOpen, setHelpOpen] = useState(false);
+	const [aboutOpen, setAboutOpen] = useState(false);
+	const version = useAppVersion();
 	const [installMedia, setInstallMedia] = useState<InstallMedia | null>(null);
 	const [paletteOpen, setPaletteOpen] = useState(false);
 
@@ -155,6 +158,19 @@ export default function App() {
 		setStepIndex(0);
 		void loadWizard(false);
 	}, [loadWizard]);
+
+	// On Windows, Deno is installed by itself in the background, once per
+	// session and without asking; a failure (offline, no winget) only goes to
+	// the console, and the next session tries again.
+	const denoTried = useRef(false);
+	useEffect(() => {
+		if (!root || info?.os !== "windows" || denoTried.current) return;
+		denoTried.current = true;
+		api
+			.ensureDeno(root)
+			.then((r) => r.installed && console.info(`Deno instalado em segundo plano: ${r.path}`))
+			.catch((e) => console.warn(`Deno não foi instalado: ${errorMessage(e)}`));
+	}, [root, info?.os]);
 
 	// the unattended Windows installation of the profile, when it has one
 	const loadInstallMedia = useCallback(async () => {
@@ -322,6 +338,7 @@ export default function App() {
 					: []),
 				{ id: "root", label: "Trocar pasta de dados…", group: "Ações", icon: <FolderOpen size={16} />, run: () => void chooseRoot() },
 				{ id: "help", label: "Como funciona", group: "Ações", icon: <Info size={16} />, run: () => setHelpOpen(true) },
+				{ id: "about", label: "Sobre o envsetup", group: "Ações", hint: version ? `v${version}` : undefined, icon: <Info size={16} />, run: () => setAboutOpen(true) },
 				...profiles
 					.filter((p) => p.id !== profileId)
 					.map((p) => ({
@@ -341,6 +358,11 @@ export default function App() {
 				<h1 className="brand">
 					<img src="/icon.svg" alt="" className="brand-icon" />
 					<span className="brand-text">envsetup</span>
+					{version && (
+						<button className="brand-version" title="Sobre o envsetup: a versão desta máquina" onClick={() => setAboutOpen(true)}>
+							v{version}
+						</button>
+					)}
 				</h1>
 				<div className="env-badge">
 					<span className="dot" />
@@ -542,6 +564,14 @@ export default function App() {
 						root={root}
 						file={openFile}
 						onClose={() => setOpenFile(null)}
+					/>
+				)}
+				{aboutOpen && (
+					<AboutDrawer
+						version={version}
+						root={root}
+						system={info?.os === "windows" ? "Windows" : info?.name || "Linux"}
+						onClose={() => setAboutOpen(false)}
 					/>
 				)}
 				{helpOpen && (
