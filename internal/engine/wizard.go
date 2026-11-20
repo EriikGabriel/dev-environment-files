@@ -71,20 +71,28 @@ func Wizard(ctx context.Context, cfg *config.Config, profileID string, env *Env)
 	app := func(id string, def bool) WizardApp {
 		a := cfg.Apps[id]
 		w := WizardApp{ID: id, Description: a.Description, Default: def}
-		res, err := Resolve(id, a, env.Info)
-		if err != nil {
+		if _, err := Resolve(id, a, env.Info); err != nil {
 			w.Default, w.Detail = false, err.Error()
 			return w
 		}
-		st := &appStep{env: env, res: res}
 		w.Available = true
+		return w
+	}
+	// what is slow (is it installed? does the machine have the card?) is
+	// filled in afterwards, in parallel; see checkWorkers
+	check := func(w *WizardApp) {
+		a := cfg.Apps[w.ID]
+		res, err := Resolve(w.ID, a, env.Info)
+		if err != nil {
+			return
+		}
+		st := &appStep{env: env, res: res}
 		w.Installed = st.installed(ctx)
 		w.Detail = st.describeInstall()
 		if ok, why := env.Suggested(ctx, a); why != "" {
 			w.Default = w.Default && ok
 			w.Hint = why
 		}
-		return w
 	}
 	dests := func(files []config.File) []WizardFile {
 		out := []WizardFile{}
@@ -137,5 +145,48 @@ func Wizard(ctx context.Context, cfg *config.Config, profileID string, env *Env)
 		}
 		steps = append(steps, w)
 	}
+	// the hardware a suggestion depends on is read first, alongside the other
+	// checks: the device list alone takes seconds (one query per USB device)
+	var jobs []func()
+	if needs(cfg, steps, func(a config.App) bool { return len(a.Devices) > 0 }) {
+		jobs = append(jobs, func() { env.Devices(ctx) })
+	}
+	if needs(cfg, steps, func(a config.App) bool { return len(a.GPU) > 0 }) {
+		jobs = append(jobs, func() { env.GPUs(ctx) })
+	}
+	for i := range steps {
+		for j := range steps[i].Apps {
+			if w := &steps[i].Apps[j]; w.Available {
+				jobs = append(jobs, func() { check(w) })
+			}
+		}
+		for k := range steps[i].Options {
+			for j := range steps[i].Options[k].Apps {
+				if w := &steps[i].Options[k].Apps[j]; w.Available {
+					jobs = append(jobs, func() { check(w) })
+				}
+			}
+		}
+	}
+	parallel(checkWorkers, jobs)
 	return steps, nil
+}
+
+// needs tells whether an app of the wizard asks for something of the machine.
+func needs(cfg *config.Config, steps []WizardStep, f func(config.App) bool) bool {
+	for _, s := range steps {
+		for _, a := range s.Apps {
+			if f(cfg.Apps[a.ID]) {
+				return true
+			}
+		}
+		for _, o := range s.Options {
+			for _, a := range o.Apps {
+				if f(cfg.Apps[a.ID]) {
+					return true
+				}
+			}
+		}
+	}
+	return false
 }

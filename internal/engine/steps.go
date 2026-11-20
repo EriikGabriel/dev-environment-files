@@ -58,8 +58,10 @@ func (s *appStep) installed(ctx context.Context) bool {
 		if s.res.Check == "" {
 			return false
 		}
-		_, err := s.env.Runner.Output(ctx, s.env.script(s.res.Check)...)
-		return err == nil
+		return s.env.CheckCache.answer(s.checkKey(), func() bool {
+			_, err := s.env.Runner.Output(ctx, s.env.script(s.res.Check)...)
+			return err == nil
+		})
 	case config.MethodSteam:
 		return s.env.steamInstalled(s.res.Name)
 	case config.MethodNinite:
@@ -79,7 +81,7 @@ func (s *appStep) installed(ctx context.Context) bool {
 	if err != nil {
 		return false
 	}
-	return b.Installed(ctx, s.env.Runner, s.res.Name)
+	return s.env.CheckCache.answer(s.checkKey(), func() bool { return b.Installed(ctx, s.env.Runner, s.res.Name) })
 }
 
 func (s *appStep) Pending(ctx context.Context) (bool, string) {

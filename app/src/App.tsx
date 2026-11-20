@@ -18,26 +18,17 @@ import {
 	UserRound,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import * as api from "./api";
 import { errorMessage } from "./api";
-import { BackupTab } from "./components/windows/BackupTab";
 import { ApplyView } from "./components/ApplyView";
-import { DotfilesTab } from "./components/DotfilesTab";
 import { DataFolder } from "./components/DataFolder";
 import { AboutDrawer, useAppVersion } from "./components/AboutDrawer";
 import { Drawer } from "./components/Drawer";
 import { FileDrawer, type FileTarget } from "./components/FileDrawer";
 import { ENV_LABEL, HomeTab } from "./components/HomeTab";
-import { LinuxPreviewTab } from "./components/linux/LinuxPreviewTab";
 import { PasswordDialog } from "./components/PasswordDialog";
 import { RootPicker } from "./components/RootPicker";
-import { InstallTab } from "./components/windows/InstallTab";
-import { PlayniteTab } from "./components/windows/PlayniteTab";
-import { RetroArchTab } from "./components/windows/RetroArchTab";
-import { PoliciesTab } from "./components/windows/PoliciesTab";
-import { WindhawkTab } from "./components/windows/WindhawkTab";
-import { WindowsPreviewTab } from "./components/windows/WindowsPreviewTab";
 import { SetupWizard } from "./components/SetupWizard";
 import { Aurora } from "./components/ui/Aurora";
 import { type Command, CommandPalette } from "./components/ui/CommandPalette";
@@ -54,6 +45,18 @@ import type {
 } from "./types";
 import "./styles.css";
 import { useApplyRun } from "./useApplyRun";
+
+// The tabs other than Início and Configurar are loaded when first opened:
+// the app starts with less code to read.
+const BackupTab = lazy(() => import("./components/windows/BackupTab").then((m) => ({ default: m.BackupTab })));
+const DotfilesTab = lazy(() => import("./components/DotfilesTab").then((m) => ({ default: m.DotfilesTab })));
+const LinuxPreviewTab = lazy(() => import("./components/linux/LinuxPreviewTab").then((m) => ({ default: m.LinuxPreviewTab })));
+const InstallTab = lazy(() => import("./components/windows/InstallTab").then((m) => ({ default: m.InstallTab })));
+const PlayniteTab = lazy(() => import("./components/windows/PlayniteTab").then((m) => ({ default: m.PlayniteTab })));
+const RetroArchTab = lazy(() => import("./components/windows/RetroArchTab").then((m) => ({ default: m.RetroArchTab })));
+const PoliciesTab = lazy(() => import("./components/windows/PoliciesTab").then((m) => ({ default: m.PoliciesTab })));
+const WindhawkTab = lazy(() => import("./components/windows/WindhawkTab").then((m) => ({ default: m.WindhawkTab })));
+const WindowsPreviewTab = lazy(() => import("./components/windows/WindowsPreviewTab").then((m) => ({ default: m.WindowsPreviewTab })));
 
 type Tab = "home" | "setup" | "preview" | "dotfiles" | "install" | "policies" | "windhawk" | "playnite" | "retroarch" | "backup";
 
@@ -471,6 +474,7 @@ export default function App() {
 					exit={{ opacity: 0, y: -8 }}
 					transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
 				>
+				<Suspense fallback={<Skeleton label="Carregando…" rows={3} />}>
 				{run ? (
 					<ApplyView
 						{...run}
@@ -555,6 +559,7 @@ export default function App() {
 				) : (
 					<Skeleton label="Calculando o plano…" rows={4} />
 				)}
+				</Suspense>
 
 				</motion.div>
 				</AnimatePresence>

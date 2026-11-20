@@ -227,7 +227,11 @@ os jogos" na aba RetroArch, ou mova a pasta com "Trocar". Formatando também o H
   o `ventoy.json` com o do pendrive (o que muda ganha um `.bak`) e baixa o Ninite. A imagem do
   Windows não é copiada.
 - **Políticas.** Gravadas no `Registry.pol` (que o gpedit lê) e no registro, seguido de
-  `gpupdate`. Algumas só valem depois de sair da sessão ou reiniciar.
+  `gpupdate`. Algumas só valem depois de sair da sessão ou reiniciar. O `gpt.ini` ao lado ganha a
+  extensão de registro e uma versão nova a cada aplicação, senão o Windows ignora o arquivo.
+  - **"Falha ao abrir o Objeto de Política de Grupo… Final do arquivo alcançado".** Era o
+    `Registry.pol` gravado pelas versões até a 0.1.7, sem o caractere nulo que fecha cada nome.
+    Aplicar as políticas de novo com esta versão lê aquele arquivo e o regrava no formato certo.
   - **Para mexer à mão**, cada política da aba Políticas tem dois botões:
     - **Abrir no gpedit** abre o Editor de Política de Grupo e navega até a política: expande
       Configuração do Computador > Modelos Administrativos > a pasta dela, seleciona e abre a

@@ -95,6 +95,8 @@ func machineCommands(f *flags) []*cobra.Command {
 			if err != nil {
 				return err
 			}
+			env.CheckCache = engine.OpenCheckCache(engine.StateDir())
+			defer env.CheckCache.Save()
 			ws, err := engine.Wizard(cmd.Context(), cfg, id, env)
 			if err != nil {
 				return err

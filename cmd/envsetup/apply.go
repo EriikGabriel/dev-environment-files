@@ -26,6 +26,8 @@ func applyCommands(f *flags) []*cobra.Command {
 			if err != nil {
 				return err
 			}
+			env.CheckCache = engine.OpenCheckCache(engine.StateDir())
+			defer env.CheckCache.Save()
 			if f.json {
 				return printJSON(os.Stdout, planJSON{
 					Platform: toPlatformJSON(env.Info), Root: env.Root, Profile: p.Profile, Choices: p.Choices,
@@ -47,6 +49,10 @@ func applyCommands(f *flags) []*cobra.Command {
 			if os.Geteuid() == 0 && os.Getenv("SUDO_USER") != "" {
 				return fmt.Errorf("run envsetup as your normal user, not through sudo: it calls sudo itself where needed, and per-user files must land in your home")
 			}
+			// apply checks for real and changes what is installed: the
+			// answers kept for the Configurar screen are dropped, before and after
+			engine.ClearCheckCache(engine.StateDir())
+			defer engine.ClearCheckCache(engine.StateDir())
 			if f.json {
 				return applyJSON(cmd.Context(), *f)
 			}

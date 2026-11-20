@@ -600,6 +600,15 @@ apps:
     description: MSI Afterburner (overclock, fan curve and the in-game overlay)
     names: { windows: Guru3D.Afterburner }
   hwinfo: { description: Hardware sensors and monitoring, names: { windows: REALiX.HWiNFO } }
+  # A portable program from GitHub (not on winget), checked against the
+  # SHA-256 of the release and registered in the Start menu like Playnite.
+  reset-explode:
+    description: 'Reset Explode (github.com/GustavoReset/ResetExplode): PC tune-up, cleanup and driver tools; portable, goes to %LOCALAPPDATA%\Programs\ResetExplode and asks for elevation when it opens'
+    method: { windows: script }
+    check:
+      windows: '& "$env:ENVSETUP_ROOT\windows\install-reset-explode.ps1" -Check'
+    source:
+      windows: '& "$env:ENVSETUP_ROOT\windows\install-reset-explode.ps1"'
   nvidia-app:
     description: "NVIDIA app (GeForce drivers, game optimization and the in-game overlay). Not in winget: downloads the installer linked on nvidia.com"
     gpu: [nvidia]

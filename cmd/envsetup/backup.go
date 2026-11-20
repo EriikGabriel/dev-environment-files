@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -142,13 +143,22 @@ func backupCommands(f *flags) []*cobra.Command {
 			if err != nil {
 				return err
 			}
-			b := backupJSON{Root: root, Git: gitStatus(root, fetch)}
+			b := backupJSON{Root: root}
 			b.Owner, _ = config.IsOwner(root)
-			if b.Playnite, err = describePlaynite(cmd, *f, false); err != nil {
-				return err
+			// git, Playnite and RetroArch are read at the same time: each
+			// one waits on its own processes and folders
+			var wg sync.WaitGroup
+			var perr, rerr error
+			wg.Add(3)
+			go func() { defer wg.Done(); b.Git = gitStatus(root, fetch) }()
+			go func() { defer wg.Done(); b.Playnite, perr = describePlaynite(cmd, *f, false) }()
+			go func() { defer wg.Done(); b.RetroArch, rerr = describeRetroArch(cmd, *f, false) }()
+			wg.Wait()
+			if perr != nil {
+				return perr
 			}
-			if b.RetroArch, err = describeRetroArch(cmd, *f, false); err != nil {
-				return err
+			if rerr != nil {
+				return rerr
 			}
 			b.Windows = b.RetroArch.Windows
 			for _, store := range []string{b.RetroArch.Config.Store, b.Playnite.Config.Store} {

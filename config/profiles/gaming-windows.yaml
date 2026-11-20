@@ -20,16 +20,16 @@ media:
 steps:
   - id: base
     title: Essenciais
-    description: Runtimes que os jogos pedem e utilitários básicos, como o Raycast.
-    apps: [7zip, vcredist, directx, windows-media-player, raycast, raycast-extensions]
-    optional: [scoop, powertoys, ninite]
+    description: Runtimes que os jogos pedem e utilitários básicos, como o Raycast e o PowerToys.
+    apps: [vcredist, directx, windows-media-player, raycast, raycast-extensions, powertoys, ninite]
+    optional: [7zip, scoop]
 
   # Both GPU apps are listed: the one for the card of the machine starts
   # selected, the other unselected (`gpu` in config/apps.yaml).
   - id: drivers
     title: Drivers e hardware
-    description: O software da placa de vídeo (vem marcado o da placa desta máquina) e as ferramentas de monitoramento.
-    apps: [nvidia-app, amd-software]
+    description: O software da placa de vídeo (vem marcado o da placa desta máquina), o Reset Explode e as ferramentas de monitoramento.
+    apps: [nvidia-app, amd-software, reset-explode]
     optional: [msi-afterburner, hwinfo]
 
   - id: peripherals
@@ -62,14 +62,13 @@ steps:
   - id: social
     title: Comunicação e navegador
     description: Voz, navegador e o que roda junto com os jogos.
-    apps: [discord, dia]
-    optional: [opera-gx, brave, spotify, obs-studio]
+    apps: [discord, dia, spotify]
+    optional: [opera-gx, brave, obs-studio]
 
   - id: tuning
     title: Otimizações
-    description: Desliga a compressão de memória (vale depois de reiniciar) e, se marcar, as políticas de grupo que cortam telemetria, sugestões e tarefas em segundo plano (aba Políticas).
-    apps: [disable-memory-compression]
-    optional: [group-policies]
+    description: Desliga a compressão de memória (vale depois de reiniciar) e aplica as políticas de grupo que cortam telemetria, sugestões e tarefas em segundo plano (aba Políticas).
+    apps: [disable-memory-compression, group-policies]
 
   # After the launchers on purpose: these are installed through Steam itself.
   - id: steam-apps

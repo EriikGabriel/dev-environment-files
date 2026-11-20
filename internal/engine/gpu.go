@@ -29,9 +29,17 @@ func GPUVendor(name string) string {
 // GPUs lists the kinds of graphics card the machine has (nvidia, amd, intel),
 // sorted; empty when they cannot be read (Linux, or the query failed).
 func (e *Env) GPUs(ctx context.Context) []string {
+	e.gpuMu.Lock()
+	defer e.gpuMu.Unlock()
 	if e.gpus != nil {
 		return *e.gpus
 	}
+	found := e.CheckCache.lines("\x00gpus", func() []string { return e.readGPUs(ctx) })
+	e.gpus = &found
+	return found
+}
+
+func (e *Env) readGPUs(ctx context.Context) []string {
 	found := []string{}
 	if e.Info.OS == "windows" {
 		if out, err := e.Runner.Output(ctx, e.script(gpuScript)...); err == nil {
@@ -45,7 +53,6 @@ func (e *Env) GPUs(ctx context.Context) []string {
 			sort.Strings(found)
 		}
 	}
-	e.gpus = &found
 	return found
 }
 
@@ -96,9 +103,17 @@ const devicesScript = "Get-PnpDevice -PresentOnly -ErrorAction SilentlyContinue 
 // Devices lists the connected devices (see devicesScript); empty when they
 // cannot be read (Linux, or the query failed).
 func (e *Env) Devices(ctx context.Context) []string {
+	e.devicesMu.Lock()
+	defer e.devicesMu.Unlock()
 	if e.devices != nil {
 		return *e.devices
 	}
+	found := e.CheckCache.lines("\x00devices", func() []string { return e.readDevices(ctx) })
+	e.devices = &found
+	return found
+}
+
+func (e *Env) readDevices(ctx context.Context) []string {
 	found := []string{}
 	if e.Info.OS == "windows" {
 		if out, err := e.Runner.Output(ctx, e.script(devicesScript)...); err == nil {
@@ -109,7 +124,6 @@ func (e *Env) Devices(ctx context.Context) []string {
 			}
 		}
 	}
-	e.devices = &found
 	return found
 }
 

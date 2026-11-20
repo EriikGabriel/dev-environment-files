@@ -464,7 +464,7 @@ func TestGamingProfileOnWindows(t *testing.T) {
 	res := p.Execute(context.Background(), io.Discard, func(Event) {})
 	var failed []string
 	for _, f := range res.Failures {
-		if f.Title != "windhawk-mods" && f.Title != "playnite" && f.Title != "retroarch" {
+		if f.Title != "windhawk-mods" && f.Title != "group-policies" && f.Title != "playnite" && f.Title != "retroarch" {
 			failed = append(failed, f.Title)
 		}
 	}

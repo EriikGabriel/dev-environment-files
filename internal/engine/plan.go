@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/EriikGabriel/dev-environment-files/internal/backend"
@@ -36,10 +37,18 @@ type Env struct {
 	// config.IsOwner): restores leave out the owner's saves, play history
 	// and account ids.
 	Guest bool
+	// CheckCache, when set, reuses recent answers of the slow install checks
+	// (read-only commands only; nil checks every time).
+	CheckCache *CheckCache
 
 	refreshed map[string]bool
+	// The caches below are read by state checks running in parallel; each
+	// has its own lock, so a check waiting on the (slow) device list does not
+	// hold up one that needs the graphics cards.
+	gpuMu sync.Mutex
 	// gpus caches GPUs; nil until read.
-	gpus *[]string
+	gpus      *[]string
+	devicesMu sync.Mutex
 	// devices caches Devices; nil until read.
 	devices *[]string
 }
@@ -301,11 +310,16 @@ type Line struct {
 }
 
 // Describe reports the current state of every step without changing anything.
+// The checks run in parallel (see checkWorkers); the lines keep the plan's order.
 func (p *Plan) Describe(ctx context.Context) []Line {
 	lines := make([]Line, len(p.Steps))
+	jobs := make([]func(), len(p.Steps))
 	for i, s := range p.Steps {
-		pending, detail := s.Pending(ctx)
-		l := Line{Title: s.Title(), ID: s.Title(), Pending: pending, Detail: detail}
+		jobs[i] = func() { lines[i].Pending, lines[i].Detail = s.Pending(ctx) }
+	}
+	parallel(checkWorkers, jobs)
+	for i, s := range p.Steps {
+		l := Line{Title: s.Title(), ID: s.Title(), Pending: lines[i].Pending, Detail: lines[i].Detail}
 		if i < len(p.groups) {
 			l.Step = p.groups[i]
 		}

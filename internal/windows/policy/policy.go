@@ -227,7 +227,10 @@ func ParseState(out string) (map[string]bool, error) {
 // gpedit.msc reads, and defines PolSet, PolDel and PolSave to edit it. The
 // format is documented as "Registry Policy File Format" (PReg): the header
 // "PReg" + version 1, then entries [key;value;type;size;data]. Strings and
-// separators are UTF-16LE; type, size and data are binary little-endian.
+// separators are UTF-16LE; the key and the value name each end with a NUL
+// (UTF-16 0x0000) before their ";": without it Windows reads past the end of
+// the file and gpedit.msc / gpupdate fail with "end of file reached". Type,
+// size and data are binary little-endian.
 const polHeader = `$polFile = Join-Path $env:SystemRoot 'System32\GroupPolicy\Machine\Registry.pol'
 $polDir = Split-Path $polFile
 if (-not (Test-Path -LiteralPath $polDir)) { New-Item -ItemType Directory -Path $polDir -Force | Out-Null }
@@ -239,8 +242,8 @@ function ReadStr {
   while ($script:pos + 1 -lt $script:bytes.Length) {
     $c = [BitConverter]::ToUInt16($script:bytes, $script:pos); $script:pos += 2
     if ($c -eq 0x3B) {
-      # Accept and clean up files produced by earlier envsetup versions,
-      # which incorrectly wrote a NUL before each semicolon.
+      # the NUL that ends the string comes before the ";"; files written by
+      # envsetup 0.1.0-0.1.7 left it out, and are read and rewritten right
       return $sb.ToString().TrimEnd([char]0)
     }
     [void]$sb.Append([char]$c)
@@ -291,10 +294,11 @@ function PolSave {
   $w = New-Object System.IO.BinaryWriter($ms)
   $w.Write([byte[]](0x50,0x52,0x65,0x67)); $w.Write([uint32]1)
   $sep = [byte[]](0x3B,0)
+  $nul = [byte[]](0,0)
   foreach ($e in $script:pol) {
     $w.Write([byte[]](0x5B,0))
-    $w.Write([Text.Encoding]::Unicode.GetBytes($e.Key)); $w.Write($sep)
-    $w.Write([Text.Encoding]::Unicode.GetBytes($e.Name)); $w.Write($sep)
+    $w.Write([Text.Encoding]::Unicode.GetBytes($e.Key)); $w.Write($nul); $w.Write($sep)
+    $w.Write([Text.Encoding]::Unicode.GetBytes($e.Name)); $w.Write($nul); $w.Write($sep)
     $w.Write([uint32]$e.Type); $w.Write($sep)
     $w.Write([uint32]$e.Data.Length); $w.Write($sep)
     $w.Write([byte[]]$e.Data)
@@ -303,11 +307,28 @@ function PolSave {
   $w.Flush()
   if (Test-Path -LiteralPath $polFile) { (Get-Item -LiteralPath $polFile -Force).Attributes = 'Normal' }
   [IO.File]::WriteAllBytes($polFile, $ms.ToArray())
+  # gpt.ini tells Windows which extensions process the machine policies (the
+  # registry one, {35378EAC...}, with the Administrative Templates tool
+  # {D02B1F72...}) and, by its version, that they changed. With only
+  # "[General]" in it (as gpedit.msc may leave it) the Registry.pol is skipped.
   $gpt = Join-Path (Split-Path $polDir) 'gpt.ini'
-  if (-not (Test-Path -LiteralPath $gpt)) {
-    $lines = '[General]', 'gPCMachineExtensionNames=[{35378EAC-683F-11D2-A89A-00C04FBBCFA2}{D02B1F72-3407-48AE-BA88-E8213C6761F1}]', 'Version=1'
-    [IO.File]::WriteAllText($gpt, (($lines -join [Environment]::NewLine) + [Environment]::NewLine), [Text.Encoding]::ASCII)
+  $reg = '[{35378EAC-683F-11D2-A89A-00C04FBBCFA2}{D02B1F72-3407-48AE-BA88-E8213C6761F1}]'
+  $lines = @()
+  if (Test-Path -LiteralPath $gpt) {
+    (Get-Item -LiteralPath $gpt -Force).Attributes = 'Normal'
+    $lines = @(Get-Content -LiteralPath $gpt | Where-Object { $_.Trim() })
   }
+  $ext = $lines | Where-Object { $_ -match '^\s*gPCMachineExtensionNames\s*=' } | Select-Object -First 1
+  $ext = if ($ext) { ($ext -split '=', 2)[1].Trim() } else { '' }
+  if ($ext.IndexOf('{35378EAC-683F-11D2-A89A-00C04FBBCFA2}', [StringComparison]::OrdinalIgnoreCase) -lt 0) { $ext = $ext + $reg }
+  $ver = [uint32]0
+  $old = $lines | Where-Object { $_ -match '^\s*Version\s*=\s*\d+' } | Select-Object -First 1
+  if ($old -and $old -match '=\s*(\d+)') { $ver = [uint32]$Matches[1] }
+  # the low 16 bits count the changes to the machine policies, the high ones the user's
+  $ver = ($ver -band 0xFFFF0000) -bor ((($ver -band 0xFFFF) + 1) -band 0xFFFF)
+  $keep = @($lines | Where-Object { $_ -notmatch '^\s*(\[General\]|gPCMachineExtensionNames\s*=|Version\s*=)' })
+  $out = @('[General]', ('gPCMachineExtensionNames=' + $ext), ('Version=' + $ver)) + $keep
+  [IO.File]::WriteAllText($gpt, (($out -join [Environment]::NewLine) + [Environment]::NewLine), [Text.Encoding]::ASCII)
 }
 `
 
