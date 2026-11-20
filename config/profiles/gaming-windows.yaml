@@ -39,7 +39,7 @@ steps:
 
   - id: launchers
     title: Lojas e launchers
-    description: As lojas e launchers de onde os jogos são instalados (instale os jogos em D:\Games).
+    description: As lojas e launchers de onde os jogos são instalados (instale os jogos em D:\Games\Steam, D:\Games\Epic Games e D:\Games\Hydra).
     apps: [steam, epic-games, hydra-launcher]
     optional: [gog-galaxy, ea-app, ubisoft-connect, battle-net]
 

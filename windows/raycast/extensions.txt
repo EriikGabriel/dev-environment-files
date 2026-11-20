@@ -2,5 +2,4 @@
 # windows\raycast-extensions.ps1 -Install; refresh with -Save.
 bennettsh/playnite-launcher              # Playnite Launcher
 ike-gg/clean-keyboard                    # Clean Keyboard
-ron-myers/brave                          # Brave
 thomas/color-picker                      # Color Picker

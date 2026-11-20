@@ -56,14 +56,15 @@ var safeName = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9._+-]*$`)
 func main() {
 	out := flag.String("out", filepath.Join("windows", "icons", "mactahoe"), "folder of the pack")
 	ref := flag.String("ref", commit, "commit of the theme")
+	extra := flag.String("extra", filepath.Join("windows", "icons", "macosicons"), "folder of 256 px PNGs copied over the theme's icons (empty for none)")
 	flag.Parse()
-	if err := run(*out, *ref); err != nil {
+	if err := run(*out, *ref, *extra); err != nil {
 		fmt.Fprintln(os.Stderr, "iconpack:", err)
 		os.Exit(1)
 	}
 }
 
-func run(out, ref string) error {
+func run(out, ref, extra string) error {
 	edge, err := findEdge()
 	if err != nil {
 		return err
@@ -145,6 +146,15 @@ func run(out, ref string) error {
 	for _, n := range empty {
 		delete(drawn, n)
 	}
+	// The icons of the extra folder go over the theme's: an app the theme
+	// draws badly, or not at all, gets one picked by hand.
+	added, err := copyExtra(extra, out)
+	if err != nil {
+		return err
+	}
+	for _, n := range added {
+		drawn[n] = true
+	}
 	aliases := map[string]string{}
 	for alias, target := range links {
 		if drawn[target] && !drawn[alias] {
@@ -174,7 +184,9 @@ Made by "go run ./cmd/iconpack"; do not edit by hand. aliases.json lists the
 other names each icon answers to (the symbolic links of the theme).
 this-pc, user-files, recycle-bin, recycle-bin-full and network are the icons
 of the Windows system items.
-`, repo, ref)
+The icons of %s (%s) replace the theme's of the same name:
+they come from macosicons.com, see the README there.
+`, repo, ref, filepath.ToSlash(extra), strings.Join(added, ", "))
 	if err := os.WriteFile(filepath.Join(out, "README.txt"), []byte(readme), 0o644); err != nil {
 		return err
 	}
@@ -288,4 +300,33 @@ func blank(im *image.NRGBA) bool {
 		}
 	}
 	return true
+}
+
+// copyExtra copies the PNGs of dir into out, replacing the icons of the same
+// name, and returns their names (without extension). No dir, no icons.
+func copyExtra(dir, out string) ([]string, error) {
+	if dir == "" {
+		return nil, nil
+	}
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return nil, err
+	}
+	var added []string
+	for _, e := range entries {
+		name := e.Name()
+		if e.IsDir() || !strings.EqualFold(filepath.Ext(name), ".png") || !safeName.MatchString(name) {
+			continue
+		}
+		data, err := os.ReadFile(filepath.Join(dir, name))
+		if err != nil {
+			return nil, err
+		}
+		if err := os.WriteFile(filepath.Join(out, name), data, 0o644); err != nil {
+			return nil, err
+		}
+		added = append(added, strings.TrimSuffix(name, filepath.Ext(name)))
+	}
+	sort.Strings(added)
+	return added, nil
 }

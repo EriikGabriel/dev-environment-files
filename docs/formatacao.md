@@ -11,7 +11,8 @@ Termos usados:
 - **HD**: o disco D:, que **não** se formata. Tem duas pastas do envsetup:
   - `D:\envsetup`: o *store*, com a cópia do Playnite, a BIOS do RetroArch e as senhas.
   - `D:\Games`: os jogos. Os do RetroArch ficam em `D:\Games\Retro\<sistema>` e os das lojas em
-    `D:\Games\<loja>`.
+    `D:\Games\<loja>`: `D:\Games\Steam`, `D:\Games\Epic Games` e `D:\Games\Hydra`. Essas pastas
+    só organizam as instalações de cada loja; o RetroArch e o Playnite só olham `D:\Games\Retro`.
 - **GitHub**: este repositório. Guarda as configurações, os saves e os arquivos `config/`.
 - **Pasta de dados**: a pasta que o app usa. Pode ser um clone do repositório ou a cópia que o
   instalador do app faz em `Documentos\envsetup`.
@@ -141,7 +142,7 @@ Isto **não** é guardado nem refeito pelo envsetup. Confira antes de formatar.
 **O que a Steam e as outras lojas precisam de você**
 - **Reconhecer os jogos do HD.** Na Steam: Configurações > Armazenamento > Adicionar unidade >
   `D:\Games\Steam`; os jogos que já estão lá aparecem como instalados. Na Epic: instale o jogo
-  apontando para a pasta existente e ela verifica os arquivos em vez de baixar tudo.
+  apontando para a pasta existente em `D:\Games\Epic Games` e ela verifica os arquivos em vez de baixar tudo.
 - **Wallpaper Engine**: a Steam abre a janela de instalação, e os papéis de parede da Oficina são
   baixados de novo.
 

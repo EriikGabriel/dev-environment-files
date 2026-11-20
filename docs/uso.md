@@ -143,7 +143,8 @@ envsetup backup-clone --dir=... --url=... --branch=...  # máquina nova: instala
   internet, sem winget) só vai para o console, e o app tenta de novo na próxima vez
   (`envsetup ensure-deno`).
 - **Lojas e launchers.** Steam, Epic Games e Hydra Launcher marcados; GOG, EA, Ubisoft e Battle.net
-  opcionais. Configure a pasta de instalação de cada um para `D:\Games\<loja>`.
+  opcionais. Configure a pasta de instalação de cada um para `D:\Games\<loja>`: `D:\Games\Steam`,
+  `D:\Games\Epic Games` e `D:\Games\Hydra`.
 - **Placa de vídeo.** A etapa Drivers traz o NVIDIA App e o AMD Software (Adrenalin). Vem
   marcado só o da placa desta máquina, e o assistente mostra o motivo ("placa NVIDIA detectada").
 - **Periféricos.** A etapa Periféricos instala, já marcados, o MCHOSE HUB (headset V9 Pro), o
@@ -169,11 +170,11 @@ Só o **C:** (o SSD) é formatado. Cada coisa mora num destes lugares:
 | **GitHub** | configurações e saves do Playnite e do RetroArch, sem senhas (`windows/playnite`, `windows/retroarch`) e os `config/*.yaml` |
 | **Internet** | o RetroArch e os cores, os drivers e os programas do perfil |
 | **HD** (`D:\envsetup`) | o Playnite (biblioteca, capas, trailers, temas, extensões), a BIOS e as senhas tiradas do git |
-| **HD** (`D:\Games`) | os jogos: os do RetroArch em `D:\Games\Retro\<sistema>`, os das lojas em `D:\Games\<loja>` |
+| **HD** (`D:\Games`) | os jogos: os do RetroArch em `D:\Games\Retro\<sistema>`, os das lojas em `D:\Games\<loja>` (`Steam`, `Epic Games`, `Hydra`) |
 
 Os jogos não são copiados. Eles já moram no HD, e o RetroArch e o Playnite apontam para lá.
 Instale todo jogo novo em `D:\Games`: na Steam, em Configurações > Armazenamento > Adicionar
-unidade; na Epic, escolhendo a pasta na instalação. Depois de formatar, adicione `D:\Games\Steam`
+unidade; na Epic, escolhendo `D:\Games\Epic Games` na instalação. Depois de formatar, adicione `D:\Games\Steam`
 de novo na Steam, e ela reconhece os jogos que já estão lá.
 
 **Antes de formatar** (aba Backup)
@@ -259,7 +260,9 @@ os jogos" na aba RetroArch, ou mova a pasta com "Trocar". Formatando também o H
   `%ProgramData%\envsetup\icons\manifest.json` para desfazer. Apps que recriam o atalho ao
   atualizar (Discord, Steam) voltam ao ícone deles até você aplicar de novo. O pack MacTahoe vem
   do [MacTahoe-icon-theme](https://github.com/vinceliuice/MacTahoe-icon-theme) (GPL-3.0);
-  `go run ./cmd/iconpack` o refaz.
+  `go run ./cmd/iconpack` o refaz, copiando por cima os ícones de `windows/icons/macosicons`
+  (Dia, Playnite e RetroArch, do [macosicons.com](https://macosicons.com)). O Dia, que é MSIX,
+  ganha um atalho no menu Iniciar (`windows/msix-shortcut.ps1`) para poder receber o ícone.
 - **Windhawk.** Precisa do Windhawk 2 (o 1.x não tem o `windhawk-cli`). O item `windhawk` não usa
   o winget, que só tem o 1.x: `windows/install-windhawk.ps1` pega a release mais recente de versão 2
   ou maior no GitHub (hoje uma pré-release, a 2.0 alpha 8; quando sair a final, ela passa a ser

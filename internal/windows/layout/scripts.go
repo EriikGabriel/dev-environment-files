@@ -68,8 +68,9 @@ function PinXml($p) {
   '        <taskbar:DesktopApp DesktopApplicationLinkPath="' + (& $esc $v) + '" />'
 }
 function PinLink($name, $names) {
-  # the names in order, each as a shortcut or as an MSIX app (Dia has no
-  # shortcut: it is pinned by its app id); then a partial shortcut match
+  # the names in order, each as a shortcut or as an MSIX app (Dia without the
+  # shortcut windows\msix-shortcut.ps1 makes is pinned by its app id); then
+  # a partial shortcut match
   $p = $null; $uwa = $null
   foreach ($n in $names) {
     $m = $links | Where-Object { $_.BaseName -ieq $n } | Select-Object -First 1
