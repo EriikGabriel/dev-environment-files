@@ -647,6 +647,15 @@ apps:
     names: { windows: HydraLauncher.Hydra }
   opera-gx: { description: Opera GX browser, names: { windows: Opera.OperaGX } }
   brave: { description: Brave browser, names: { windows: Brave.Brave } }
+  # Dia is not on winget: its site hands out an MSIX through an .appinstaller,
+  # installed for the user (no elevation) and kept up to date by Windows.
+  dia:
+    description: 'Dia, the browser of The Browser Company (MSIX from diabrowser.com, installed for the user; updates itself)'
+    method: { windows: script }
+    check:
+      windows: 'if (-not (Get-AppxPackage -Name ''TheBrowserCompany.Dia'')) { exit 1 }'
+    source:
+      windows: '$a = if ($env:PROCESSOR_ARCHITECTURE -eq ''ARM64'') { ''arm64'' } else { ''x64'' }; Add-AppxPackage -AppInstallerFile "https://releases.diabrowser.com/windows/release/Dia.$a.appinstaller"'
   obs-studio: { description: OBS Studio (recording and streaming), names: { windows: OBSProject.OBSStudio } }
   wallpaper-engine:
     description: Wallpaper Engine, bought on Steam (AppID 431960). Steam opens its install dialog

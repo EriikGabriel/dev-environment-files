@@ -64,7 +64,7 @@ registrada e as seguintes **continuam**.
 | **Aparência** | Windhawk e os mods de `windows/windhawk/backup.json`, com as configurações (dock, menu Iniciar, Explorer…), e as opções da ilha do "Ilha e Dock estilo Mac" (`windows/windhawk/mac-island-dock.txt`) | o instalador do Windhawk 2 no GitHub (a versão mais recente, pré-release inclusa) e o repositório de mods dele | não |
 | **Playnite** | o Playnite portable em `C:\Playnite`: biblioteca, capas, trailers, temas, extensões e configurações | HD (`D:\envsetup\Playnite`) e GitHub (`windows/playnite`); sem o HD, o programa e os add-ons vêm da internet | só a biblioteca de jogos e as mídias |
 | **Emuladores** | o RetroArch portable em `C:\Emuladores\RetroArch`: programa, 7 cores, configurações, saves, estados, playlists e BIOS | buildbot.libretro.com, GitHub (`windows/retroarch`) e HD (BIOS) | só a BIOS e as senhas |
-| **Comunicação e navegador** | Discord, Opera GX / Brave, Spotify, OBS Studio | winget | não |
+| **Comunicação e navegador** | Discord, Dia / Opera GX, Brave, Spotify, OBS Studio | winget (o Dia vem do site dele, diabrowser.com, como pacote MSIX que se atualiza sozinho) | não |
 | **Otimizações** | compressão de memória desligada (`Disable-MMAgent -MemoryCompression`; pede elevação e vale depois de reiniciar) / políticas de grupo (`config/policies.yaml`) | o próprio Windows | não |
 | **Apps da Steam** | Wallpaper Engine | a Steam (você precisa estar logado) | não |
 | **Barra de tarefas** | a barra (a dock do Windhawk): Explorador, Spotify, Discord, o seu navegador, Playnite, RetroArch e Hydra Launcher; escondida automaticamente; menu Iniciar e área de trabalho limpos (`config/layout.yaml`) | o próprio Windows | não |

@@ -447,12 +447,12 @@ func TestGamingProfileOnWindows(t *testing.T) {
 		titles = append(titles, s.Title())
 	}
 	got := "," + strings.Join(titles, ",") + ","
-	for _, want := range []string{",steam,", ",amd-software,", ",opera-gx,", ",discord,", ",epic-games,", ",wallpaper-engine,"} {
+	for _, want := range []string{",steam,", ",amd-software,", ",dia,", ",discord,", ",epic-games,", ",wallpaper-engine,"} {
 		if !strings.Contains(got, want) {
 			t.Errorf("gaming plan misses %q in %s", want, got)
 		}
 	}
-	if strings.Contains(got, ",gog-galaxy,") {
+	if strings.Contains(got, ",gog-galaxy,") || strings.Contains(got, ",opera-gx,") {
 		t.Error("optional apps must stay out by default")
 	}
 
@@ -474,7 +474,7 @@ func TestGamingProfileOnWindows(t *testing.T) {
 	ran := ranLines(fr)
 	for _, want := range []string{
 		"winget install --id Valve.Steam --exact --silent",
-		"winget install --id Opera.OperaGX --exact",
+		"Add-AppxPackage -AppInstallerFile \"https://releases.diabrowser.com/windows/release/Dia.$a.appinstaller\"",
 		"powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command $ErrorActionPreference = 'Stop'; $env:ENVSETUP_ROOT = '/repo'; ",
 	} {
 		if !strings.Contains(ran, want) {

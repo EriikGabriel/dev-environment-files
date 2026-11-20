@@ -39,7 +39,8 @@ func PrepareScript(c Config) string {
 $links = @(foreach ($r in $roots) { if (Test-Path -LiteralPath $r) { Get-ChildItem -LiteralPath $r -Recurse -Filter *.lnk -ErrorAction SilentlyContinue } })
 function FindLink($names) {
   foreach ($n in $names) { $m = $links | Where-Object { $_.BaseName -ieq $n } | Select-Object -First 1; if ($m) { return $m.FullName } }
-  foreach ($n in $names) { $m = $links | Where-Object { $_.BaseName.IndexOf($n, [StringComparison]::OrdinalIgnoreCase) -ge 0 } | Select-Object -First 1; if ($m) { return $m.FullName } }
+  # a partial match is by whole words: "Dia" must not take "Windows Media Player"
+  foreach ($n in $names) { $re = '(?i)(^|[^\p{L}\p{N}])' + [regex]::Escape($n) + '($|[^\p{L}\p{N}])'; $m = $links | Where-Object { $_.BaseName -match $re } | Select-Object -First 1; if ($m) { return $m.FullName } }
   $null
 }
 $esc = { param($s) [System.Security.SecurityElement]::Escape($s) }
@@ -67,8 +68,25 @@ function PinXml($p) {
   '        <taskbar:DesktopApp DesktopApplicationLinkPath="' + (& $esc $v) + '" />'
 }
 function PinLink($name, $names) {
-  $p = FindLink $names
-  if (-not $p) { Write-Output ('not found in the Start menu, left out: ' + $name + ' (install it first)'); return }
+  # the names in order, each as a shortcut or as an MSIX app (Dia has no
+  # shortcut: it is pinned by its app id); then a partial shortcut match
+  $p = $null; $uwa = $null
+  foreach ($n in $names) {
+    $m = $links | Where-Object { $_.BaseName -ieq $n } | Select-Object -First 1
+    if ($m) { $p = $m.FullName; break }
+    $uwa = $startApps | Where-Object { $_.Name -ieq $n -and $_.AppID -match '!' } | Select-Object -First 1
+    if ($uwa) { break }
+  }
+  if (-not $p -and -not $uwa) { $p = FindLink $names }
+  if (-not $p) {
+    if (-not $uwa) { Write-Output ('not found in the Start menu, left out: ' + $name + ' (install it first)'); return }
+    if ($seen[$uwa.AppID]) { Write-Output ('already pinned, left out: ' + $name + ' (' + $uwa.Name + ')'); return }
+    $seen[$uwa.AppID] = $true
+    [void]$pins.Add('        <taskbar:UWA AppUserModelID="' + (& $esc $uwa.AppID) + '" />')
+    [void]$expected.Add($uwa.AppID + '|' + $uwa.Name + '|' + $uwa.AppID)
+    Write-Output ('pinned: ' + $name + ' (' + $uwa.Name + ', store app)')
+    return
+  }
   if ($seen[$p]) { Write-Output ('already pinned, left out: ' + $name + ' (' + [IO.Path]::GetFileNameWithoutExtension($p) + ')'); return }
   $seen[$p] = $true
   [void]$pins.Add((PinXml $p))
@@ -87,6 +105,11 @@ function PinBrowser($name, $names) {
   $byProg = [ordered]@{ 'BraveHTML' = 'Brave'; 'ChromeHTML' = 'Google Chrome'; 'FirefoxURL' = 'Firefox'; 'Opera GX' = 'Opera GX'; 'OperaGX' = 'Opera GX'; 'OperaStable' = 'Opera'; 'VivaldiHTM' = 'Vivaldi' }
   $first = @()
   foreach ($k in $byProg.Keys) { if ($prog -and $prog.StartsWith($k, [StringComparison]::OrdinalIgnoreCase)) { $first += $byProg[$k] } }
+  # an MSIX browser (Dia) has an AppX... ProgId: its app id tells which one
+  if ($prog -and -not $first) {
+    $aumid = (Get-ItemProperty -LiteralPath ('Registry::HKEY_CLASSES_ROOT\' + $prog + '\Application') -ErrorAction SilentlyContinue).AppUserModelID
+    if ($aumid -match '^TheBrowserCompany\.Dia_') { $first += 'Dia' }
+  }
   PinLink $name (@($first) + @($names))
 }
 `)

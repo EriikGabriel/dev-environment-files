@@ -200,7 +200,7 @@ vem o atalho fixado. O item fica pendente de novo quando o arquivo muda. Uma lis
 barra como está; um app que não está instalado fica de fora.
 
 `browser` é o navegador da máquina: o navegador padrão do Windows (quem abre links https), ou,
-se ele for o Edge, o primeiro instalado entre Brave, Opera GX, Chrome, Firefox, Vivaldi e Opera.
+se ele for o Edge, o primeiro instalado entre Dia, Brave, Opera GX, Chrome, Firefox, Vivaldi e Opera. O Dia é um app MSIX, sem atalho no menu Iniciar: ele é fixado pelo id do app (`TheBrowserCompany.Dia_…!Dia`).
 Assim quem escolhe outro navegador mantém a mesma ordem. Se o mesmo atalho aparecer duas vezes
 (`browser` e `brave`, por exemplo), ele só é fixado uma vez.
 

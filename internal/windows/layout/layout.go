@@ -156,11 +156,12 @@ type known struct {
 var table = []known{
 	{id: "explorer", name: "Explorador de Arquivos", aumid: "Microsoft.Windows.Explorer", glyph: "🗂", color: "#f2b632"},
 	// Whatever browser the machine uses: someone who picks Opera GX instead of
-	// Brave keeps the same layout.
+	// Dia keeps the same layout.
 	{id: "browser", name: "Navegador padrão", match: BrowserNames, glyph: "🌐", color: "#3b82f6", browser: true},
 	{id: "edge", name: "Microsoft Edge", aumid: "MSEdge", ninite: []string{"edge"}, glyph: "e", color: "#0f7cc0"},
 	{id: "chrome", name: "Chrome", ninite: []string{"chrome"}, apps: []string{"google-chrome"}, match: []string{"Google Chrome"}, glyph: "C", color: "#4285f4", desktop: true},
 	{id: "firefox", name: "Firefox", ninite: []string{"firefox"}, match: []string{"Firefox"}, glyph: "F", color: "#ff7139", desktop: true},
+	{id: "dia", name: "Dia", apps: []string{"dia"}, match: []string{"Dia"}, glyph: "D", color: "#5b5bf7"},
 	{id: "brave", name: "Brave", ninite: []string{"brave"}, apps: []string{"brave"}, match: []string{"Brave"}, glyph: "B", color: "#fb542b", desktop: true},
 	{id: "opera", name: "Opera", ninite: []string{"operaChromium"}, match: []string{"Opera"}, glyph: "O", color: "#ff1b2d", desktop: true},
 	{id: "opera-gx", name: "Opera GX", apps: []string{"opera-gx"}, match: []string{"Opera GX"}, glyph: "GX", color: "#fa1e4e", desktop: true},
@@ -191,7 +192,7 @@ var windowsItems = []string{"explorer", "browser", "edge"}
 
 // BrowserNames are the Start menu shortcuts of the browsers, in the order the
 // item "browser" falls back to when the default browser is Edge or unknown.
-var BrowserNames = []string{"Brave", "Opera GX", "Google Chrome", "Firefox", "Vivaldi", "Opera"}
+var BrowserNames = []string{"Dia", "Brave", "Opera GX", "Google Chrome", "Firefox", "Vivaldi", "Opera"}
 
 // noWindow tells the Ninite apps that install nothing to open.
 func noWindow(slug, category string) bool {

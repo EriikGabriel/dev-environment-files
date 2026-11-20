@@ -147,9 +147,10 @@ func TestBrowserRetroArchAndAutoHide(t *testing.T) {
 	c := Config{Taskbar: []string{"explorer", "browser", "playnite", "retroarch", "steam"}, TaskbarAutoHide: true}
 	prep := PrepareScript(c)
 	for _, want := range []string{
-		"PinBrowser 'Navegador padrão' @('Brave', 'Opera GX', 'Google Chrome', 'Firefox', 'Vivaldi', 'Opera')",
+		"PinBrowser 'Navegador padrão' @('Dia', 'Brave', 'Opera GX', 'Google Chrome', 'Firefox', 'Vivaldi', 'Opera')",
 		`UrlAssociations\https\UserChoice`,
 		"PinLink 'RetroArch' @('RetroArch')",
+		`[regex]::Escape($n) + '($|[^\p{L}\p{N}])'`, "<taskbar:UWA AppUserModelID=", `TheBrowserCompany\.Dia_`,
 		"already pinned, left out",
 	} {
 		if !strings.Contains(prep, want) {
