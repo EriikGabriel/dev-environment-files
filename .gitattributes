@@ -5,3 +5,4 @@ windows/playnite/** -text
 
 # shell scripts run on Linux: always LF
 *.sh text eol=lf
+windows/windhawk/mac-island-dock.txt -text
