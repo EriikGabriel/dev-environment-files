@@ -247,8 +247,10 @@ os jogos" na aba RetroArch, ou mova a pasta com "Trocar". Formatando também o H
     não for encontrada, o nome dela vai para a área de transferência, para você buscar. Na linha
     de comando: `envsetup open-policy <id> [--registry]`.
   - O gpedit só existe nas edições Pro, Enterprise e Education.
-- **Barra de tarefas e menu Iniciar.** A barra é escrita num `TaskbarLayout.xml` apontado pela
-  política "Start layout"; o menu Iniciar é limpo por `ConfigureStartPins` e os ícones da área de
+- **Barra de tarefas e menu Iniciar.** Os fixados da barra são gravados como fixados do usuário
+  (uma cópia do atalho do menu Iniciar em `User Pinned\TaskBar` e a ordem em
+  `HKCU\...\Taskband`), substituindo os que estavam lá; nada os reaplica no login. O menu Iniciar
+  é limpo por `ConfigureStartPins` e os ícones da área de
   trabalho por `HideIcons`. "Esconder automaticamente" é o byte 8 de `StuckRects3`. O Playnite e
   o RetroArch são portables: o envsetup registra os dois como apps do usuário (atalho no menu
   Iniciar e entrada em Aplicativos instalados), o que permite fixar e achar pela pesquisa. Se o
@@ -258,7 +260,10 @@ os jogos" na aba RetroArch, ou mova a pasta com "Trocar". Formatando também o H
   Rede. Um app com arquivo no pack recebe esse arquivo; os outros recebem o ícone original numa
   placa arredondada. O ícone original de cada atalho fica em
   `%ProgramData%\envsetup\icons\manifest.json` para desfazer. Apps que recriam o atalho ao
-  atualizar (Discord, Steam) voltam ao ícone deles até você aplicar de novo. O pack MacTahoe vem
+  atualizar (Discord, Steam) voltam ao ícone deles até você aplicar de novo. Na barra, o escopo
+  `taskbar` também cobre `User Pinned\ImplicitAppShortcuts`: é de lá que o Windows tira o ícone de
+  um app aberto cujas janelas têm um id que nenhum atalho do menu Iniciar tem (o Steam aberto,
+  `Valve.Steam.Client`). O pack MacTahoe vem
   do [MacTahoe-icon-theme](https://github.com/vinceliuice/MacTahoe-icon-theme) (GPL-3.0);
   `go run ./cmd/iconpack` o refaz, copiando por cima os ícones de `windows/icons/macosicons`
   (Dia, Playnite e RetroArch, do [macosicons.com](https://macosicons.com)). O Dia, que é MSIX,

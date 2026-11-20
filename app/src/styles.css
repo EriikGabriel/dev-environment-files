@@ -412,12 +412,6 @@ button.card:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8p
 .desk-icons { position: absolute; top: 12px; left: 12px; bottom: 60px; display: flex; flex-direction: column; flex-wrap: wrap; align-content: flex-start; gap: 10px 8px; }
 .desk-icon { width: 76px; display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; font-size: 11.5px; color: #fff; text-shadow: 0 1px 3px rgb(0 0 0 / .7); }
 .desk-hidden { font-size: 12px; color: rgb(255 255 255 / .55); border: 1px dashed rgb(255 255 255 / .35); border-radius: 8px; padding: 4px 10px; }
-.start-menu { position: absolute; bottom: 58px; left: 50%; transform: translateX(-50%); width: min(420px, 72%); display: flex; flex-direction: column; gap: 8px; padding: 14px; border-radius: 12px; background: rgb(24 27 34 / .94); border: 1px solid rgb(255 255 255 / .12); box-shadow: 0 12px 40px rgb(0 0 0 / .5); }
-.start-menu.left { left: 8px; transform: none; }
-.start-search { padding: 7px 12px; border-radius: 999px; background: rgb(255 255 255 / .08); color: var(--muted); font-size: 12.5px; }
-.start-empty { padding: 18px 0; text-align: center; }
-.start-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; padding: 6px 0; }
-.start-tile { aspect-ratio: 1; border-radius: 8px; background: rgb(255 255 255 / .1); }
 .taskbar { position: absolute; left: 0; right: 0; bottom: 0; height: 48px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding: 0 12px; background: rgb(20 22 28 / .92); border-top: 1px solid rgb(255 255 255 / .1); }
 .taskbar.left { grid-template-columns: 1fr auto; }
 .taskbar.left .tb-side { display: none; }
@@ -425,7 +419,6 @@ button.card:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8p
 .tb-group { display: flex; align-items: center; gap: 4px; min-width: 0; }
 .tb-side { display: flex; align-items: center; }
 .tb-btn { display: inline-grid; place-items: center; width: 34px; height: 34px; border-radius: 6px; color: #cbd5e1; font-size: 15px; }
-.tb-start { color: #60a5fa; font-size: 18px; }
 .tb-search { padding: 6px 12px; margin: 0 4px; border-radius: 999px; background: rgb(255 255 255 / .1); color: var(--muted); font-size: 12px; }
 .tb-app { position: relative; display: inline-grid; place-items: center; width: 38px; height: 38px; padding: 0; border: 0; border-radius: 8px; background: transparent; cursor: grab; transition: background .12s, transform .12s; }
 .tb-app:hover { background: rgb(255 255 255 / .1); }

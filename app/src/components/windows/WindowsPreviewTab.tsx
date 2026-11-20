@@ -62,7 +62,7 @@ function entryFor(item: LayoutItem, entries: IconEntry[]): IconEntry | undefined
     .sort((a, b) => ORDER.indexOf(a.scope) - ORDER.indexOf(b.scope))[0];
 }
 
-/** The desktop as it will look: taskbar pins you can rearrange, the Start menu and the desktop icons. */
+/** The desktop as it will look: taskbar pins you can rearrange, with their macOS icons, and the desktop icons. */
 export function WindowsPreviewTab({ root, profile, apps, windows }: Props) {
   const [data, setData] = useState<Layout | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -72,7 +72,6 @@ export function WindowsPreviewTab({ root, profile, apps, windows }: Props) {
   const [clearStart, setClearStart] = useState(false);
   const [hideIcons, setHideIcons] = useState(false);
   const [autoHide, setAutoHide] = useState(false);
-  const [showStart, setShowStart] = useState(true);
   const [dragId, setDragId] = useState<string | null>(null);
   const [overIndex, setOverIndex] = useState<number | null>(null);
   const [icons, setIcons] = useState<Icons | null>(null);
@@ -108,7 +107,6 @@ export function WindowsPreviewTab({ root, profile, apps, windows }: Props) {
 
   const shell = data.shell;
   const dirty = !sameList(taskbar, data.taskbar) || clearStart !== data.clear_start || hideIcons !== data.hide_desktop_icons || autoHide !== data.taskbar_autohide || !data.saved;
-  const startEmpty = clearStart || shell.start_pins_empty;
 
   // Moves an app to a position of the taskbar (or appends it); an app that is already there is moved.
   const place = (id: string, index?: number) =>
@@ -155,10 +153,14 @@ export function WindowsPreviewTab({ root, profile, apps, windows }: Props) {
     await api.setLayout(root, profile, choice);
     await api.applyLayout(root, profile);
     await load();
-    return "Layout aplicado. A barra de tarefas reiniciou; se ela não mudou, saia da conta e entre de novo.";
+    return "Layout aplicado. A barra de tarefas reiniciou com os apps fixados na ordem escolhida; eles continuam lá depois de sair e entrar de novo.";
   });
 
+  // The pack's icon (or the override) the icons step gives the app's shortcut; then the last scan, for the
+  // apps drawn on a plate from their own icon; then a stand-in plate.
   const look = (item: LayoutItem): Look | undefined => {
+    const packed = data.icons?.[item.id];
+    if (packed) return { img: packed };
     if (!icons?.config.enabled && !icons?.applied && !icons?.scanned) return undefined;
     const style = icons?.config.style ?? "light";
     const entry = icons?.scanned ? entryFor(item, icons.entries) : undefined;
@@ -185,11 +187,12 @@ export function WindowsPreviewTab({ root, profile, apps, windows }: Props) {
           <strong>
             Preview do desktop
             <Help title="Como funciona">
-              Uma simulação de como a área de trabalho fica: a barra de tarefas com os apps fixados, o menu Iniciar e os
-              ícones. Arraste os apps da bandeja para a barra, e reordene arrastando os ícones dela. A barra segue as
+              Uma simulação de como a área de trabalho fica: a barra de tarefas com os apps fixados e os ícones, já no
+              estilo macOS que o cartão Ícones aplica. Arraste os apps da bandeja para a barra, e reordene arrastando os ícones dela. A barra segue as
               opções do arquivo de resposta (ela alinhada à esquerda, sem pesquisa etc.). “Salvar e aplicar” grava no
-              Windows: a barra e o menu Iniciar entram por política (pede elevação uma vez) e a área de trabalho pelo
-              seu usuário; a barra de tarefas reinicia. Apps ainda não instalados ficam de fora da barra até você
+              Windows: os apps são fixados na barra como se você os fixasse à mão, substituindo os que estavam lá (sem
+              atalhos duplicados); o menu Iniciar é limpo por política (pede elevação uma vez) e a barra de tarefas
+              reinicia. Apps ainda não instalados ficam de fora da barra até você
               aplicar de novo. Com a barra vazia, a barra atual não é alterada.
             </Help>
           </strong>
@@ -221,9 +224,6 @@ export function WindowsPreviewTab({ root, profile, apps, windows }: Props) {
           <input type="checkbox" checked={autoHide} onChange={(e) => setAutoHide(e.target.checked)} /> Esconder a barra de tarefas automaticamente
           <span className="chip">a dock do Windhawk se esconde junto</span>
         </label>
-        <label className="check">
-          <input type="checkbox" checked={showStart} onChange={(e) => setShowStart(e.target.checked)} /> Mostrar o menu Iniciar aberto no preview
-        </label>
       </div>
 
       <div className="wscreen" aria-label="Preview da área de trabalho">
@@ -250,28 +250,9 @@ export function WindowsPreviewTab({ root, profile, apps, windows }: Props) {
           )}
         </div>
 
-        {showStart && (
-          <div className={shell.taskbar_left ? "start-menu left" : "start-menu"}>
-            <div className="start-search">Digite aqui para pesquisar</div>
-            <h3>Fixados</h3>
-            {startEmpty ? (
-              <p className="muted small-note start-empty">Nenhum app fixado.</p>
-            ) : (
-              <div className="start-grid" title="Os apps fixados que o Windows traz">
-                {Array.from({ length: 12 }, (_, i) => (
-                  <span key={i} className="start-tile" />
-                ))}
-              </div>
-            )}
-            <h3>Recomendados</h3>
-            <p className="muted small-note">Arquivos e apps recentes.</p>
-          </div>
-        )}
-
         <div className={shell.taskbar_left ? "taskbar left" : "taskbar"} onDragOver={(e) => dragId && e.preventDefault()} onDrop={() => dropOnBar(taskbar.length)}>
           <span className="tb-side">{!shell.no_widgets && <span className="tb-btn" title="Widgets">☁</span>}</span>
           <div className="tb-group">
-            <span className="tb-btn tb-start" title="Iniciar">⊞</span>
             {!shell.hide_search && <span className="tb-search">Pesquisar</span>}
             {!shell.hide_task_view && <span className="tb-btn" title="Visão de Tarefas">▭</span>}
             {pinned.map((i, index) => (

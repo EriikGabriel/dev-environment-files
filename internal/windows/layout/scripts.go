@@ -7,12 +7,18 @@ import (
 
 func psQuote(s string) string { return "'" + strings.ReplaceAll(s, "'", "''") + "'" }
 
-// XMLDir and XMLFile are where the taskbar layout file is written, under
-// %ProgramData%: the policy that points at it is read at sign-in, by
-// whichever user signs in.
+// What earlier versions left on the machine: the taskbar was handed to
+// Windows as a layout file through the "Start layout" policy, and a guard
+// started at sign-in put it back. Windows re-read that file at every sign-in
+// and dropped the pins it could not resolve (most of them, on recent builds),
+// leaving copies such as "Brave (2).lnk" behind each time. The layout step now
+// removes all of it.
 const (
-	XMLDir  = `envsetup`
-	XMLFile = `TaskbarLayout.xml`
+	legacyDir      = `envsetup`
+	legacyXML      = `TaskbarLayout.xml`
+	legacyPins     = `taskbar-pins.txt`
+	legacyGuard    = `taskbar-guard.ps1`
+	legacyRunValue = `envsetup-taskbar`
 )
 
 // Pinned resolves the saved ids to the items that can be pinned, in order.
@@ -26,78 +32,101 @@ func Pinned(ids []string) []Item {
 	return out
 }
 
-// PrepareScript runs as the user: it finds the Start menu shortcut of every
-// pinned app and writes the taskbar layout file. An app that is not installed
-// yet is reported and left out; if none is found nothing is written, since a
-// layout with no apps would empty the taskbar.
-func PrepareScript(c Config) string {
-	var b strings.Builder
-	b.WriteString("$ErrorActionPreference = 'Stop'\n")
-	b.WriteString("$dir = Join-Path $env:ProgramData " + psQuote(XMLDir) + "\n")
-	b.WriteString("New-Item -ItemType Directory -Force -Path $dir | Out-Null\n")
-	b.WriteString(`$roots = @((Join-Path $env:ProgramData 'Microsoft\Windows\Start Menu\Programs'), (Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs'))
+// pinHelper reads the taskbar's own list (to check the pins after Explorer
+// restarts) and turns a path into the shell's item id list.
+const pinHelper = `Add-Type -TypeDefinition @'
+using System;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
+public static class EnvsetupTaskbar {
+  [ComImport, Guid("0DD79AE2-D156-45D4-9EEB-3B549769E940"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+  interface IPinnedList3 { [PreserveSig] int EnumObjects(out IEnumFullIDList e); }
+  [ComImport, Guid("D0191542-7954-4908-BC06-B2360BBE45BA"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+  interface IEnumFullIDList { [PreserveSig] int Next(uint n, out IntPtr pidl, out uint got); }
+  [DllImport("shell32.dll", CharSet = CharSet.Unicode)] static extern int SHParseDisplayName(string name, IntPtr bc, out IntPtr pidl, uint sfgao, out uint attrs);
+  [DllImport("shell32.dll", CharSet = CharSet.Unicode)] static extern int SHGetNameFromIDList(IntPtr pidl, uint sigdn, out IntPtr name);
+  [DllImport("shell32.dll")] static extern uint ILGetSize(IntPtr pidl);
+  public static byte[] IdList(string path) {
+    IntPtr p; uint a;
+    int hr = SHParseDisplayName(path, IntPtr.Zero, out p, 0, out a);
+    if (hr != 0) throw new COMException(path, hr);
+    int n = (int)ILGetSize(p); byte[] b = new byte[n]; Marshal.Copy(p, b, 0, n); Marshal.FreeCoTaskMem(p);
+    return b;
+  }
+  public static string[] Pinned() {
+    Type t = Type.GetTypeFromCLSID(new Guid("90AA3A4E-1CBA-4233-B8BB-535773D48449"));
+    IPinnedList3 list = (IPinnedList3)Activator.CreateInstance(t);
+    IEnumFullIDList e; List<string> o = new List<string>();
+    if (list.EnumObjects(out e) != 0) return o.ToArray();
+    IntPtr p; uint got;
+    while (e.Next(1, out p, out got) == 0 && got == 1) {
+      IntPtr s;
+      if (SHGetNameFromIDList(p, 0x80058000, out s) == 0) { o.Add(Marshal.PtrToStringUni(s)); Marshal.FreeCoTaskMem(s); }
+      Marshal.FreeCoTaskMem(p);
+    }
+    return o.ToArray();
+  }
+}
+'@
+`
+
+// pinFunctions find the Start menu shortcut of each chosen app. A pin is a
+// copy of that shortcut, so it carries the icon the icons step gave it.
+const pinFunctions = `$roots = @((Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs'), (Join-Path $env:ProgramData 'Microsoft\Windows\Start Menu\Programs'))
 $links = @(foreach ($r in $roots) { if (Test-Path -LiteralPath $r) { Get-ChildItem -LiteralPath $r -Recurse -Filter *.lnk -ErrorAction SilentlyContinue } })
+$startApps = @(try { Get-StartApps } catch { })
+$shell = New-Object -ComObject Shell.Application
+$wsh = New-Object -ComObject WScript.Shell
+function LinkProp($p, $name) {
+  try { $shell.NameSpace([IO.Path]::GetDirectoryName($p)).ParseName([IO.Path]::GetFileName($p)).ExtendedProperty($name) } catch { $null }
+}
 function FindLink($names) {
   foreach ($n in $names) { $m = $links | Where-Object { $_.BaseName -ieq $n } | Select-Object -First 1; if ($m) { return $m.FullName } }
   # a partial match is by whole words: "Dia" must not take "Windows Media Player"
   foreach ($n in $names) { $re = '(?i)(^|[^\p{L}\p{N}])' + [regex]::Escape($n) + '($|[^\p{L}\p{N}])'; $m = $links | Where-Object { $_.BaseName -match $re } | Select-Object -First 1; if ($m) { return $m.FullName } }
   $null
 }
-$esc = { param($s) [System.Security.SecurityElement]::Escape($s) }
+# The app id the taskbar files a pin under: the shortcut's own, else the one
+# Windows gives the program (what Get-StartApps lists), else the target with
+# the known folder written as its id, the way Windows writes it.
+function AppId($p) {
+  $id = LinkProp $p 'System.AppUserModel.ID'
+  if ($id) { return [string]$id }
+  $base = [IO.Path]::GetFileNameWithoutExtension($p)
+  $a = $startApps | Where-Object { $_.Name -ieq $base -and $_.AppID -notmatch '!' } | Select-Object -First 1
+  if ($a) { return [string]$a.AppID }
+  $t = $wsh.CreateShortcut($p).TargetPath
+  if (-not $t) { return '' }
+  $known = @(
+    @([Environment]::GetFolderPath('System'), '{1AC14E77-02E7-4E5D-B744-2EB1AE5198B7}'),
+    @([Environment]::GetFolderPath('ProgramFilesX86'), '{7C5A40EF-A0FB-4BFC-874A-C0F2E0B9FA8E}'),
+    @($env:ProgramW6432, '{6D809377-6AF0-444B-8957-A3773F02200E}'),
+    @([Environment]::GetFolderPath('Windows'), '{F38BF404-1D43-42F2-9305-67DE0B28FC23}'))
+  foreach ($k in $known) { if ($k[0] -and $t.StartsWith($k[0] + '\', [StringComparison]::OrdinalIgnoreCase)) { return $k[1] + $t.Substring($k[0].Length) } }
+  $t
+}
 $pins = New-Object System.Collections.ArrayList
 $seen = @{}
-# What each pin starts, for the sign-in guard to tell whether the pins are there.
-$expected = New-Object System.Collections.ArrayList
-$startApps = @(try { Get-StartApps } catch { })
-$wsh = New-Object -ComObject WScript.Shell
-function PinId($name, $id) {
-  [void]$pins.Add('        <taskbar:DesktopApp DesktopApplicationID="' + (& $esc $id) + '" />')
-  Write-Output ('pinned: ' + $name)
-}
-# How a shortcut goes in the layout: by its path, written with %APPDATA% or
-# %ALLUSERSPROFILE% as the layout format expects. Windows re-reads the layout
-# at sign-in; there a shortcut written as a plain C:\Users\... path was
-# dropped, and so were the apps given by their app id (Brave,
-# com.squirrel.Discord.Discord), while the shortcuts written with the
-# variables stayed.
-function PinXml($p) {
-  $v = $p
-  foreach ($pair in @(@($env:APPDATA, '%APPDATA%'), @($env:ProgramData, '%ALLUSERSPROFILE%'))) {
-    if ($pair[0] -and $p.StartsWith($pair[0] + '\', [StringComparison]::OrdinalIgnoreCase)) { $v = $pair[1] + $p.Substring($pair[0].Length); break }
-  }
-  '        <taskbar:DesktopApp DesktopApplicationLinkPath="' + (& $esc $v) + '" />'
+function AddPin($name, $p) {
+  $id = AppId $p
+  $key = if ($id) { $id.ToLowerInvariant() } else { $p.ToLowerInvariant() }
+  if ($seen[$key]) { Write-Output ('already pinned, left out: ' + $name + ' (' + [IO.Path]::GetFileNameWithoutExtension($p) + ')'); return }
+  $seen[$key] = $true
+  [void]$pins.Add([pscustomobject]@{ Name = $name; Link = $p; Id = $id })
 }
 function PinLink($name, $names) {
-  # the names in order, each as a shortcut or as an MSIX app (Dia without the
-  # shortcut windows\msix-shortcut.ps1 makes is pinned by its app id); then
-  # a partial shortcut match
-  $p = $null; $uwa = $null
-  foreach ($n in $names) {
-    $m = $links | Where-Object { $_.BaseName -ieq $n } | Select-Object -First 1
-    if ($m) { $p = $m.FullName; break }
-    $uwa = $startApps | Where-Object { $_.Name -ieq $n -and $_.AppID -match '!' } | Select-Object -First 1
-    if ($uwa) { break }
-  }
-  if (-not $p -and -not $uwa) { $p = FindLink $names }
-  if (-not $p) {
-    if (-not $uwa) { Write-Output ('not found in the Start menu, left out: ' + $name + ' (install it first)'); return }
-    if ($seen[$uwa.AppID]) { Write-Output ('already pinned, left out: ' + $name + ' (' + $uwa.Name + ')'); return }
-    $seen[$uwa.AppID] = $true
-    [void]$pins.Add('        <taskbar:UWA AppUserModelID="' + (& $esc $uwa.AppID) + '" />')
-    [void]$expected.Add($uwa.AppID + '|' + $uwa.Name + '|' + $uwa.AppID)
-    Write-Output ('pinned: ' + $name + ' (' + $uwa.Name + ', store app)')
-    return
-  }
-  if ($seen[$p]) { Write-Output ('already pinned, left out: ' + $name + ' (' + [IO.Path]::GetFileNameWithoutExtension($p) + ')'); return }
-  $seen[$p] = $true
-  [void]$pins.Add((PinXml $p))
-  # target|shortcut name|app id: any of them in the taskbar's list tells the pin is there
-  $t = $wsh.CreateShortcut($p).TargetPath
-  $base = [IO.Path]::GetFileNameWithoutExtension($p)
-  $app = $startApps | Where-Object { $_.Name -ieq $base -and $_.AppID -and $_.AppID -notmatch '[\\/:]' } | Select-Object -First 1
-  $aumid = if ($app) { $app.AppID } else { '' }
-  if ($t) { [void]$expected.Add($t + '|' + [IO.Path]::GetFileName($p) + '|' + $aumid) }
-  Write-Output ('pinned: ' + $name + ' (' + $base + ')')
+  $p = FindLink $names
+  if ($p) { AddPin $name $p; return }
+  $uwa = $startApps | Where-Object { $names -icontains $_.Name -and $_.AppID -match '!' } | Select-Object -First 1
+  if ($uwa) { Write-Output ('a store app with no Start menu shortcut, left out: ' + $name + ' (' + $uwa.Name + ')'); return }
+  Write-Output ('not found in the Start menu, left out: ' + $name + ' (install it first)')
+}
+# Windows' own apps (File Explorer, Edge): their Start menu shortcut, by name
+# or, in another language, by the app id it carries.
+function PinId($name, $id, $names) {
+  $p = FindLink $names
+  if (-not $p) { $m = $links | Where-Object { (LinkProp $_.FullName 'System.AppUserModel.ID') -eq $id } | Select-Object -First 1; if ($m) { $p = $m.FullName } }
+  if ($p) { AddPin $name $p } else { Write-Output ('no Start menu shortcut, left out: ' + $name) }
 }
 # The default browser (the program that opens https links) comes first; Edge,
 # or no choice yet, falls back to the first browser of the list installed.
@@ -113,147 +142,117 @@ function PinBrowser($name, $names) {
   }
   PinLink $name (@($first) + @($names))
 }
-`)
-	for _, it := range Pinned(c.Taskbar) {
-		if it.AUMID != "" {
-			fmt.Fprintf(&b, "PinId %s %s\n", psQuote(it.Name), psQuote(it.AUMID))
-			continue
-		}
-		names := make([]string, len(it.Match))
-		for i, m := range it.Match {
-			names[i] = psQuote(m)
-		}
-		fn := "PinLink"
-		if it.Browser {
-			fn = "PinBrowser"
-		}
-		fmt.Fprintf(&b, "%s %s @(%s)\n", fn, psQuote(it.Name), strings.Join(names, ", "))
-	}
-	b.WriteString(`if ($pins.Count -eq 0) { throw 'none of the chosen apps was found in the Start menu: install them first, then apply again' }
-$xml = @(
-  '<?xml version="1.0" encoding="utf-8"?>',
-  '<LayoutModificationTemplate xmlns="http://schemas.microsoft.com/Start/2014/LayoutModification" xmlns:defaultlayout="http://schemas.microsoft.com/Start/2014/FullDefaultLayout" xmlns:start="http://schemas.microsoft.com/Start/2014/StartLayout" xmlns:taskbar="http://schemas.microsoft.com/Start/2014/TaskbarLayout" Version="1">',
-  '  <CustomTaskbarLayoutCollection PinListPlacement="Replace">',
-  '    <defaultlayout:TaskbarLayout>',
-  '      <taskbar:TaskbarPinList>'
-) + $pins + @(
-  '      </taskbar:TaskbarPinList>',
-  '    </defaultlayout:TaskbarLayout>',
-  '  </CustomTaskbarLayoutCollection>',
-  '</LayoutModificationTemplate>'
-)
-[IO.File]::WriteAllText((Join-Path $dir ` + psQuote(XMLFile) + `), (($xml -join [Environment]::NewLine) + [Environment]::NewLine), (New-Object System.Text.UTF8Encoding $false))
-[IO.File]::WriteAllText((Join-Path $dir ` + psQuote(PinsFile) + `), (($expected -join [Environment]::NewLine) + [Environment]::NewLine), (New-Object System.Text.UTF8Encoding $false))
-$guard = @'
-` + GuardScript + `'@
-[IO.File]::WriteAllText((Join-Path $dir ` + psQuote(GuardFile) + `), $guard, (New-Object System.Text.UTF8Encoding $false))
-`)
-	return b.String()
-}
-
-// The sign-in guard: what the pins start (one target per line) and the
-// script that checks them, next to the layout file.
-const (
-	PinsFile  = `taskbar-pins.txt`
-	GuardFile = `taskbar-guard.ps1`
-	// RunValue is the HKCU\...\Run value that starts the guard at sign-in.
-	RunValue = `envsetup-taskbar`
-)
-
-// GuardScript runs at every sign-in of the user who applied the layout. When
-// the taskbar comes up with most of the pins missing (Windows re-reading the
-// layout at sign-in and failing to resolve them), it hands Windows the layout
-// again: newer file, Taskband reset, Explorer restarted. A pin the user took
-// off by hand stays off, since most of the others are still there. If the
-// repair does not bring the pins back it is not tried again for this layout,
-// so the shell is never restarted at every sign-in for nothing.
-const GuardScript = `# envsetup: puts the taskbar pins back when a sign-in leaves the taskbar
-# (almost) empty. Written by envsetup apply-layout, started at sign-in by the
-# HKCU Run value "` + RunValue + `". Its log is %LOCALAPPDATA%\envsetup\taskbar-guard.log.
-$ErrorActionPreference = 'SilentlyContinue'
-$dir = Join-Path $env:ProgramData '` + XMLDir + `'
-$xml = Join-Path $dir '` + XMLFile + `'
-$list = Join-Path $dir '` + PinsFile + `'
-if (-not (Test-Path -LiteralPath $xml) -or -not (Test-Path -LiteralPath $list)) { return }
-$want = @(Get-Content -LiteralPath $list | Where-Object { $_.Trim() })
-if ($want.Count -eq 0) { return }
-$stateDir = Join-Path $env:LOCALAPPDATA 'envsetup'
-$state = Join-Path $stateDir 'taskbar-guard.txt'
-$log = Join-Path $stateDir 'taskbar-guard.log'
-New-Item -ItemType Directory -Force -Path $stateDir | Out-Null
-function Log($m) { Add-Content -LiteralPath $log -Value ((Get-Date -Format 's') + ' ' + $m) }
-$sum = (Get-FileHash -LiteralPath $list -Algorithm SHA256).Hash
-if ((Get-Content -LiteralPath $state -Raw) -match $sum) { return }
-$tb = 'Registry::HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\Taskband'
-$pinned = Join-Path $env:APPDATA 'Microsoft\Internet Explorer\Quick Launch\User Pinned'
-# Each line is target|shortcut name|app id. A pin is there when the taskbar's
-# own list (Taskband\Favorites) names it in any of the ways Windows stores a
-# pin: a pinned shortcut (long or 8.3 name) that starts the target, the
-# target itself, the Start menu shortcut, or the app id.
-function Get-Missing {
-  $fav = (Get-ItemProperty -LiteralPath $tb).Favorites
-  if (-not $fav) { return @($want | ForEach-Object { ($_ -split '\|')[0] }) }
-  # names are UTF-16 starting at even or odd offsets, 8.3 names are ASCII
-  $text = [Text.Encoding]::Unicode.GetString($fav) + ' ' + [Text.Encoding]::Unicode.GetString($fav, 1, $fav.Length - 1) + ' ' + [Text.Encoding]::ASCII.GetString($fav)
-  $sh = New-Object -ComObject WScript.Shell
-  $fso = New-Object -ComObject Scripting.FileSystemObject
-  $have = @{}
-  foreach ($l in @(Get-ChildItem -LiteralPath $pinned -Recurse -Filter *.lnk)) {
-    $short = $fso.GetFile($l.FullName).ShortName
-    if ($text.IndexOf($l.Name, [StringComparison]::OrdinalIgnoreCase) -lt 0 -and (-not $short -or $text.IndexOf($short, [StringComparison]::OrdinalIgnoreCase) -lt 0)) { continue }
-    $t = $sh.CreateShortcut($l.FullName).TargetPath
-    if ($t) { $have[$t.ToLowerInvariant()] = $true }
-  }
-  foreach ($w in $want) {
-    $f = $w -split '\|'
-    $target = $f[0]
-    $there = $have[$target.ToLowerInvariant()] -or $text.IndexOf($target, [StringComparison]::OrdinalIgnoreCase) -ge 0
-    if (-not $there -and $f.Count -gt 1 -and $f[1]) { $there = $text.IndexOf($f[1], [StringComparison]::OrdinalIgnoreCase) -ge 0 }
-    if (-not $there -and $f.Count -gt 2 -and $f[2]) { $there = $text -match ('(?i)(^|[^A-Za-z0-9.])' + [regex]::Escape($f[2]) + '($|[^A-Za-z0-9.])') }
-    if (-not $there) { $target }
-  }
-}
-for ($i = 0; $i -lt 120 -and -not (Get-Process -Name explorer); $i++) { Start-Sleep -Seconds 1 }
-Start-Sleep -Seconds 20
-$miss = @(Get-Missing)
-if ($miss.Count * 2 -le $want.Count) { return }
-Log ('pins missing after sign-in: ' + ($miss -join '; ') + ' - applying the layout again')
-(Get-Item -LiteralPath $xml).LastWriteTime = Get-Date
-Remove-Item -LiteralPath $tb -Recurse -Force
-Stop-Process -Name explorer -Force
-Start-Sleep -Seconds 30
-$miss = @(Get-Missing)
-if ($miss.Count * 2 -gt $want.Count) {
-  Log ('still missing: ' + ($miss -join '; ') + ' - not trying again for this layout')
-  Set-Content -LiteralPath $state -Value $sum
-} else {
-  Log 'pins are back'
-}
 `
 
-// AdminScript runs elevated: the policies it sets are under HKLM. The
-// taskbar layout is handed to Windows through the "Start layout" policy, the
-// Start menu pins through the policy the answer file's SetStartPins script
-// uses.
+// pinWrite replaces the taskbar's pins with $pins, the way Explorer keeps
+// them: a shortcut in User Pinned\TaskBar for each, and the list in
+// HKCU\...\Taskband (Favorites: the item ids of those shortcuts, in order;
+// FavoritesResolve: a link to each, to find it again). They are the user's
+// own pins: no policy reapplies them at sign-in, they stay until unpinned.
+//
+// Each Favorites record is 0x00, the length, then an item id list under the
+// "User Pinned" folder ({1f3427c8-...}): the TaskBar folder and the shortcut,
+// whose item carries three more blocks Explorer checks (a time, the app id
+// and "UserPinned"). A record Explorer does not accept makes it drop that pin
+// and every one after it, so all of them are written the way it writes its own.
+const pinWrite = `$dir = Join-Path $env:APPDATA 'Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar'
+New-Item -ItemType Directory -Force -Path $dir | Out-Null
+# the shortcuts there now go: the pins being replaced and the copies earlier
+# layouts left behind ("Brave (2).lnk", "File Explorer (6).lnk")
+Get-ChildItem -LiteralPath $dir -Filter *.lnk -Force | Remove-Item -Force
+# give the shell a moment to see them go before its list is rewritten
+Start-Sleep -Seconds 2
+$ini = Join-Path $dir 'desktop.ini'
+$names = New-Object System.Collections.ArrayList
+$used = @{}
+foreach ($p in $pins) {
+  $base = [IO.Path]::GetFileNameWithoutExtension($p.Link); $file = $base + '.lnk'; $n = 2
+  while ($used[$file.ToLowerInvariant()]) { $file = $base + ' (' + $n + ').lnk'; $n++ }
+  $used[$file.ToLowerInvariant()] = $true
+  $p | Add-Member -NotePropertyName Pinned -NotePropertyValue (Join-Path $dir $file)
+  Copy-Item -LiteralPath $p.Link -Destination $p.Pinned -Force
+  # the name Windows shows for it ("File Explorer.lnk" is "Explorador de Arquivos")
+  $src = Join-Path ([IO.Path]::GetDirectoryName($p.Link)) 'desktop.ini'
+  # (the all-users Start menu's desktop.ini cannot be read by a user)
+  $line = try { Get-Content -LiteralPath $src -Force -ErrorAction Stop | Where-Object { $_ -like ([IO.Path]::GetFileName($p.Link) + '=*') } | Select-Object -First 1 } catch { $null }
+  if ($line) { [void]$names.Add($file + $line.Substring($line.IndexOf('='))) }
+}
+if (Test-Path -LiteralPath $ini) { (Get-Item -LiteralPath $ini -Force).Attributes = 'Normal'; Remove-Item -LiteralPath $ini -Force }
+if ($names.Count -gt 0) {
+  [IO.File]::WriteAllText($ini, (((@('[LocalizedFileNames]') + $names) -join [Environment]::NewLine) + [Environment]::NewLine))
+  (Get-Item -LiteralPath $ini -Force).Attributes = 'Hidden, System'
+}
+$now = [BitConverter]::GetBytes([DateTime]::UtcNow.ToFileTimeUtc())
+$root = [byte[]](@(0x3a, 0x00, 0x1f, 0x80) + (New-Object Guid '1f3427c8-5c10-4210-aa03-2ee45287d668').ToByteArray() + @(0x26, 0x00, 0x01, 0x00, 0x26, 0x00, 0xef, 0xbe, 0x12, 0x00, 0x00, 0x00) + $now + $now + $now + @(0x14, 0x00))
+function Block($sig, $text, $back) {
+  $s = [Text.Encoding]::Unicode.GetBytes($text + [char]0)
+  [byte[]]([BitConverter]::GetBytes([uint16](12 + $s.Length)) + @(0x00, 0x00, $sig, 0x00, 0xef, 0xbe, 0x02, 0x00) + $s + $back)
+}
+$fav = New-Object System.Collections.Generic.List[byte]
+$res = New-Object System.Collections.Generic.List[byte]
+foreach ($p in $pins) {
+  $abs = [EnvsetupTaskbar]::IdList($p.Pinned)
+  $items = @(); $i = 0
+  while ($true) { $cb = [BitConverter]::ToUInt16($abs, $i); if ($cb -eq 0) { break }; $items += , @($i, $cb); $i += $cb }
+  $f = $items[-2]; $folder = [byte[]]$abs[$f[0]..($f[0] + $f[1] - 1)]
+  $f = $items[-1]; $item = [byte[]]$abs[$f[0]..($f[0] + $f[1] - 1)]
+  # every extension block ends with the offset of the first one
+  $back = [byte[]]$item[($item.Length - 2)..($item.Length - 1)]
+  $ext = @(0x12, 0x00, 0x00, 0x00, 0x2b, 0x00, 0xef, 0xbe) + $now + $back
+  if ($p.Id) { $ext += Block 0x1d $p.Id $back }
+  $ext += Block 0x1e 'UserPinned' $back
+  $item = [byte[]]($item + $ext)
+  $len = [BitConverter]::GetBytes([uint16]$item.Length); $item[0] = $len[0]; $item[1] = $len[1]
+  $rel = [byte[]]($root + $folder + $item + @(0x00, 0x00))
+  $fav.Add(0); $fav.AddRange([BitConverter]::GetBytes([uint32]$rel.Length)); $fav.AddRange($rel)
+  $tmp = Join-Path $env:TEMP ('envsetup-pin-' + [guid]::NewGuid().ToString('N') + '.lnk')
+  $l = $wsh.CreateShortcut($tmp); $l.TargetPath = $p.Pinned; $l.Save()
+  $raw = [IO.File]::ReadAllBytes($tmp); Remove-Item -LiteralPath $tmp -Force
+  $res.AddRange([BitConverter]::GetBytes([uint32]$raw.Length)); $res.AddRange($raw)
+}
+$fav.Add(0xff)
+$tb = 'Registry::HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\Taskband'
+function WritePins {
+  if (-not (Test-Path -LiteralPath $tb)) { New-Item -Path $tb -Force | Out-Null }
+  Set-ItemProperty -LiteralPath $tb -Name 'Favorites' -Value ([byte[]]$fav.ToArray()) -Type Binary
+  Set-ItemProperty -LiteralPath $tb -Name 'FavoritesResolve' -Value ([byte[]]$res.ToArray()) -Type Binary
+  # Explorer reads the list when it starts; it starts again by itself
+  Stop-Process -Name 'explorer' -Force -ErrorAction SilentlyContinue
+  for ($i = 0; $i -lt 30; $i++) { Start-Sleep -Seconds 1; if (Get-Process -Name 'explorer' -ErrorAction SilentlyContinue) { break } }
+  Start-Sleep -Seconds 4
+}
+function Missing {
+  $have = @{}
+  foreach ($x in [EnvsetupTaskbar]::Pinned()) { $have[$x.ToLowerInvariant()] = $true }
+  @($pins | Where-Object { -not $have[$_.Pinned.ToLowerInvariant()] })
+}
+WritePins
+$miss = @(Missing)
+# a change the shell was still making to its list can win the race: once more
+if ($miss.Count -gt 0) { WritePins; $miss = @(Missing) }
+foreach ($p in $pins) {
+  if ($miss | Where-Object { $_.Pinned -eq $p.Pinned }) { Write-Output ('not on the taskbar after Explorer restarted: ' + $p.Name) }
+  else { Write-Output ('pinned: ' + $p.Name + ' (' + [IO.Path]::GetFileNameWithoutExtension($p.Pinned) + ')') }
+}
+if ($miss.Count -eq $pins.Count) { throw 'Explorer did not take the pins' }
+`
+
+// AdminScript runs elevated: the policies it sets are under HKLM. It takes
+// out the "Start layout" policy earlier versions pointed at their taskbar
+// file (Windows re-read it at every sign-in and dropped the pins), and the
+// Start menu pins go through the policy the answer file's SetStartPins
+// script uses.
 func AdminScript(c Config) string {
 	var b strings.Builder
 	b.WriteString("$ErrorActionPreference = 'Stop'\n")
 	b.WriteString(`$ex = 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Explorer'
 $st = 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\PolicyManager\current\device\Start'
-`)
-	if len(Pinned(c.Taskbar)) > 0 {
-		b.WriteString(`if (-not (Test-Path -LiteralPath $ex)) { New-Item -Path $ex -Force | Out-Null }
-$layout = Join-Path $env:ProgramData ` + psQuote(XMLDir+`\`+XMLFile) + `
-New-ItemProperty -LiteralPath $ex -Name 'StartLayoutFile' -Value $layout -PropertyType ExpandString -Force | Out-Null
-New-ItemProperty -LiteralPath $ex -Name 'LockedStartLayout' -Value 0 -PropertyType DWord -Force | Out-Null
-`)
-	} else {
-		b.WriteString(`if (Test-Path -LiteralPath $ex) {
+$old = (Get-ItemProperty -LiteralPath $ex -ErrorAction SilentlyContinue).StartLayoutFile
+if ($old -and $old -like ('*\' + ` + psQuote(legacyDir+`\`+legacyXML) + `)) {
   Remove-ItemProperty -LiteralPath $ex -Name 'StartLayoutFile' -ErrorAction SilentlyContinue
   Remove-ItemProperty -LiteralPath $ex -Name 'LockedStartLayout' -ErrorAction SilentlyContinue
 }
 `)
-	}
 	if c.ClearStart {
 		b.WriteString(`if (-not (Test-Path -LiteralPath $st)) { New-Item -Path $st -Force | Out-Null }
 Set-ItemProperty -LiteralPath $st -Name 'ConfigureStartPins' -Value '{"pinnedList":[]}' -Type String
@@ -267,9 +266,11 @@ Set-ItemProperty -LiteralPath $st -Name 'ConfigureStartPins' -Value '{"pinnedLis
 }
 
 // FinishScript runs as the user, after the policies are in place: it hides
-// or shows the desktop icons, resets what the shell remembers about the
-// taskbar and the Start menu so the new layout is read, and restarts the
-// shell (Windows starts it again by itself).
+// or shows the desktop icons, clears what earlier versions left for the
+// taskbar, resets the Start menu state when its pins are cleared, pins the
+// apps and restarts the shell (Windows starts it again by itself). With
+// pins, the restart is the pin step's, which then checks the taskbar took
+// every one.
 func FinishScript(c Config) string {
 	var b strings.Builder
 	b.WriteString("$ErrorActionPreference = 'Stop'\n")
@@ -288,24 +289,43 @@ func FinishScript(c Config) string {
 $v = (Get-ItemProperty -LiteralPath $sr -ErrorAction SilentlyContinue).Settings
 if ($v -and $v.Length -gt 8) { $v[8] = %d; Set-ItemProperty -LiteralPath $sr -Name 'Settings' -Value ([byte[]]$v) -Type Binary }
 `, autohide)
-	b.WriteString("$run = 'Registry::HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run'\n")
-	if len(Pinned(c.Taskbar)) > 0 {
-		b.WriteString("Remove-Item -LiteralPath 'Registry::HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Taskband' -Recurse -Force -ErrorAction SilentlyContinue\n")
-		// the guard checks the pins at every sign-in; a new layout gets its
-		// chances to repair again
-		fmt.Fprintf(&b, `$guard = Join-Path $env:ProgramData %s
-Set-ItemProperty -LiteralPath $run -Name %s -Value ('powershell.exe -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File "' + $guard + '"')
-Remove-Item -LiteralPath (Join-Path $env:LOCALAPPDATA 'envsetup\taskbar-guard.txt') -Force -ErrorAction SilentlyContinue
-`, psQuote(XMLDir+`\`+GuardFile), psQuote(RunValue))
-	} else {
-		fmt.Fprintf(&b, "Remove-ItemProperty -LiteralPath $run -Name %s -ErrorAction SilentlyContinue\n", psQuote(RunValue))
-	}
+	fmt.Fprintf(&b, `Remove-ItemProperty -LiteralPath 'Registry::HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run' -Name %s -ErrorAction SilentlyContinue
+foreach ($f in @(%s, %s, %s)) { Remove-Item -LiteralPath (Join-Path (Join-Path $env:ProgramData %s) $f) -Force -ErrorAction SilentlyContinue }
+foreach ($f in @('taskbar-guard.txt', 'taskbar-guard.log')) { Remove-Item -LiteralPath (Join-Path $env:LOCALAPPDATA ('envsetup\' + $f)) -Force -ErrorAction SilentlyContinue }
+`, psQuote(legacyRunValue), psQuote(legacyXML), psQuote(legacyPins), psQuote(legacyGuard), psQuote(legacyDir))
 	if c.ClearStart {
 		b.WriteString(`$state = Join-Path $env:LOCALAPPDATA 'Packages\Microsoft.Windows.StartMenuExperienceHost_cw5n1h2txyewy\LocalState'
 if (Test-Path -LiteralPath $state) { Get-ChildItem -LiteralPath $state -Filter 'start*.bin' -ErrorAction SilentlyContinue | Remove-Item -Force -ErrorAction SilentlyContinue }
 Stop-Process -Name 'StartMenuExperienceHost' -Force -ErrorAction SilentlyContinue
 `)
 	}
-	b.WriteString("Stop-Process -Name 'explorer' -Force -ErrorAction SilentlyContinue\n")
+	pinned := Pinned(c.Taskbar)
+	if len(pinned) == 0 {
+		b.WriteString("Stop-Process -Name 'explorer' -Force -ErrorAction SilentlyContinue\n")
+		return b.String()
+	}
+	b.WriteString(pinHelper)
+	b.WriteString(pinFunctions)
+	for _, it := range pinned {
+		names := make([]string, len(it.Match))
+		for i, m := range it.Match {
+			names[i] = psQuote(m)
+		}
+		list := "@(" + strings.Join(names, ", ") + ")"
+		switch {
+		case it.AUMID != "":
+			fmt.Fprintf(&b, "PinId %s %s %s\n", psQuote(it.Name), psQuote(it.AUMID), list)
+		case it.Browser:
+			fmt.Fprintf(&b, "PinBrowser %s %s\n", psQuote(it.Name), list)
+		default:
+			fmt.Fprintf(&b, "PinLink %s %s\n", psQuote(it.Name), list)
+		}
+	}
+	b.WriteString(`if ($pins.Count -eq 0) {
+  Stop-Process -Name 'explorer' -Force -ErrorAction SilentlyContinue
+  throw 'none of the chosen apps was found in the Start menu: install them first, then apply again'
+}
+`)
+	b.WriteString(pinWrite)
 	return b.String()
 }

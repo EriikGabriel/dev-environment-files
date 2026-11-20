@@ -39,6 +39,8 @@ export interface Layout {
   saved: boolean;
   shell: Shell;
   installs: { id: string; name: string; kind: "ninite" | "github" | "runtime" }[];
+  /** The macOS icon of each app, by id, as the icons step gives it (PNG data URL); missing when the pack has none. */
+  icons?: Record<string, string>;
 }
 
 export interface LayoutChoice {

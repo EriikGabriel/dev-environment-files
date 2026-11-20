@@ -185,7 +185,7 @@ other names each icon answers to (the symbolic links of the theme).
 this-pc, user-files, recycle-bin, recycle-bin-full and network are the icons
 of the Windows system items.
 The icons of %s (%s) replace the theme's of the same name:
-they come from macosicons.com, see the README there.
+they were picked by hand (most from macosicons.com), see the README there.
 `, repo, ref, filepath.ToSlash(extra), strings.Join(added, ", "))
 	if err := os.WriteFile(filepath.Join(out, "README.txt"), []byte(readme), 0o644); err != nil {
 		return err

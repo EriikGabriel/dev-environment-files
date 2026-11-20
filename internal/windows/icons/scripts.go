@@ -93,6 +93,11 @@ function AddRoot($scope, $path, $recurse) { [void]$roots.Add([pscustomobject]@{ 
 			b.WriteString("AddRoot 'start-menu' (Join-Path $env:ProgramData 'Microsoft\\Windows\\Start Menu\\Programs') $true\nAddRoot 'start-menu' (Join-Path $env:APPDATA 'Microsoft\\Windows\\Start Menu\\Programs') $true\n")
 		case ScopeTaskbar:
 			b.WriteString("AddRoot 'taskbar' (Join-Path $env:APPDATA 'Microsoft\\Internet Explorer\\Quick Launch\\User Pinned\\TaskBar') $false\n")
+			// ImplicitAppShortcuts is where Windows keeps a shortcut for an app
+			// whose windows carry an app id no Start menu shortcut has (Steam's
+			// "Valve.Steam.Client"): the taskbar takes the icon of a running
+			// Steam from there, one subfolder per app.
+			b.WriteString("AddRoot 'taskbar' (Join-Path $env:APPDATA 'Microsoft\\Internet Explorer\\Quick Launch\\User Pinned\\ImplicitAppShortcuts') $true\n")
 		}
 	}
 	b.WriteString(`$explorerName = '(?i)^(File Explorer|Explorador de Arquivos)( \(\d+\))?$'

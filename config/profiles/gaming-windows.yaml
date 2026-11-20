@@ -61,8 +61,8 @@ steps:
 
   - id: social
     title: Comunicação e navegador
-    description: Voz, navegador e o que roda junto com os jogos.
-    apps: [discord, dia, spotify]
+    description: Voz, navegador, VPN e o que roda junto com os jogos.
+    apps: [discord, dia, spotify, proton-vpn]
     optional: [opera-gx, brave, obs-studio]
 
   - id: tuning

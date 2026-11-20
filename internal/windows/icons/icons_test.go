@@ -325,3 +325,27 @@ func TestIconFilesAreNamedAfterTheirContent(t *testing.T) {
 		}
 	}
 }
+
+// The shortcut names Windows gives these apps find the macOS icons picked
+// for them (windows/icons/macosicons, copied into the pack).
+func TestPackHasTheHandPickedIcons(t *testing.T) {
+	p, err := LoadPack(filepath.Join(testutil.RepoRoot(t), filepath.FromSlash(BuiltinPack)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for name, want := range map[string]string{"Hydra": "hydra.png", "Epic Games Launcher": "epic-games.png", "SignalRgb": "signalrgb.png", "Proton VPN": "protonvpn-gui.png", "Playnite": "playnite.png", "Dia": "dia.png"} {
+		if f, ok := p.Lookup(name); !ok || filepath.Base(f) != want {
+			t.Errorf("%s: got %q, want %s", name, f, want)
+		}
+	}
+}
+
+// A running Steam shows the icon of the shortcut Windows keeps in
+// ImplicitAppShortcuts (its windows carry the app id Valve.Steam.Client), so
+// the taskbar scope goes through that folder too.
+func TestTaskbarScopeCoversImplicitAppShortcuts(t *testing.T) {
+	scan := ScanScript(`C:\w`, `C:\m.json`, `C:\ico`, []string{ScopeTaskbar})
+	if !strings.Contains(scan, `User Pinned\ImplicitAppShortcuts') $true`) {
+		t.Errorf("the taskbar scope must scan ImplicitAppShortcuts, recursively:\n%s", scan)
+	}
+}

@@ -5,16 +5,22 @@ errado. `go run ./cmd/iconpack` copia esta pasta por cima de
 `windows/icons/mactahoe` (o pack que o app usa), então eles aparecem na
 biblioteca da aba Preview e são aplicados pelo nome do atalho, como os outros.
 
-Cada um é o PNG de 1024 px do `.icns` da página, recortado e reduzido para
-256 px com a mesma margem dos ícones do MacTahoe.
+Cada um é o PNG de 1024 px do ícone, recortado e reduzido para 256 px com a
+mesma margem dos ícones do MacTahoe (a placa com 224 px, 16 px de cada lado).
 
 | Arquivo | Atalho do Windows | Origem |
 |---|---|---|
 | `dia.png` | Dia (o navegador da The Browser Company; o `dia.png` do MacTahoe era o editor de diagramas do GNOME) | https://macosicons.com/icon/dia-hxUwoDa0xe |
+| `epic-games.png` | Epic Games Launcher (o atalho procura `epic-games`) | https://macosicons.com/?icon=EmvxyNh7Wl (o PNG de 1024 px do `.icns`) |
+| `hydra.png` | Hydra (o Hydra Launcher) | um `AppIcon.iconset` estilo macOS do dono; o desenho vinha numa placa preta sobre fundo branco, que virou transparente (a borda suavizada virou a transparência da placa) |
 | `playnite.png` | Playnite | https://macosicons.com/?icon=TYLkUIi7Uk |
 | `retroarch.png` | RetroArch | https://macosicons.com/?icon=xWBRy8t6Dq |
+| `signalrgb.png` | SignalRgb | https://macosicons.com/icon/signalrgb-HhaB1UTmLm (o PNG de 1024 px do `.icns`) |
 
-Para trocar ou acrescentar um: salve o PNG aqui com o nome do atalho (em
-minúsculas, como `hydra-launcher.png`), rode `go run ./cmd/iconpack` (ou copie
-o arquivo para `windows/icons/mactahoe` à mão) e aplique os ícones na aba
-Preview.
+O Proton VPN não precisa de arquivo aqui: o atalho "Proton VPN" acha o
+`protonvpn-gui.png` do MacTahoe (`windowsNames` em `internal/windows/icons/plan.go`).
+
+Para trocar ou acrescentar um: salve o PNG aqui com o nome do atalho em
+minúsculas (`hydra.png` para o atalho "Hydra"), rode `go run ./cmd/iconpack`
+(ou copie o arquivo para `windows/icons/mactahoe` à mão) e aplique os ícones na
+aba Preview.

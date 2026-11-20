@@ -204,17 +204,19 @@ se ele for o Edge, o primeiro instalado entre Dia, Brave, Opera GX, Chrome, Fire
 Assim quem escolhe outro navegador mantém a mesma ordem. Se o mesmo atalho aparecer duas vezes
 (`browser` e `brave`, por exemplo), ele só é fixado uma vez.
 
-Os fixados são entregues ao Windows pela política "Layout de Início" (`StartLayoutFile`), que
-o Windows relê no login. Para que eles resistam ao login:
-- cada app é fixado pelo atalho do menu Iniciar escrito com `%APPDATA%` / `%ALLUSERSPROFILE%`
-  (com o caminho `C:\Users\...` por extenso, ou pelo id do app, eles sumiam no login); só o
-  Explorador, que não tem atalho, vai pelo id;
-- um guarda (`%ProgramData%\envsetup\taskbar-guard.ps1`, iniciado no login pelo valor
-  `envsetup-taskbar` de `HKCU\...\Run`) confere a barra uns 20 s depois do login. Se a maior
-  parte dos fixados sumiu, ele entrega o layout de novo e reinicia o Explorer. Um app que você
-  desafixou à mão continua desafixado. Se o reparo não resolver, ele desiste daquele layout e
-  anota o motivo em `%LOCALAPPDATA%\envsetup\taskbar-guard.log`. Uma lista `taskbar` vazia
-  desliga o guarda.
+Os fixados são gravados como fixados seus, do jeito que o Explorer grava quando você fixa à mão
+(a decisão está em [0009](decisions/0009-fixados-da-barra-do-usuario.md)):
+- cada app vira uma cópia do atalho dele no menu Iniciar, em
+  `%APPDATA%\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar`, e a ordem vai para
+  `HKCU\...\Explorer\Taskband` (`Favorites`); a cópia já leva o ícone do pack;
+- aplicar **substitui** os fixados: o que estava na barra e as cópias que versões antigas
+  deixaram (`Brave (2).lnk`, `File Explorer (6).lnk`) saem. Nenhum atalho é criado na área de
+  trabalho;
+- o Explorer reinicia e o passo confere a barra: cada app sai como `pinned:` ou, se o Windows
+  não aceitou, `not on the taskbar after Explorer restarted:`;
+- nenhuma política reaplica os fixados no login, então eles ficam como estão até você mudar
+  (mudar a ordem à mão não é desfeito). A política "Layout de Início" (`StartLayoutFile`), o
+  `TaskbarLayout.xml` e o guarda de login que versões antigas usavam são removidos ao aplicar.
 
 ## `config/icons.yaml`: ícones no estilo macOS (Windows)
 
@@ -235,10 +237,9 @@ valendo em outra máquina. Para trocar o ícone de um app sem override, ponha um
 nome dele no pack (`discord.png`); `envsetup icon-pack --query nome` mostra o nome que o pack usa.
 
 Os ícones que o MacTahoe não tem, ou desenha errado, foram escolhidos no
-[macosicons.com](https://macosicons.com) e ficam em `windows/icons/macosicons/` (Dia, Playnite e
-RetroArch); `go run ./cmd/iconpack` copia essa pasta por cima do pack, então eles aparecem na
-biblioteca do cartão Ícones como os outros. O Hydra Launcher fica com o ícone padrão (o original
-numa placa arredondada).
+[macosicons.com](https://macosicons.com), ou feitos à parte, e ficam em `windows/icons/macosicons/`
+(Dia, Epic Games, Playnite, RetroArch, Hydra Launcher e SignalRGB); o Proton VPN usa o `protonvpn-gui` do MacTahoe; `go run ./cmd/iconpack` copia essa pasta por cima
+do pack, então eles aparecem na biblioteca do cartão Ícones como os outros.
 
 ## Onde fica cada parte dos programas portáteis
 

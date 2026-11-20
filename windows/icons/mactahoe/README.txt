@@ -9,5 +9,5 @@ Made by "go run ./cmd/iconpack"; do not edit by hand. aliases.json lists the
 other names each icon answers to (the symbolic links of the theme).
 this-pc, user-files, recycle-bin, recycle-bin-full and network are the icons
 of the Windows system items.
-The icons of windows/icons/macosicons (dia, playnite, retroarch) replace the theme's of the same name:
-they come from macosicons.com, see the README there.
+The icons of windows/icons/macosicons (dia, epic-games, hydra, playnite, retroarch, signalrgb) replace the theme's of the same name:
+they were picked by hand (most from macosicons.com), see the README there.

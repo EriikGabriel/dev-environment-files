@@ -201,6 +201,7 @@ var windowsNames = map[string][]string{
 	"vlc":               {"vlc"},
 	"qbittorrent":       {"qbittorrent"},
 	"epicgameslauncher": {"epic-games", "epicgames"},
+	"protonvpn":         {"protonvpn-gui"},
 }
 
 // vague are first words that say who made a program, not which one it is:

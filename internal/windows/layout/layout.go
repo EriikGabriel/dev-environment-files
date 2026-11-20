@@ -129,8 +129,9 @@ type Item struct {
 	Glyph   string `json:"glyph"`
 	Color   string `json:"color"`
 
-	// Match are the names of the Start menu shortcut, or AUMID is the id of
-	// a built-in app; the apply script resolves them on the machine.
+	// Match are the names of the Start menu shortcut; AUMID is the app id of
+	// a built-in app, whose shortcut is also found by it in another language.
+	// The apply script resolves them on the machine.
 	Match []string `json:"-"`
 	AUMID string   `json:"-"`
 	// Browser pins the default browser of the machine, or the first of Match
@@ -154,11 +155,11 @@ type known struct {
 // The apps the preview knows how to draw and pin. Anything else that is
 // installed still shows up, in grey.
 var table = []known{
-	{id: "explorer", name: "Explorador de Arquivos", aumid: "Microsoft.Windows.Explorer", glyph: "🗂", color: "#f2b632"},
+	{id: "explorer", name: "Explorador de Arquivos", aumid: "Microsoft.Windows.Explorer", match: []string{"File Explorer", "Explorador de Arquivos"}, glyph: "🗂", color: "#f2b632"},
 	// Whatever browser the machine uses: someone who picks Opera GX instead of
 	// Dia keeps the same layout.
 	{id: "browser", name: "Navegador padrão", match: BrowserNames, glyph: "🌐", color: "#3b82f6", browser: true},
-	{id: "edge", name: "Microsoft Edge", aumid: "MSEdge", ninite: []string{"edge"}, glyph: "e", color: "#0f7cc0"},
+	{id: "edge", name: "Microsoft Edge", aumid: "MSEdge", match: []string{"Microsoft Edge"}, ninite: []string{"edge"}, glyph: "e", color: "#0f7cc0"},
 	{id: "chrome", name: "Chrome", ninite: []string{"chrome"}, apps: []string{"google-chrome"}, match: []string{"Google Chrome"}, glyph: "C", color: "#4285f4", desktop: true},
 	{id: "firefox", name: "Firefox", ninite: []string{"firefox"}, match: []string{"Firefox"}, glyph: "F", color: "#ff7139", desktop: true},
 	{id: "dia", name: "Dia", apps: []string{"dia"}, match: []string{"Dia"}, glyph: "D", color: "#5b5bf7"},
@@ -177,6 +178,7 @@ var table = []known{
 	{id: "nvidia-app", name: "NVIDIA app", apps: []string{"nvidia-app"}, match: []string{"NVIDIA app"}, glyph: "N", color: "#76b900", desktop: true},
 	{id: "amd-software", name: "AMD Software", apps: []string{"amd-software"}, match: []string{"AMD Software"}, glyph: "A", color: "#ed1c24"},
 	{id: "hydra", name: "Hydra Launcher", github: []string{"hydra"}, match: []string{"Hydra Launcher", "Hydra"}, glyph: "H", color: "#1c9ad6", desktop: true},
+	{id: "proton-vpn", name: "Proton VPN", apps: []string{"proton-vpn"}, match: []string{"Proton VPN"}, glyph: "▽", color: "#6d4aff"},
 	{id: "obs-studio", name: "OBS Studio", apps: []string{"obs-studio"}, match: []string{"OBS Studio"}, glyph: "◉", color: "#302e31", desktop: true},
 	{id: "gog-galaxy", name: "GOG Galaxy", apps: []string{"gog-galaxy"}, match: []string{"GOG GALAXY"}, glyph: "G", color: "#8f3ad0"},
 	{id: "ea-app", name: "EA app", apps: []string{"ea-app"}, match: []string{"EA"}, glyph: "EA", color: "#ff4747"},

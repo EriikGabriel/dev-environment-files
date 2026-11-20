@@ -24,6 +24,9 @@ type layoutJSON struct {
 	Saved    bool          `json:"saved"`
 	Shell    install.Shell `json:"shell"`
 	Installs []install.App `json:"installs"`
+	// Icons are the macOS icon of each app, by id, as the icons step gives it
+	// (a PNG data URL); an app the pack has no icon for is missing.
+	Icons map[string]string `json:"icons"`
 }
 
 // describeLayout is the saved layout plus the apps that can be pinned: the
@@ -33,7 +36,7 @@ func describeLayout(f flags, apps []string) (layoutJSON, error) {
 	if err != nil {
 		return layoutJSON{}, err
 	}
-	out := layoutJSON{Items: []layout.Item{}, Taskbar: []string{}, Installs: []install.App{}}
+	out := layoutJSON{Items: []layout.Item{}, Taskbar: []string{}, Installs: []install.App{}, Icons: map[string]string{}}
 	if md.m.Unattend == "" {
 		return out, nil
 	}
@@ -62,6 +65,7 @@ func describeLayout(f flags, apps []string) (layoutJSON, error) {
 			out.Taskbar = append(out.Taskbar, id)
 		}
 	}
+	out.Icons = layoutIcons(md.root, out.Items)
 	return out, nil
 }
 
@@ -184,7 +188,7 @@ func layoutCommands(f *flags) []*cobra.Command {
 			if f.json {
 				return printJSON(os.Stdout, map[string]any{"applied": true})
 			}
-			fmt.Println("layout applied; if the taskbar did not change, sign out and in again")
+			fmt.Println("layout applied; the taskbar pins are the user's own, kept across sign-ins")
 			return nil
 		},
 	})

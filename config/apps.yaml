@@ -656,6 +656,7 @@ apps:
     names: { windows: HydraLauncher.Hydra }
   opera-gx: { description: Opera GX browser, names: { windows: Opera.OperaGX } }
   brave: { description: Brave browser, names: { windows: Brave.Brave } }
+  proton-vpn: { description: Proton VPN (free VPN by Proton AG), names: { windows: Proton.ProtonVPN } }
   # Dia is not on winget: its site hands out an MSIX through an .appinstaller,
   # installed for the user (no elevation) and kept up to date by Windows. An
   # MSIX app has no shortcut, so windows/msix-shortcut.ps1 makes one in the
