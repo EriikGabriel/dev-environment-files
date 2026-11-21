@@ -216,6 +216,46 @@ fn copy_missing(src: &Path, dst: &Path, report: &mut CopyReport) -> std::io::Res
     Ok(())
 }
 
+/// Updates the 8BitDo catalogue entry even in data folders made by an older
+/// envsetup release. The entry is maintained by envsetup, unlike arbitrary
+/// edits in the rest of apps.yaml.
+fn migrate_8bitdo_v1(dst: &Path) -> std::io::Result<bool> {
+    let path = dst.join("config").join("apps.yaml");
+    let text = match std::fs::read_to_string(&path) {
+        Ok(text) => text,
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(false),
+        Err(e) => return Err(e),
+    };
+    let start = match text.find("  8bitdo-ultimate-software:\n") {
+        Some(start) => start,
+        None => return Ok(false),
+    };
+    let end = text[start..]
+        .find("\n  steam:")
+        .map(|offset| start + offset)
+        .unwrap_or(text.len());
+    let new_block = concat!(
+        "  8bitdo-ultimate-software:\n",
+        "    description: 8BitDo Ultimate Software V1 (buttons, sticks, triggers and profiles of the 8BitDo Ultimate 2.4G first-generation controller)\n",
+        "    devices: [VID_2DC8, 8BitDo]\n",
+        "    method: { windows: script }\n",
+        "    check:\n",
+        "      windows: if (-not ((Test-Path -LiteralPath \"$env:LOCALAPPDATA\\Programs\\8BitDo Ultimate Software V1\\8BitDo Ultimate Software.exe\") -and (Test-Path -LiteralPath \"$env:APPDATA\\Microsoft\\Windows\\Start Menu\\Programs\\8BitDo Ultimate Software V1.lnk\"))) { exit 1 }\n",
+        "    source:\n",
+        "      windows: |\n",
+        "        & \"$env:ENVSETUP_ROOT\\windows\\install-8bitdo-v1.ps1\""
+    );
+    if text[start..end].starts_with(new_block) {
+        return Ok(false);
+    }
+    let mut migrated = String::with_capacity(text.len());
+    migrated.push_str(&text[..start]);
+    migrated.push_str(new_block);
+    migrated.push_str(&text[end..]);
+    std::fs::write(path, migrated)?;
+    Ok(true)
+}
+
 fn write_marker(app: &AppHandle, dir: &Path) -> Result<(), String> {
     let marker = serde_json::json!({ "version": app.package_info().version.to_string() });
     std::fs::write(dir.join(DATA_MARKER), marker.to_string()).map_err(|e| e.to_string())
@@ -263,6 +303,7 @@ fn seed_data(app: AppHandle) -> Result<String, String> {
     let dst = default_data_dir(&app)?;
     let mut report = CopyReport::default();
     copy_missing(&src, &dst, &mut report).map_err(|e| format!("copy the data to {}: {e}", dst.display()))?;
+    migrate_8bitdo_v1(&dst).map_err(|e| format!("migrate 8BitDo data: {e}"))?;
     write_marker(&app, &dst)?;
     save_root(&app, &dst)
 }
@@ -278,6 +319,7 @@ fn update_data(app: AppHandle, root: String) -> Result<CopyReport, String> {
     let src = bundled_data(&app).ok_or("this build carries no data")?;
     let mut report = CopyReport::default();
     copy_missing(&src, &dst, &mut report).map_err(|e| e.to_string())?;
+    migrate_8bitdo_v1(&dst).map_err(|e| e.to_string())?;
     write_marker(&app, &dst)?;
     Ok(report)
 }
@@ -591,6 +633,33 @@ mod tests {
         let read = |p: &str| std::fs::read_to_string(dst.join("config").join(p)).unwrap();
         assert_eq!(read("apps.yaml"), "edited by the user");
         assert_eq!(read("added.yaml"), "added");
+        std::fs::remove_dir_all(&base).unwrap();
+    }
+
+    #[test]
+    fn migrates_the_old_8bitdo_catalog_entry() {
+        let base = std::env::temp_dir().join(format!("envsetup-8bitdo-migrate-{}", std::process::id()));
+        let dst = base.join("dst");
+        std::fs::create_dir_all(dst.join("config")).unwrap();
+        std::fs::write(
+            dst.join("config").join("apps.yaml"),
+            concat!(
+                "apps:\n",
+                "  8bitdo-ultimate-software:\n",
+                "    description: old V2 entry\n",
+                "    names: { windows: 8BitDo.UltimateSoftwareV2 }\n",
+                "  steam: { description: Steam }\n",
+            ),
+        )
+        .unwrap();
+
+        assert!(migrate_8bitdo_v1(&dst).unwrap());
+        let text = std::fs::read_to_string(dst.join("config").join("apps.yaml")).unwrap();
+        assert!(text.contains("Ultimate Software V1"));
+        assert!(text.contains("install-8bitdo-v1.ps1"));
+        assert!(!text.contains("UltimateSoftwareV2"));
+        assert!(text.contains("  steam:"));
+        assert!(!migrate_8bitdo_v1(&dst).unwrap());
         std::fs::remove_dir_all(&base).unwrap();
     }
 
