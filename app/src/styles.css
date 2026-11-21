@@ -402,6 +402,9 @@ button.card:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8p
 .policy p { line-height: 1.45; }
 .policy select { flex: 0 1 300px; min-width: 180px; max-width: 100%; }
 .caution { color: var(--warn); font-size: 12.5px; }
+/* what Windows 11 does with the policy not configured */
+.policy-default { color: var(--muted); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.policy-default strong { color: var(--text); font-weight: 600; }
 
 /* desktop layout: preview, taskbar and the tray of apps */
 .layout { display: flex; flex-direction: column; gap: 14px; }

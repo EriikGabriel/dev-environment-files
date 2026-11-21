@@ -170,8 +170,10 @@ pelos widgets do Noctalia.
 ## `config/policies.yaml`: políticas de grupo (Windows)
 
 As 42 configurações do gpedit do vídeo citado em `source`, cada uma com `path` (a pasta no
-gpedit), `video` (o estado do vídeo), `about`, `caution` (ressalvas), os valores do registro em
-`set` e a **escolha** em `choice`:
+gpedit), `video` (o estado do vídeo), `default` (o que o Windows 11 faz com ela "Não
+configurado", o estado em que ela vem), `aliases` (outros nomes dela no gpedit, em outras
+builds), `about`, `caution` (ressalvas), os valores do registro em `set` e a **escolha** em
+`choice`:
 
 - `video`: o estado do vídeo (padrão, "Recomendado" no app);
 - `off`: não configurar (os valores são apagados);
@@ -181,6 +183,14 @@ gpedit), `video` (o estado do vídeo), `about`, `caution` (ressalvas), os valore
 `choice:` é reescrita. **Aplicar:** botão da aba, `envsetup apply-policies` ou o item
 `group-policies` da etapa Otimizações (pede elevação). Chaves fora de
 `HKLM\SOFTWARE\Policies` e `...\CurrentVersion\Policies` são recusadas.
+
+**Os valores seguem o modelo da política, não o nome.** O gpedit decide se mostra Habilitado,
+Desabilitado ou Não configurado comparando o `Registry.pol` com o modelo ADMX da política
+(`C:\Windows\PolicyDefinitions`). Alguns modelos gravam 0 para Habilitado (os de Widgets), e
+alguns Desabilitados não são um valor, e sim a ordem de apagá-lo: `delete: true`, que vira uma
+entrada `**del.<nome>` no `Registry.pol` (é o caso de "Permitir Dados de Diagnóstico"
+desabilitada e das listas vazias de apps das políticas de Privacidade de Aplicativos). Uma
+política só conta como aplicada quando o registro **e** o `Registry.pol` batem com a escolha.
 
 ## `config/layout.yaml`: barra de tarefas e área de trabalho (Windows)
 

@@ -12,6 +12,7 @@
 param(
   [string]$Path,     # "Componentes do Windows > Coleta de Dados e Compilações de Visualização"
   [string]$Title,    # "Permitir Dados de Diagnóstico"
+  [string]$Also,     # other names of the policy in other builds, separated by "|"
   [string]$Key,      # HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection
   [switch]$Registry,
   [string]$Result    # (internal) where the elevated copy writes its report
@@ -49,7 +50,7 @@ $admin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
 if (-not $admin) {
   $report = Join-Path $env:TEMP ('envsetup-policy-' + [guid]::NewGuid().ToString('N').Substring(0, 8) + '.txt')
   $q = { param($s) "'" + ($s -replace "'", "''") + "'" }
-  $cmd = "& $(& $q $PSCommandPath) -Path $(& $q $Path) -Title $(& $q $Title) -Result $(& $q $report)"
+  $cmd = "& $(& $q $PSCommandPath) -Path $(& $q $Path) -Title $(& $q $Title) -Also $(& $q $Also) -Result $(& $q $report)"
   $enc = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($cmd))
   $p = Start-Process powershell.exe -Verb RunAs -Wait -PassThru -WindowStyle Hidden -ArgumentList '-NoProfile', '-ExecutionPolicy', 'Bypass', '-EncodedCommand', $enc
   if (Test-Path $report) { Get-Content -LiteralPath $report -Encoding UTF8; Remove-Item -LiteralPath $report }
@@ -118,6 +119,9 @@ public static class EnvsetupTyper {
   try { $win.SetFocus() } catch {}
 
   function Norm([string]$s) { ($s -replace '\s+', ' ').Trim().ToLowerInvariant() }
+  # the policy's names: its title and, from other builds, the -Also ones
+  $titles = @(@($Title) + @($Also -split '\|') | Where-Object { $_ } | ForEach-Object { Norm $_ })
+  function IsPolicy([string]$name) { $titles -contains (Norm $name) }
   function Kids($parent) { @($parent.FindAll($scope::Children, $isItem)) }
   function Pick($item) {
     try { $item.GetCurrentPattern([Windows.Automation.SelectionItemPattern]::Pattern).Select() } catch {}
@@ -185,8 +189,10 @@ public static class EnvsetupTyper {
     $rows = @($list.FindAll($scope::Descendants, $isRow))
     Trace ("list rows seen: {0}" -f $rows.Count)
     $row = $null
-    foreach ($r in $rows) { if ((Norm $r.Current.Name) -eq (Norm $Title)) { $row = $r; break } }
+    foreach ($r in $rows) { if (IsPolicy $r.Current.Name) { $row = $r; break } }
+    $shown = $Title
     if ($row) {
+      $shown = $row.Current.Name
       Pick $row
     } else {
       # the rows cannot be read either: type the whole name, which selects
@@ -200,7 +206,7 @@ public static class EnvsetupTyper {
     $keys::SendWait('{ENTER}')
     # the policy window has the policy's name as its title; it can take a few
     # seconds to show up, and may not be a direct child of the desktop
-    $isTitled = New-Object Windows.Automation.PropertyCondition($A::NameProperty, $Title)
+    $isTitled = New-Object Windows.Automation.PropertyCondition($A::NameProperty, $shown)
     $dialog = $null
     for ($i = 0; $i -lt 30 -and -not $dialog; $i++) {
       Start-Sleep -Milliseconds 300
@@ -213,7 +219,7 @@ public static class EnvsetupTyper {
       Finish 0
     }
     Trace "dialog '$($dialog.Current.Name)'"
-    Say ("opened: {0}" -f $Title)
+    Say ("opened: {0}" -f $shown)
     Finish 0
   }
 
@@ -243,7 +249,7 @@ public static class EnvsetupTyper {
   $row = $null
   for ($i = 0; $i -lt 20 -and -not $row; $i++) {
     $rows = @($win.FindAll($scope::Descendants, $isRow))
-    foreach ($r in $rows) { if ((Norm $r.Current.Name) -eq (Norm $Title)) { $row = $r; break } }
+    foreach ($r in $rows) { if (IsPolicy $r.Current.Name) { $row = $r; break } }
     if (-not $row) { Start-Sleep -Milliseconds 300 }
   }
   if (-not $row) {
@@ -254,7 +260,7 @@ public static class EnvsetupTyper {
   }
   Pick $row
   $keys::SendWait('{ENTER}')
-  Say ("opened: {0}" -f $Title)
+  Say ("opened: {0}" -f $row.Current.Name)
   Finish 0
 } catch {
   Say ("error: {0} (line {1})" -f $_.Exception.Message, $_.InvocationInfo.ScriptLineNumber)

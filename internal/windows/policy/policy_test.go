@@ -46,8 +46,8 @@ func TestRepoPoliciesLoad(t *testing.T) {
 		if p.Choice != ChoiceVideo && p.Choice != ChoiceOff {
 			t.Errorf("%s: unexpected repo choice %q", p.ID, p.Choice)
 		}
-		if p.Group == "" || p.Path == "" || p.Title == "" || p.Video == "" || p.About == "" {
-			t.Errorf("%s: group, path, title, video and about are all required", p.ID)
+		if p.Group == "" || p.Path == "" || p.Title == "" || p.Video == "" || p.Default == "" || p.About == "" {
+			t.Errorf("%s: group, path, title, video, default and about are all required", p.ID)
 		}
 		for _, v := range p.Set {
 			id := strings.ToLower(v.Key + `\` + v.Name)
@@ -130,13 +130,17 @@ func TestEveryPolicyCanBeSwitched(t *testing.T) {
 
 func TestScripts(t *testing.T) {
 	p := []Policy{
-		{ID: "a", Choice: ChoiceVideo, Set: []Value{{`HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Search`, "AllowCortana", 0}}},
-		{ID: "b", Choice: ChoiceOff, Set: []Value{{`HKLM\SOFTWARE\Policies\Microsoft\Dsh`, "AllowNewsAndInterests", 0}}},
+		{ID: "a", Choice: ChoiceVideo, Set: []Value{{Key: `HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Search`, Name: "AllowCortana"}}},
+		{ID: "b", Choice: ChoiceOff, Set: []Value{{Key: `HKLM\SOFTWARE\Policies\Microsoft\Dsh`, Name: "AllowNewsAndInterests"}}},
+		{ID: "c", Choice: ChoiceVideo, Set: []Value{{Key: `HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection`, Name: "AllowTelemetry", Delete: true}}},
 	}
 	state := StateScript(p)
 	for _, want := range []string{
-		`$r['a'] = [bool](((V 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Windows Search' 'AllowCortana') -eq 0))`,
-		`$r['b'] = [bool](($null -eq (V 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Dsh' 'AllowNewsAndInterests')))`,
+		// the registry and the Registry.pol (what gpedit shows) both count
+		`$r['a'] = [bool]($polOk -and $gptOk -and ((V 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Windows Search' 'AllowCortana') -eq 0) -and (PolIs 'SOFTWARE\Policies\Microsoft\Windows\Windows Search' 'AllowCortana' 0))`,
+		`$r['b'] = [bool]($polOk -and ($null -eq (V 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Dsh' 'AllowNewsAndInterests')) -and (PolNone 'SOFTWARE\Policies\Microsoft\Dsh' 'AllowNewsAndInterests'))`,
+		`$r['c'] = [bool]($polOk -and $gptOk -and ($null -eq (V 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\DataCollection' 'AllowTelemetry')) -and (PolIsDel 'SOFTWARE\Policies\Microsoft\Windows\DataCollection' 'AllowTelemetry'))`,
+		"if ($script:polOld) { $polOk = $false }",
 	} {
 		if !strings.Contains(state, want) {
 			t.Errorf("state script misses %s in:\n%s", want, state)
@@ -148,6 +152,8 @@ func TestScripts(t *testing.T) {
 		`Remove-ItemProperty -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Dsh' -Name 'AllowNewsAndInterests'`,
 		`PolSet 'SOFTWARE\Policies\Microsoft\Windows\Windows Search' 'AllowCortana' 0`,
 		`PolDel 'SOFTWARE\Policies\Microsoft\Dsh' 'AllowNewsAndInterests'`,
+		`PolSetDel 'SOFTWARE\Policies\Microsoft\Windows\DataCollection' 'AllowTelemetry'`,
+		"PolLoad\n",
 		"PolSave\n",
 		`if ($c -eq 0x3B)`,
 		`[Text.Encoding]::Unicode.GetBytes($e.Key)`,

@@ -38,6 +38,15 @@ mão no gpedit, seguindo um vídeo.
   políticas de pesquisa na Web cobertas por um diálogo, que ficaram de fora.
 - Os nomes dos valores do registro foram escritos a partir dos modelos ADMX; a leitura do estado
   rodou numa máquina Windows 11, a gravação (elevada) ainda não.
+- O estado lê o registro **e** o `Registry.pol`: lendo só o registro, um `Registry.pol` antigo
+  ou ilegível passava por aplicado e nunca era regravado. Os valores foram conferidos contra os
+  ADMX de um Windows 11 pt-BR: o estado do gpedit sai do modelo, não do nome da política (há
+  modelos que gravam 0 para Habilitado, e Desabilitados que são `**del.<nome>`).
+- Conduzir o gpedit por UI Automation para gravar cada política foi considerado e descartado:
+  são 42 janelas por aplicação, a navegação depende da árvore do MMC ser visível para a
+  automação (em algumas máquinas não é, e o "Abrir no gpedit" cai no modo de teclado) e uma
+  falha no meio deixa metade aplicada. Gravar o mesmo que o gpedit grava, conferido contra os
+  ADMX, dá o mesmo resultado sem depender da janela.
 - O catálogo de programas do Ninite é uma cópia da página inicial do site; um nome que não
   estiver nele ainda pode ser digitado, mas o site ignora nomes que não conhece.
 - No Windows, `go test ./...` falha em cinco testes antigos que criam symlinks ou esperam

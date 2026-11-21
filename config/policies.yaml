@@ -7,7 +7,15 @@
 #
 # envsetup does not drive gpedit: it writes the value each policy stands for
 # (the same value gpedit writes) to the local Registry.pol, which gpedit.msc
-# reads, and to the registry, so it takes effect right away.
+# reads, and to the registry, so it takes effect right away. A policy counts
+# as applied only when both match. The values follow the policy's template
+# (C:\Windows\PolicyDefinitions\*.admx), not its name: some templates write 0
+# for Enabled, and some Disabled states are an order to delete the value
+# (`delete: true`, a "**del.<name>" entry), not a value of their own.
+#
+# default: what Windows 11 does with the policy not configured, the state it
+# comes in (gpedit shows every policy as "Não configurado" out of the box).
+# aliases: other names of the policy in gpedit, in other Windows builds.
 #
 # choice: video  the state in the video (the default; shown as "Recomendado")
 #         off    not configured: the values are removed
@@ -27,11 +35,19 @@ policies:
     path: Componentes do Windows > Coleta de Dados e Compilações de Visualização
     title: Permitir Dados de Diagnóstico
     video: Desabilitado
+    default: 'envia os dados de diagnóstico obrigatórios, e você escolhe nas Configurações se envia também os opcionais.'
     about: Define quantos dados de diagnóstico o Windows envia à Microsoft e se o controle "dados de diagnóstico opcionais" das Configurações fica travado. Nas edições Home e Pro o Windows sempre envia os dados obrigatórios; só Enterprise e Education aceitam desligar tudo.
+    caution: Desabilitada, esta política tem o mesmo efeito de não configurada (o gpedit grava só a ordem de apagar o valor). Para travar o envio no mínimo, escolha "Habilitado, dados de diagnóstico desativados" ou "só os dados obrigatórios".
     choice: video
+    # gpedit's Disabled for this policy (enum only, no value for Disabled) is
+    # "**del.AllowTelemetry"; AllowTelemetry = 0 is Enabled, "desativados"
     set:
-      - { key: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection', name: AllowTelemetry, value: 0 }
+      - { key: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection', name: AllowTelemetry, delete: true }
     options:
+      - id: off-level
+        title: Habilitado, dados de diagnóstico desativados
+        set:
+          - { key: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection', name: AllowTelemetry, value: 0 }
       - id: required
         title: Habilitado, só os dados obrigatórios
         set:
@@ -47,6 +63,7 @@ policies:
     path: Componentes do Windows > Compatibilidade de Aplicativos
     title: Desativar a Telemetria de Aplicativos
     video: Habilitado
+    default: 'a telemetria de aplicativos fica ligada.'
     about: Controla o registro de quais componentes do sistema cada aplicativo usa (dados anônimos que a Microsoft usa para avaliar compatibilidade).
     choice: video
     set:
@@ -56,6 +73,7 @@ policies:
     path: Componentes do Windows > Compatibilidade de Aplicativos
     title: Desativar o Mecanismo de Compatibilidade de Aplicativos
     video: Habilitado
+    default: 'o mecanismo de compatibilidade fica ligado.'
     about: Liga ou desliga o mecanismo que confere cada programa aberto contra a base de compatibilidade da Microsoft e aplica correções.
     caution: Desligar o mecanismo pode quebrar jogos e programas antigos que dependem dessas correções, e os bloqueios de programas incompatíveis conhecidos deixam de valer. Se um jogo antigo parar de abrir, ponha esta em "não configurar" ou desabilitada.
     choice: off
@@ -66,6 +84,7 @@ policies:
     path: Componentes do Windows > Compatibilidade de Aplicativos
     title: Desativar o Auxiliar de Compatibilidade de Programa
     video: Habilitado
+    default: 'o Auxiliar de Compatibilidade de Programa fica ligado.'
     about: Controla o assistente que monitora programas e, depois de uma falha, sugere rodar em modo de compatibilidade.
     choice: video
     set:
@@ -75,6 +94,7 @@ policies:
     path: Componentes do Windows > Compatibilidade de Aplicativos
     title: Desativar o Coletor de Inventário
     video: Habilitado
+    default: 'o Coletor de Inventário fica ligado.'
     about: Controla o Coletor de Inventário, que lista aplicativos, arquivos, dispositivos e drivers do PC e envia à Microsoft.
     choice: video
     set:
@@ -84,6 +104,7 @@ policies:
     path: Componentes do Windows > Compatibilidade de Aplicativos
     title: Desativar o Mecanismo de Compatibilidade de SwitchBack
     video: Habilitado
+    default: 'o SwitchBack fica ligado.'
     about: Controla o SwitchBack, que faz programas antigos enxergarem o comportamento de versões anteriores do Windows. Desligá-lo dá um ganho pequeno de desempenho.
     caution: Desligar o SwitchBack pode quebrar programas feitos para versões antigas do Windows.
     choice: off
@@ -94,6 +115,7 @@ policies:
     path: Componentes do Windows > Compatibilidade de Aplicativos
     title: Desativar o Gravador de Passos
     video: Habilitado
+    default: 'o Gravador de Passos fica disponível.'
     about: Controla o Gravador de Passos, que registra teclado, mouse e capturas de tela para relatórios de erro.
     choice: video
     set:
@@ -105,6 +127,7 @@ policies:
     path: Componentes do Windows > Conteúdo de Nuvem
     title: Desativar o conteúdo otimizado em nuvem
     video: Habilitado
+    default: 'o Windows pode usar conteúdo ajustado pela nuvem.'
     about: Define se a Microsoft pode ajustar remotamente conteúdos do Windows, como os itens fixados na barra de tarefas.
     choice: video
     set:
@@ -114,6 +137,7 @@ policies:
     path: Componentes do Windows > Conteúdo de Nuvem
     title: Desligue o conteúdo do estado da conta do consumidor na nuvem
     video: Habilitado
+    default: 'o Windows pode usar o estado da conta Microsoft para mostrar conteúdo.'
     about: Define se as experiências do Windows usam o estado da conta Microsoft (assinaturas, ofertas) para mostrar conteúdo.
     choice: video
     set:
@@ -123,6 +147,7 @@ policies:
     path: Componentes do Windows > Conteúdo de Nuvem
     title: Não mostrar dicas do Windows
     video: Habilitado
+    default: 'as dicas sobre como usar o Windows aparecem.'
     about: Controla as dicas e sugestões que o Windows mostra sobre os próprios recursos.
     choice: video
     set:
@@ -132,6 +157,7 @@ policies:
     path: Componentes do Windows > Conteúdo de Nuvem
     title: Desativar as experiências do cliente da Microsoft
     video: Habilitado
+    default: 'aparecem sugestões da Microsoft, apps sugeridos e avisos sobre a conta Microsoft.'
     about: Controla a instalação automática de aplicativos sugeridos e patrocinados e as recomendações personalizadas no menu Iniciar.
     choice: video
     set:
@@ -143,6 +169,7 @@ policies:
     path: Componentes do Windows > Controle por voz
     title: Permitir a Atualização Automática de Dados de Fala
     video: Desabilitado
+    default: 'os modelos de voz são atualizados automaticamente.'
     about: Define se o Windows baixa periodicamente modelos de reconhecimento e síntese de voz.
     choice: video
     set:
@@ -153,7 +180,10 @@ policies:
     group: Explorador e menu Iniciar
     path: Componentes do Windows > Explorador de Arquivos
     title: Desativar insights baseados em conta, arquivos recentes, favoritos e recomendados no Explorador de Arquivos
+    # the name in newer builds (same value: Enabled is still 1)
+    aliases: [Mostrar arquivos com base na sua conta e na atividade do provedor de nuvem]
     video: Habilitado
+    default: 'o Explorador mostra arquivos recentes, favoritos e recomendados com base na conta e na nuvem.'
     about: Define se o Explorador consulta a nuvem para montar as seções Recente, Favoritos e Recomendado da página inicial com base na atividade da conta.
     choice: video
     set:
@@ -165,6 +195,7 @@ policies:
     path: Componentes do Windows > IA do Windows
     title: Desabilitar Click to Do
     video: Habilitado
+    default: 'o Click to Do fica disponível (nos PCs que o têm).'
     about: Controla o Click to Do, que analisa o que está na tela para sugerir ações com IA.
     choice: video
     set:
@@ -174,6 +205,7 @@ policies:
     path: Componentes do Windows > IA do Windows
     title: Desabilitar a experiência de pesquisa agêntica de Configurações
     video: Habilitado
+    default: 'a busca das Configurações usa o agente de IA (nos PCs que o têm).'
     about: Define se a busca do aplicativo Configurações usa um modelo de IA para interpretar o que você digita.
     choice: video
     set:
@@ -185,6 +217,7 @@ policies:
     path: Componentes do Windows > Local e sensores > Localizador do Windows
     title: Desativar fornecedor de local do Windows
     video: Habilitado
+    default: 'o localizador do Windows fica ligado e os programas podem usá-lo.'
     about: Controla o localizador do Windows, pelo qual programas obtêm a posição do PC.
     caution: Com o localizador desligado, fuso horário automático, clima e mapas deixam de saber onde você está.
     choice: video
@@ -197,6 +230,7 @@ policies:
     path: Componentes do Windows > Localizar Meu Dispositivo
     title: Ativar/desativar Localizar Meu Dispositivo
     video: Desabilitado
+    default: 'você liga ou desliga Localizar Meu Dispositivo nas Configurações.'
     about: Define se o PC registra a própria localização na conta Microsoft para o recurso Localizar Meu Dispositivo.
     caution: Com o recurso desligado, você não poderá localizar o PC por account.microsoft.com se ele for perdido ou roubado.
     choice: video
@@ -209,6 +243,7 @@ policies:
     path: Componentes do Windows > Loja
     title: Desabilitar Download e Instalação Automáticos de Atualizações
     video: Habilitado
+    default: 'a Store baixa e instala as atualizações dos apps sozinha, e você pode desligar isso nas configurações dela.'
     about: Controla se a Microsoft Store baixa e instala atualizações de apps sozinha, em segundo plano.
     caution: Com o download automático desligado, os apps da Store só atualizam quando você abre a Store e manda atualizar.
     choice: video
@@ -226,6 +261,7 @@ policies:
     path: Componentes do Windows > Microsoft Edge
     title: Permitir que o Microsoft Edge inicie e carregue a página Inicial e Nova Guia na inicialização do Windows e cada vez que o Microsoft Edge for fechado
     video: Habilitado, "Impedir o pré-carregamento de guia"
+    default: 'o Edge pré-carrega as páginas Inicial e Nova Guia.'
     about: Define se o Edge deixa as páginas Inicial e Nova Guia pré-carregadas na memória ao entrar no Windows.
     choice: video
     set:
@@ -240,6 +276,7 @@ policies:
     path: Componentes do Windows > Microsoft Edge
     title: Permitir a pré-inicialização do Microsoft Edge na inicialização do Windows, quando o sistema estiver ocioso e sempre que o Microsoft Edge for fechado
     video: Habilitado, "Impedir a pré-inicialização"
+    default: 'o Edge fica pré-iniciado em segundo plano.'
     about: Define se o Edge fica pré-iniciado em segundo plano ao entrar no Windows e quando o sistema está ocioso.
     choice: video
     set:
@@ -256,6 +293,7 @@ policies:
     path: Componentes do Windows > Pesquisar
     title: Sempre usar a detecção automática de idioma ao indexar conteúdo e propriedades
     video: Desabilitado
+    default: 'o idioma só é detectado quando o Windows tem confiança nele.'
     about: Define se o indexador sempre detecta o idioma do conteúdo ou só quando necessário. Detectar só quando necessário alivia a indexação.
     choice: video
     set:
@@ -265,6 +303,7 @@ policies:
     path: Componentes do Windows > Pesquisar
     title: Permitir que pesquisa e Cortana usem a localização
     video: Desabilitado
+    default: 'a pesquisa pode usar a localização.'
     about: Define se a pesquisa do Windows pode usar a sua localização.
     choice: video
     set:
@@ -274,6 +313,7 @@ policies:
     path: Componentes do Windows > Pesquisar
     title: Permitir Pesquisa na Nuvem
     video: Desabilitado
+    default: 'você escolhe nas Configurações se a pesquisa busca na nuvem.'
     about: Define se a pesquisa do Windows busca em conteúdo na nuvem (OneDrive, Outlook, SharePoint).
     choice: video
     set:
@@ -283,6 +323,7 @@ policies:
     path: Componentes do Windows > Pesquisar
     title: Permitir destaques de pesquisa
     video: Desabilitado
+    default: 'os destaques de pesquisa aparecem.'
     about: Define se a caixa de pesquisa mostra os "destaques" (ilustrações, datas comemorativas e conteúdo em alta).
     choice: video
     set:
@@ -292,6 +333,7 @@ policies:
     path: Componentes do Windows > Pesquisar
     title: Permitir Cortana
     video: Desabilitado
+    default: 'a Cortana é permitida (no Windows 11 ela não vem mais instalada).'
     about: Liga ou desliga a Cortana.
     choice: video
     set:
@@ -301,7 +343,9 @@ policies:
     path: Componentes do Windows > Pesquisar
     title: Definir as informações que são compartilhadas na pesquisa
     video: Habilitado, "Informações anônimas"
+    default: 'você escolhe nas Configurações o que a pesquisa compartilha.'
     about: Define quais informações a pesquisa compartilha com o Bing (só informações de uso anônimas, ou também localização e histórico de pesquisa). A própria política diz que não tem efeito do Windows 10 em diante.
+    caution: O modelo do Windows usa o mesmo valor para "Habilitado" (1) e para a lista de opções (3 = anônimas), então o gpedit pode mostrar esta como "Não configurado" mesmo quando foi ele quem a gravou; o valor no registro fica certo.
     choice: video
     set:
       - { key: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Search', name: ConnectedSearchPrivacy, value: 3 }
@@ -317,38 +361,58 @@ policies:
     path: Componentes do Windows > Privacidade de Aplicativos
     title: Permitir que aplicativos do Windows acessem movimentos do usuário enquanto estiverem em execução em segundo plano
     video: Habilitado, "Forçar Negação"
+    default: 'você decide nas Configurações, app por app.'
     about: Define se apps da Store podem ler os movimentos do usuário (cabeça, mãos, controles de realidade mista) enquanto estão em segundo plano.
     choice: video
     set:
       - { key: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy', name: LetAppsAccessBackgroundSpatialPerception, value: 2 }
+      - { key: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy', name: LetAppsAccessBackgroundSpatialPerception_UserInControlOfTheseApps, delete: true }
+      - { key: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy', name: LetAppsAccessBackgroundSpatialPerception_ForceAllowTheseApps, delete: true }
+      - { key: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy', name: LetAppsAccessBackgroundSpatialPerception_ForceDenyTheseApps, delete: true }
     options:
       - id: user
         title: Habilitado, "O usuário está no controle"
         set:
           - { key: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy', name: LetAppsAccessBackgroundSpatialPerception, value: 0 }
+          - { key: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy', name: LetAppsAccessBackgroundSpatialPerception_UserInControlOfTheseApps, delete: true }
+          - { key: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy', name: LetAppsAccessBackgroundSpatialPerception_ForceAllowTheseApps, delete: true }
+          - { key: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy', name: LetAppsAccessBackgroundSpatialPerception_ForceDenyTheseApps, delete: true }
       - id: allow
         title: Habilitado, "Forçar Permissão"
         set:
           - { key: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy', name: LetAppsAccessBackgroundSpatialPerception, value: 1 }
+          - { key: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy', name: LetAppsAccessBackgroundSpatialPerception_UserInControlOfTheseApps, delete: true }
+          - { key: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy', name: LetAppsAccessBackgroundSpatialPerception_ForceAllowTheseApps, delete: true }
+          - { key: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy', name: LetAppsAccessBackgroundSpatialPerception_ForceDenyTheseApps, delete: true }
   - id: apps-run-background
     group: Aplicativos em segundo plano
     path: Componentes do Windows > Privacidade de Aplicativos
     title: Permitir que os aplicativos do Windows sejam executados em segundo plano
     video: Habilitado, "Forçar Negação"
+    default: 'os apps da Store rodam em segundo plano e você decide nas Configurações, app por app.'
     about: Define se os apps da Microsoft Store podem rodar em segundo plano. Programas comuns (Steam, Discord) não são afetados.
     caution: Com "Forçar Negação", apps da Store deixam de notificar e sincronizar quando fechados (Email, Calendário, WhatsApp da Store, alarmes), e não dá para liberar um app pelas Configurações. Use a opção "usuário decide" se precisar de algum.
     choice: video
     set:
       - { key: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy', name: LetAppsRunInBackground, value: 2 }
+      - { key: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy', name: LetAppsRunInBackground_UserInControlOfTheseApps, delete: true }
+      - { key: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy', name: LetAppsRunInBackground_ForceAllowTheseApps, delete: true }
+      - { key: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy', name: LetAppsRunInBackground_ForceDenyTheseApps, delete: true }
     options:
       - id: user
         title: Habilitado, "O usuário está no controle"
         set:
           - { key: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy', name: LetAppsRunInBackground, value: 0 }
+          - { key: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy', name: LetAppsRunInBackground_UserInControlOfTheseApps, delete: true }
+          - { key: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy', name: LetAppsRunInBackground_ForceAllowTheseApps, delete: true }
+          - { key: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy', name: LetAppsRunInBackground_ForceDenyTheseApps, delete: true }
       - id: allow
         title: Habilitado, "Forçar Permissão"
         set:
           - { key: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy', name: LetAppsRunInBackground, value: 1 }
+          - { key: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy', name: LetAppsRunInBackground_UserInControlOfTheseApps, delete: true }
+          - { key: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy', name: LetAppsRunInBackground_ForceAllowTheseApps, delete: true }
+          - { key: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy', name: LetAppsRunInBackground_ForceDenyTheseApps, delete: true }
 
   # ---- Componentes do Windows > Relatórios de Erros do Windows ----
   - id: error-reporting
@@ -356,6 +420,7 @@ policies:
     path: Componentes do Windows > Relatórios de Erros do Windows
     title: Desabilitar Relatório de Erros do Windows
     video: Habilitado
+    default: 'o Relatório de Erros fica ligado, como estiver nas configurações do usuário.'
     about: Define se, quando um programa trava, o Windows coleta e envia o relatório de erro à Microsoft.
     choice: video
     set:
@@ -365,6 +430,7 @@ policies:
     path: Componentes do Windows > Relatórios de Erros do Windows
     title: Desabilitar log
     video: Habilitado
+    default: 'os eventos do Relatório de Erros vão para o log do sistema.'
     about: Define se o Relatório de Erros grava os próprios eventos no log do sistema.
     choice: video
     set:
@@ -376,6 +442,7 @@ policies:
     path: Componentes do Windows > Sincronizar suas configurações
     title: Não sincronizar
     video: Habilitado
+    default: 'a sincronização fica ligada e você pode desligá-la nas Configurações.'
     about: Controla "sincronizar suas configurações" - tema, senhas, idioma e preferências indo e vindo pela conta Microsoft.
     choice: video
     set:
@@ -394,6 +461,7 @@ policies:
     path: Componentes do Windows > Widgets
     title: Permitir widgets
     video: Desabilitado
+    default: 'os Widgets ficam disponíveis, com o botão na barra de tarefas.'
     about: Liga ou desliga os Widgets (notícias, clima) e o botão deles na barra de tarefas.
     choice: video
     set:
@@ -403,19 +471,25 @@ policies:
     path: Componentes do Windows > Widgets
     title: Desabilitar Widgets na Tela de Bloqueio
     video: Habilitado
+    default: 'os widgets aparecem na tela de bloqueio.'
     about: Controla se os widgets (clima, esportes, finanças) aparecem na tela de bloqueio.
+    caution: O modelo do próprio Windows grava 0 para "Habilitado" e 1 para "Desabilitado" nesta política, o contrário do que o nome sugere. O envsetup grava o que o gpedit grava, para o gpedit mostrar o estado certo; quem de fato tira os widgets é "Permitir widgets" desabilitada.
     choice: video
+    # Enabled is 0 in NewsAndInterests.admx (enabledValue 0, disabledValue 1)
     set:
-      - { key: 'HKLM\SOFTWARE\Policies\Microsoft\Dsh', name: DisableWidgetsOnLockScreen, value: 1 }
+      - { key: 'HKLM\SOFTWARE\Policies\Microsoft\Dsh', name: DisableWidgetsOnLockScreen, value: 0 }
   - id: widgets-board
     group: Widgets
     path: Componentes do Windows > Widgets
     title: Desabilitar o Quadro de Widgets
     video: Habilitado
+    default: 'o quadro de Widgets abre normalmente.'
     about: Controla se o quadro de Widgets pode ser aberto e se o ponto de entrada aparece na barra de tarefas.
+    caution: O modelo do próprio Windows grava 0 para "Habilitado" e 1 para "Desabilitado" nesta política, o contrário do que o nome sugere. O envsetup grava o que o gpedit grava, para o gpedit mostrar o estado certo; quem de fato tira os widgets é "Permitir widgets" desabilitada.
     choice: video
+    # Enabled is 0 in NewsAndInterests.admx (enabledValue 0, disabledValue 1)
     set:
-      - { key: 'HKLM\SOFTWARE\Policies\Microsoft\Dsh', name: DisableWidgetsBoard, value: 1 }
+      - { key: 'HKLM\SOFTWARE\Policies\Microsoft\Dsh', name: DisableWidgetsBoard, value: 0 }
 
   # ---- Componentes do Windows > Windows Update > Gerenciar a experiência do usuário final ----
   - id: windows-update-auto
@@ -423,6 +497,7 @@ policies:
     path: Componentes do Windows > Windows Update > Gerenciar a experiência do usuário final
     title: Configurar Atualizações Automáticas
     video: Habilitado, "2 - Avisar antes de baixar e instalar automaticamente"
+    default: 'o Windows baixa e instala as atualizações sozinho e reinicia fora do horário ativo.'
     about: Define como o Windows Update baixa e instala as atualizações - só avisa, baixa e avisa, instala sozinho em horário agendado, ou fica desligado.
     caution: Se as atualizações não se instalam sozinhas, as de segurança também ficam por sua conta. Abra o Windows Update de tempos em tempos.
     choice: video
@@ -458,6 +533,7 @@ policies:
     path: Componentes do Windows > Windows Update > Gerenciar a experiência do usuário final
     title: Opções de exibição de notificações de atualização
     video: Habilitado, "1 - Desabilitar todas as notificações, exceto os avisos de reinício"
+    default: 'todas as notificações do Windows Update aparecem.'
     about: Define quais notificações do Windows Update são mostradas - todas, só os avisos de reinicialização, ou nenhuma.
     caution: Sem as notificações, junto com "avisar antes de baixar", você não é avisado de que há atualizações novas.
     choice: video
@@ -486,6 +562,7 @@ policies:
     path: Menu Iniciar e Barra de Tarefas
     title: Não manter histórico de documentos abertos recentemente
     video: Habilitado
+    default: 'o Windows guarda e mostra os itens abertos recentemente.'
     about: Controla se o Windows e os programas guardam e mostram atalhos para documentos abertos recentemente (Itens Recentes, listas de atalhos da barra de tarefas).
     caution: Sem o histórico, as listas de arquivos recentes do menu Iniciar, da barra de tarefas e do Explorador ficam vazias.
     choice: video
@@ -498,6 +575,7 @@ policies:
     path: Sistema > Perfis de usuário
     title: Desligar a ID de anúncio
     video: Habilitado
+    default: 'você decide nas Configurações se os apps usam a ID de anúncio.'
     about: Controla a ID de anúncio, que os apps usam para acompanhar você entre aplicativos e personalizar propaganda.
     choice: video
     set:
@@ -509,6 +587,7 @@ policies:
     path: Sistema > Políticas do SO
     title: Permitir upload de Atividades do Usuário
     video: Desabilitado
+    default: 'o envio é permitido, conforme o histórico de atividades nas Configurações.'
     about: Define se o histórico de atividades (apps e arquivos usados) é enviado para a nuvem.
     choice: video
     set:
@@ -518,6 +597,7 @@ policies:
     path: Sistema > Políticas do SO
     title: Permitir sincronização da Área de Transferência entre dispositivos
     video: Desabilitado
+    default: 'você pode ligar a sincronização da área de transferência nas Configurações.'
     about: Define se o que você copia é sincronizado com outros dispositivos da mesma conta Microsoft.
     choice: video
     set:
@@ -527,6 +607,7 @@ policies:
     path: Sistema > Políticas do SO
     title: Permitir publicação das Atividades do Usuário
     video: Desabilitado
+    default: 'o Windows registra as atividades.'
     about: Define se o Windows registra as atividades do usuário (apps e arquivos usados) para o histórico de atividades.
     choice: video
     set:
@@ -536,6 +617,7 @@ policies:
     path: Sistema > Políticas do SO
     title: Habilita o Feed de Atividades
     video: Desabilitado
+    default: 'o feed de atividades fica ligado.'
     about: Liga ou desliga o feed de atividades, que publica as atividades e as sincroniza com a nuvem.
     choice: video
     set:

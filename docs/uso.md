@@ -240,6 +240,12 @@ os jogos" na aba RetroArch, ou mova a pasta com "Trocar". Formatando também o H
   - **"Falha ao abrir o Objeto de Política de Grupo… Final do arquivo alcançado".** Era o
     `Registry.pol` gravado pelas versões até a 0.1.7, sem o caractere nulo que fecha cada nome.
     Aplicar as políticas de novo com esta versão lê aquele arquivo e o regrava no formato certo.
+  - **O app dizia "aplicada", mas o gpedit mostrava "Não configurado".** Até a 0.2.1 o estado
+    era lido só do registro: com os valores lá (gravados antes, num `Registry.pol` que o gpedit
+    não lia), a etapa contava como feita e o arquivo nunca era regravado. Agora o estado também
+    lê o `Registry.pol` (e recusa o formato antigo), então essas políticas aparecem pendentes e
+    aplicar de novo resolve. Algumas também gravavam um valor que o gpedit não reconhece
+    como o estado do vídeo (veja `config/policies.yaml` em [configuracao.md](configuracao.md)).
   - **Para mexer à mão**, cada política da aba Políticas tem dois botões:
     - **Abrir no gpedit** abre o Editor de Política de Grupo e navega até a política: expande
       Configuração do Computador > Modelos Administrativos > a pasta dela, seleciona e abre a

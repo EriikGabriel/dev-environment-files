@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/EriikGabriel/dev-environment-files/internal/windows/policy"
 )
@@ -100,6 +101,10 @@ func (e *Env) OpenPolicy(ctx context.Context, out io.Writer, id string, registry
 		cmd = fmt.Sprintf("& %s -Registry -Key %s", psQuote(script), psQuote(key))
 	} else {
 		cmd = fmt.Sprintf("& %s -Path %s -Title %s", psQuote(script), psQuote(p.Path), psQuote(p.Title))
+		if len(p.Aliases) > 0 {
+			// other names of the policy in other Windows builds
+			cmd += " -Also " + psQuote(strings.Join(p.Aliases, "|"))
+		}
 	}
 	return e.Runner.Run(ctx, out, e.script(cmd)...)
 }

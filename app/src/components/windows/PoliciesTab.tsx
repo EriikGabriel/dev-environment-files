@@ -17,7 +17,11 @@ interface Props {
 type Filter = "all" | "pending" | "changed" | "caution";
 
 const choiceLabel = (p: Policy, choice: string) =>
-  choice === "video" ? `${p.video} (Recomendado)` : choice === "off" ? "Não configurar" : (p.options.find((o) => o.id === choice)?.title ?? choice);
+  choice === "video" ? `${p.video} (Recomendado)` : choice === "off" ? "Não configurado (padrão do Windows 11)" : (p.options.find((o) => o.id === choice)?.title ?? choice);
+
+/** A registry value as the policy writes it; a deleted one is gpedit's "**del." order. */
+const valueLine = (v: { key: string; name: string; value: number; delete?: boolean }) =>
+  `${v.key}\n    ${v.name} ${v.delete ? "(apagado: **del." + v.name + " no Registry.pol)" : "= " + v.value}`;
 
 /** The group policies of config/policies.yaml: what each does, what it is set to, and applying them. */
 export function PoliciesTab({ root, windows, onApplied }: Props) {
@@ -97,10 +101,12 @@ export function PoliciesTab({ root, windows, onApplied }: Props) {
             Políticas de grupo
             <Help title="Como são aplicadas">
               Cada item é uma configuração do Editor de Política de Grupo (gpedit.msc), em Configuração do Computador ›
-              Modelos Administrativos. O envsetup grava o mesmo valor que o gpedit gravaria, no Registry.pol e no registro, então o
-              Windows obedece e o gpedit mostra a política como Habilitada ou Desabilitada (reabra o gpedit se ele
-              já estava aberto). “Não configurar” apaga o valor e devolve o comportamento padrão. Gravar pede
-              elevação (UAC) uma vez; algumas só valem depois de sair da sessão ou reiniciar.
+              Modelos Administrativos. O envsetup grava o mesmo valor que o gpedit gravaria (seguindo o modelo da
+              política em C:\Windows\PolicyDefinitions), no Registry.pol e no registro, então o Windows obedece e o gpedit
+              mostra a política como Habilitada ou Desabilitada (reabra o gpedit se ele já estava aberto). Uma política só
+              conta como aplicada quando os dois batem. Todas vêm do Windows 11 como “Não configurado”; cada item diz o que o
+              Windows faz nesse estado, e escolher “Não configurado” apaga o valor e volta a ele. Gravar pede elevação (UAC)
+              uma vez; algumas só valem depois de sair da sessão ou reiniciar.
             </Help>
           </strong>
           <span className="muted">
@@ -121,7 +127,7 @@ export function PoliciesTab({ root, windows, onApplied }: Props) {
             act("apply", async () => {
               setData(await api.applyPolicies(root));
               onApplied();
-              return "Políticas gravadas no registro. Algumas só passam a valer depois de sair da sessão ou reiniciar.";
+              return "Políticas gravadas no Registry.pol (o que o gpedit mostra) e no registro. Algumas só passam a valer depois de sair da sessão ou reiniciar.";
             })
           }
         >
@@ -178,6 +184,10 @@ export function PoliciesTab({ root, windows, onApplied }: Props) {
                     )}
                   </div>
                   <p>{p.about}</p>
+                  <p className="policy-default small-note">
+                    <strong>Padrão do Windows 11:</strong> Não configurado — {p.default}
+                    {p.choice === "off" && <span className="chip">escolhido</span>}
+                  </p>
                   {p.caution && (
                     <p className="caution">
                       <strong>Atenção:</strong> {p.caution}
@@ -186,7 +196,7 @@ export function PoliciesTab({ root, windows, onApplied }: Props) {
                   <details className="script">
                     <summary className="muted small-note">Valores no registro</summary>
                     <pre className="code">
-                      {p.set.map((v) => `${v.key}\n    ${v.name} = ${v.value}`).join("\n")}
+                      {p.set.map(valueLine).join("\n")}
                     </pre>
                   </details>
                 </div>

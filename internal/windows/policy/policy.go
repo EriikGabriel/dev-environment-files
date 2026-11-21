@@ -20,11 +20,17 @@ const (
 	ChoiceOff   = "off"   // not configured: the values are removed
 )
 
-// Value is one DWORD under a policy key.
+// Value is one DWORD under a policy key, or (Delete) the order to delete it.
 type Value struct {
 	Key   string `yaml:"key" json:"key"` // HKLM\SOFTWARE\Policies\...
 	Name  string `yaml:"name" json:"name"`
 	Value uint32 `yaml:"value" json:"value"`
+	// Delete is what gpedit writes for a policy, or a part of one, it set to
+	// Disabled that has no value of its own for that state: a "**del.<name>"
+	// entry in the Registry.pol, which deletes the value from the registry.
+	// Without it gpedit reads the policy as not configured (or as enabled,
+	// when another value is left behind).
+	Delete bool `yaml:"delete,omitempty" json:"delete,omitempty"`
 }
 
 // Option is an alternative to the video's setting.
@@ -42,9 +48,15 @@ type Policy struct {
 	// Administrative Templates.
 	Path  string `yaml:"path" json:"path"`
 	Title string `yaml:"title" json:"title"`
+	// Aliases are other names the policy has in gpedit, in other Windows
+	// builds; the "open in gpedit" link looks for them too.
+	Aliases []string `yaml:"aliases" json:"aliases,omitempty"`
 	// Video is the state the video sets, as gpedit words it.
 	Video string `yaml:"video" json:"video"`
-	About string `yaml:"about" json:"about"`
+	// Default is what Windows 11 does with the policy not configured, the
+	// state it comes in.
+	Default string `yaml:"default" json:"default"`
+	About   string `yaml:"about" json:"about"`
 	// Caution is shown when the setting can get in the way.
 	Caution string `yaml:"caution" json:"caution,omitempty"`
 	// Choice is video, off or the id of an option.
@@ -107,6 +119,9 @@ func Load(path string) (*File, error) {
 				if !keyRe.MatchString(v.Key) || strings.Contains(v.Key, `\\`) || !nameRe.MatchString(v.Name) {
 					return nil, fmt.Errorf("%s: policy %q: %s\\%s is not a policy value under HKLM\\SOFTWARE", path, p.ID, v.Key, v.Name)
 				}
+				if v.Delete && v.Value != 0 {
+					return nil, fmt.Errorf("%s: policy %q: %s is deleted, it cannot also have a value", path, p.ID, v.Name)
+				}
 			}
 		}
 		if !p.valid(p.Choice) {
@@ -136,7 +151,7 @@ func (p *Policy) addOpposite() {
 	}
 	flipped := make([]Value, len(p.Set))
 	for i, v := range p.Set {
-		if v.Value > 1 {
+		if v.Value > 1 || v.Delete {
 			return
 		}
 		v.Value = 1 - v.Value
@@ -194,19 +209,43 @@ func regPath(key string) string {
 
 const readValue = `function V($k, $n) { try { (Get-ItemProperty -LiteralPath $k -Name $n -ErrorAction Stop).$n } catch { $null } }` + "\n"
 
-// StateScript is a PowerShell script that prints, as JSON, whether the
-// registry already matches the choice of each policy ({"id": true}).
+// StateScript is a PowerShell script that prints, as JSON, whether each
+// policy is as chosen ({"id": true}): in the registry, which Windows obeys,
+// and in the local Registry.pol, which is what gpedit.msc shows and what a
+// policy refresh writes back to the registry. Checking only the registry
+// took a policy whose Registry.pol entry was missing or unreadable (an old
+// file, a value set by another tool) as applied, so it was never written
+// again and gpedit kept showing it as not configured.
 func StateScript(policies []Policy) string {
 	var b strings.Builder
-	b.WriteString(readValue + "$r = [ordered]@{}\n")
+	b.WriteString(readValue)
+	b.WriteString(polLib)
+	// an unreadable file, or one in the format of envsetup 0.1.0-0.1.7, is
+	// not what gpedit reads: every policy that needs it is pending
+	b.WriteString("$polOk = $true\ntry { PolLoad } catch { $polOk = $false }\nif ($script:polOld) { $polOk = $false }\n")
+	b.WriteString("$gptOk = PolGptOk\n")
+	b.WriteString("$r = [ordered]@{}\n")
 	for _, p := range policies {
 		set, remove := p.Wanted()
-		var conds []string
+		conds := []string{"$polOk"}
+		if len(set) > 0 {
+			conds = append(conds, "$gptOk")
+		}
 		for _, v := range set {
-			conds = append(conds, fmt.Sprintf("((V '%s' '%s') -eq %d)", regPath(v.Key), v.Name, v.Value))
+			if v.Delete {
+				conds = append(conds,
+					fmt.Sprintf("($null -eq (V '%s' '%s'))", regPath(v.Key), v.Name),
+					fmt.Sprintf("(PolIsDel '%s' '%s')", polKey(v.Key), v.Name))
+				continue
+			}
+			conds = append(conds,
+				fmt.Sprintf("((V '%s' '%s') -eq %d)", regPath(v.Key), v.Name, v.Value),
+				fmt.Sprintf("(PolIs '%s' '%s' %d)", polKey(v.Key), v.Name, v.Value))
 		}
 		for _, v := range remove {
-			conds = append(conds, fmt.Sprintf("($null -eq (V '%s' '%s'))", regPath(v.Key), v.Name))
+			conds = append(conds,
+				fmt.Sprintf("($null -eq (V '%s' '%s'))", regPath(v.Key), v.Name),
+				fmt.Sprintf("(PolNone '%s' '%s')", polKey(v.Key), v.Name))
 		}
 		fmt.Fprintf(&b, "$r['%s'] = [bool](%s)\n", p.ID, strings.Join(conds, " -and "))
 	}
@@ -223,20 +262,23 @@ func ParseState(out string) (map[string]bool, error) {
 	return st, nil
 }
 
-// polHeader is the PowerShell that loads the local Registry.pol, the file
-// gpedit.msc reads, and defines PolSet, PolDel and PolSave to edit it. The
-// format is documented as "Registry Policy File Format" (PReg): the header
-// "PReg" + version 1, then entries [key;value;type;size;data]. Strings and
-// separators are UTF-16LE; the key and the value name each end with a NUL
-// (UTF-16 0x0000) before their ";": without it Windows reads past the end of
-// the file and gpedit.msc / gpupdate fail with "end of file reached". Type,
-// size and data are binary little-endian.
-const polHeader = `$polFile = Join-Path $env:SystemRoot 'System32\GroupPolicy\Machine\Registry.pol'
+// polLib is the PowerShell that reads and writes the local Registry.pol, the
+// file gpedit.msc reads: PolLoad reads it, PolIs / PolIsDel / PolNone check
+// an entry, PolSet / PolSetDel / PolDel change one and PolSave writes the
+// file and gpt.ini. The format is documented as "Registry Policy File
+// Format" (PReg): the header "PReg" + version 1, then entries
+// [key;value;type;size;data]. Strings and separators are UTF-16LE; the key
+// and the value name each end with a NUL (UTF-16 0x0000) before their ";":
+// without it Windows reads past the end of the file and gpedit.msc /
+// gpupdate fail with "end of file reached". Type, size and data are binary
+// little-endian. A value name "**del.<name>" is the order to delete <name>,
+// which gpedit writes for some policies set to Disabled.
+const polLib = `$polFile = Join-Path $env:SystemRoot 'System32\GroupPolicy\Machine\Registry.pol'
 $polDir = Split-Path $polFile
-if (-not (Test-Path -LiteralPath $polDir)) { New-Item -ItemType Directory -Path $polDir -Force | Out-Null }
 $script:pol = New-Object System.Collections.ArrayList
 $script:bytes = $null
 $script:pos = 0
+$script:polOld = $false
 function ReadStr {
   $sb = New-Object System.Text.StringBuilder
   while ($script:pos + 1 -lt $script:bytes.Length) {
@@ -244,7 +286,9 @@ function ReadStr {
     if ($c -eq 0x3B) {
       # the NUL that ends the string comes before the ";"; files written by
       # envsetup 0.1.0-0.1.7 left it out, and are read and rewritten right
-      return $sb.ToString().TrimEnd([char]0)
+      $s = $sb.ToString()
+      if (-not $s.EndsWith([string][char]0)) { $script:polOld = $true }
+      return $s.TrimEnd([char]0)
     }
     [void]$sb.Append([char]$c)
   }
@@ -254,7 +298,8 @@ function ReadU32 {
   if ($script:pos + 4 -gt $script:bytes.Length) { throw 'Invalid Registry.pol: truncated integer.' }
   $v = [BitConverter]::ToUInt32($script:bytes, $script:pos); $script:pos += 4; $v
 }
-if (Test-Path -LiteralPath $polFile) {
+function PolLoad {
+  if (-not (Test-Path -LiteralPath $polFile)) { return }
   $script:bytes = [IO.File]::ReadAllBytes($polFile)
   if ($script:bytes.Length -lt 8 -or [Text.Encoding]::ASCII.GetString($script:bytes, 0, 4) -ne 'PReg' -or [BitConverter]::ToUInt32($script:bytes, 4) -ne 1) {
     throw 'Invalid Registry.pol header; envsetup did not change it. Back up or repair the file, then apply policies again.'
@@ -279,17 +324,40 @@ if (Test-Path -LiteralPath $polFile) {
     [void]$script:pol.Add([pscustomobject]@{ Key = $k; Name = $n; Type = $t; Data = $d })
   }
 }
+function PolGet($k, $n) {
+  foreach ($e in $script:pol) { if ($e.Key -ieq $k -and $e.Name -ieq $n) { return $e } }
+  $null
+}
+function PolIs($k, $n, $v) {
+  $e = PolGet $k $n
+  [bool]($e -and $e.Type -eq 4 -and $e.Data.Length -eq 4 -and [BitConverter]::ToUInt32($e.Data, 0) -eq $v -and -not (PolGet $k "**del.$n"))
+}
+function PolIsDel($k, $n) { [bool]((PolGet $k "**del.$n") -and -not (PolGet $k $n)) }
+function PolNone($k, $n) { [bool](-not (PolGet $k $n) -and -not (PolGet $k "**del.$n")) }
+# gpt.ini names the extensions that process the machine policies; without
+# the registry one, {35378EAC...}, the Registry.pol is skipped
+function PolGptOk {
+  $gpt = Join-Path (Split-Path $polDir) 'gpt.ini'
+  if (-not (Test-Path -LiteralPath $gpt)) { return $false }
+  [bool]((Get-Content -LiteralPath $gpt -Raw) -match 'gPCMachineExtensionNames\s*=.*35378EAC-683F-11D2-A89A-00C04FBBCFA2')
+}
 function PolDel($k, $n) {
   for ($i = $script:pol.Count - 1; $i -ge 0; $i--) {
     $e = $script:pol[$i]
-    if ($e.Key -ieq $k -and $e.Name -ieq $n) { $script:pol.RemoveAt($i) }
+    if ($e.Key -ieq $k -and ($e.Name -ieq $n -or $e.Name -ieq "**del.$n")) { $script:pol.RemoveAt($i) }
   }
 }
 function PolSet($k, $n, $v) {
   PolDel $k $n
   [void]$script:pol.Add([pscustomobject]@{ Key = $k; Name = $n; Type = 4; Data = [BitConverter]::GetBytes([uint32]$v) })
 }
+# PolSetDel writes the order to delete a value, as gpedit does: REG_SZ " "
+function PolSetDel($k, $n) {
+  PolDel $k $n
+  [void]$script:pol.Add([pscustomobject]@{ Key = $k; Name = "**del.$n"; Type = 1; Data = [byte[]](0x20,0,0,0) })
+}
 function PolSave {
+  if (-not (Test-Path -LiteralPath $polDir)) { New-Item -ItemType Directory -Path $polDir -Force | Out-Null }
   $ms = New-Object System.IO.MemoryStream
   $w = New-Object System.IO.BinaryWriter($ms)
   $w.Write([byte[]](0x50,0x52,0x65,0x67)); $w.Write([uint32]1)
@@ -339,16 +407,23 @@ func polKey(key string) string { return strings.TrimPrefix(key, `HKLM\`) }
 // has to run elevated: the keys are under HKLM and the Registry.pol is under
 // System32. Each value goes to both the Registry.pol, so gpedit.msc shows the
 // policy as configured and a policy refresh keeps it, and the registry, so it
-// takes effect right away.
+// takes effect right away. The Registry.pol is always written again, so a
+// file in an old format is fixed even when nothing else changed.
 func ApplyScript(policies []Policy) string {
 	var b strings.Builder
 	b.WriteString("$ErrorActionPreference = 'Stop'\n")
-	b.WriteString(polHeader)
+	b.WriteString(polLib)
+	b.WriteString("PolLoad\n")
 	for _, p := range policies {
 		set, remove := p.Wanted()
 		for _, v := range set {
-			fmt.Fprintf(&b, "PolSet '%s' '%s' %d\n", polKey(v.Key), v.Name, v.Value)
 			k := regPath(v.Key)
+			if v.Delete {
+				fmt.Fprintf(&b, "PolSetDel '%s' '%s'\n", polKey(v.Key), v.Name)
+				fmt.Fprintf(&b, "if (Test-Path -LiteralPath '%s') { Remove-ItemProperty -LiteralPath '%s' -Name '%s' -ErrorAction SilentlyContinue }\n", k, k, v.Name)
+				continue
+			}
+			fmt.Fprintf(&b, "PolSet '%s' '%s' %d\n", polKey(v.Key), v.Name, v.Value)
 			fmt.Fprintf(&b, "if (-not (Test-Path -LiteralPath '%s')) { New-Item -Path '%s' -Force | Out-Null }\n", k, k)
 			fmt.Fprintf(&b, "Set-ItemProperty -LiteralPath '%s' -Name '%s' -Value %d -Type DWord\n", k, v.Name, v.Value)
 		}
