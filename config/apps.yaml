@@ -646,7 +646,7 @@ apps:
     devices: [VID_2DC8, 8BitDo]
     method: { windows: script }
     check:
-      windows: if (-not (& "$env:ENVSETUP_ROOT\windows\install-8bitdo-v1.ps1" -Check)) { exit 1 }
+      windows: if (-not ((Test-Path -LiteralPath "$env:LOCALAPPDATA\Programs\8BitDo Ultimate Software V1\8BitDo Ultimate Software.exe") -and (Test-Path -LiteralPath "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\8BitDo Ultimate Software V1.lnk"))) { exit 1 }
     source:
       windows: |
         & "$env:ENVSETUP_ROOT\windows\install-8bitdo-v1.ps1"
