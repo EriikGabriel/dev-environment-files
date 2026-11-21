@@ -44,6 +44,7 @@ func newRoot() *cobra.Command {
 		retroarchCommands(f), // retroarch.go
 		backupCommands(f),    // backup.go: what a format needs, git push and pull
 		roleCommands(f),      // role.go: whose configuration this is
+		appUpdateCommands(f), // appupdate.go: look for a newer release and download it
 	} {
 		root.AddCommand(group...)
 	}

@@ -237,6 +237,64 @@ foreach ($p in $pins) {
 if ($miss.Count -eq $pins.Count) { throw 'Explorer did not take the pins' }
 `
 
+// singleEntries leaves one shortcut per app. Launchers (Raycast) list every
+// .lnk of the Start menus and of the desktops, so an app that an installer
+// also put on the desktop, or in a folder of its own besides the Start menu
+// root, showed up more than once. Two shortcuts are the same app when they have
+// the same name and the same program. The one in the Start menu stays (the
+// shallowest, the user's before the common one, the one without arguments): the
+// icons step gives it the macOS icon. A desktop shortcut with no Start menu twin
+// stays. The others are moved, not deleted, to
+// %LOCALAPPDATA%\envsetup\shortcuts-removed\<date>, with removed.json saying
+// where each one was. Runs elevated: the all-users desktop and Start menu
+// belong to the system.
+const singleEntries = `$sh = New-Object -ComObject WScript.Shell
+$userMenu = Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs'
+$commonMenu = Join-Path $env:ProgramData 'Microsoft\Windows\Start Menu\Programs'
+function ReadLinks($root, $recurse, $scope) {
+  if (-not $root -or -not (Test-Path -LiteralPath $root)) { return @() }
+  @(Get-ChildItem -LiteralPath $root -Filter *.lnk -File -Recurse:$recurse -ErrorAction SilentlyContinue | ForEach-Object {
+    try { $l = $sh.CreateShortcut($_.FullName) } catch { return }
+    if (-not $l.TargetPath) { return }
+    [pscustomobject]@{ Path = $_.FullName; Name = $_.BaseName.ToLowerInvariant(); Target = $l.TargetPath.ToLowerInvariant(); Args = [string]$l.Arguments
+      Depth = $_.FullName.Substring($root.Length).Split('\').Count; Scope = $scope }
+  })
+}
+$menu = @((ReadLinks $userMenu $true 0) + (ReadLinks $commonMenu $true 1))
+$desk = @((ReadLinks ([Environment]::GetFolderPath('Desktop')) $false 0) + (ReadLinks ([Environment]::GetFolderPath('CommonDesktopDirectory')) $false 1))
+$best = @{}
+$drop = New-Object System.Collections.ArrayList
+foreach ($grp in ($menu | Group-Object { $_.Name + '|' + $_.Target })) {
+  $g = @($grp.Group | Sort-Object Depth, Scope, @{ Expression = { $_.Args.Length } }, @{ Expression = { $_.Path.Length } })
+  $best[$grp.Name] = $g[0]
+  for ($i = 1; $i -lt $g.Count; $i++) { [void]$drop.Add([pscustomobject]@{ Item = $g[$i]; Kept = $g[0].Path }) }
+}
+foreach ($d in $desk) {
+  $k = $d.Name + '|' + $d.Target
+  if ($best.ContainsKey($k)) { [void]$drop.Add([pscustomobject]@{ Item = $d; Kept = $best[$k].Path }) }
+}
+if ($drop.Count -gt 0) {
+  $bk = Join-Path $env:LOCALAPPDATA ('envsetup\shortcuts-removed\' + (Get-Date -Format 'yyyyMMdd-HHmmss'))
+  New-Item -ItemType Directory -Force -Path $bk | Out-Null
+  $n = 0
+  $moved = @()
+  foreach ($x in $drop) {
+    try {
+      $n++
+      $dst = Join-Path $bk ($n.ToString() + '-' + [IO.Path]::GetFileName($x.Item.Path))
+      Move-Item -LiteralPath $x.Item.Path -Destination $dst -Force -ErrorAction Stop
+      $moved += [pscustomobject]@{ from = $x.Item.Path; kept = $x.Kept; backup = $dst }
+      Write-Output ('one entry per app: moved ' + $x.Item.Path + ' (kept ' + $x.Kept + ')')
+      $dir = Split-Path -Parent $x.Item.Path
+      foreach ($menuRoot in @($userMenu, $commonMenu)) {
+        if ($dir.StartsWith($menuRoot + '\', [StringComparison]::OrdinalIgnoreCase) -and -not (Get-ChildItem -LiteralPath $dir -Force -ErrorAction SilentlyContinue)) { Remove-Item -LiteralPath $dir -Force -ErrorAction SilentlyContinue }
+      }
+    } catch { Write-Output ('one entry per app: could not move ' + $x.Item.Path + ': ' + $_.Exception.Message) }
+  }
+  [IO.File]::WriteAllText((Join-Path $bk 'removed.json'), (ConvertTo-Json -InputObject @($moved) -Depth 3), (New-Object System.Text.UTF8Encoding $false))
+}
+`
+
 // AdminScript runs elevated: the policies it sets are under HKLM. It takes
 // out the "Start layout" policy earlier versions pointed at their taskbar
 // file (Windows re-read it at every sign-in and dropped the pins), and the
@@ -245,6 +303,9 @@ if ($miss.Count -eq $pins.Count) { throw 'Explorer did not take the pins' }
 func AdminScript(c Config) string {
 	var b strings.Builder
 	b.WriteString("$ErrorActionPreference = 'Stop'\n")
+	if c.SingleEntries {
+		b.WriteString("try {\n" + singleEntries + "} catch { Write-Output ('one entry per app: skipped, ' + $_.Exception.Message) }\n")
+	}
 	b.WriteString(`$ex = 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Explorer'
 $st = 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\PolicyManager\current\device\Start'
 $old = (Get-ItemProperty -LiteralPath $ex -ErrorAction SilentlyContinue).StartLayoutFile

@@ -70,6 +70,8 @@ const ALLOWED: &[&str] = &[
     "windhawk",
     "windhawk-export",
     "windhawk-import",
+    "app-update-check",
+    "app-update-download",
 ];
 
 #[derive(Default)]
@@ -457,6 +459,81 @@ fn cancel_apply(state: State<'_, ApplyState>) {
     }
 }
 
+/// Where `envsetup app-update-download` puts the installer.
+#[cfg_attr(not(windows), allow(dead_code))]
+fn update_dir() -> PathBuf {
+    std::env::temp_dir().join("envsetup-update")
+}
+
+/// Checks that `path` is the installer the sidecar downloaded: an envsetup
+/// `-setup.exe` directly inside `dir`. The front-end hands the path over, so it
+/// is not trusted to name any other file.
+#[cfg_attr(not(windows), allow(dead_code))]
+fn check_installer(path: &Path, dir: &Path) -> Result<PathBuf, String> {
+    let file = path.canonicalize().map_err(|e| format!("the installer is gone: {e}"))?;
+    let dir = dir.canonicalize().map_err(|e| format!("no download folder: {e}"))?;
+    if file.parent() != Some(dir.as_path()) {
+        return Err("the installer is not in the download folder".into());
+    }
+    let name = file.file_name().and_then(|n| n.to_str()).unwrap_or_default();
+    if !(name.starts_with("envsetup") && name.ends_with("-setup.exe")) {
+        return Err(format!("{name:?} is not an envsetup installer"));
+    }
+    Ok(file)
+}
+
+/// Quotes a path for a single-quoted PowerShell string.
+#[cfg_attr(not(windows), allow(dead_code))]
+fn ps_quote(p: &Path) -> String {
+    p.to_string_lossy().replace('\'', "''")
+}
+
+/// The PowerShell that runs the installer silently (NSIS `/S`) and, when it is
+/// done, opens the app: the new version if the install worked, the old one if it
+/// did not. It runs after the app has exited, which is what lets the installer
+/// replace the app's files.
+#[cfg_attr(not(windows), allow(dead_code))]
+fn update_script(installer: &Path, exe: &Path) -> String {
+    format!(
+        "Start-Process -FilePath '{}' -ArgumentList '/S' -Wait; Start-Sleep -Seconds 1; Start-Process -FilePath '{}'",
+        ps_quote(installer),
+        ps_quote(exe)
+    )
+}
+
+/// Installs the update the sidecar downloaded and reopens the app. The app
+/// closes itself here so its files are free for the installer.
+#[tauri::command]
+fn install_update(app: AppHandle, path: String) -> Result<(), String> {
+    #[cfg(not(windows))]
+    {
+        let _ = (app, path);
+        Err("the app updates itself on Windows only: install the new version from its package".into())
+    }
+    #[cfg(windows)]
+    {
+        use std::os::windows::process::CommandExt;
+        let installer = check_installer(Path::new(&path), &update_dir())?;
+        let exe = std::env::current_exe().map_err(|e| e.to_string())?;
+        // a build run from the source tree is not an install: the installer would not replace it
+        if exe.to_string_lossy().to_lowercase().contains("\\target\\") {
+            return Err("this is a development build: install a release to use the update".into());
+        }
+        Command::new("powershell")
+            .args(["-NoProfile", "-NonInteractive", "-WindowStyle", "Hidden", "-ExecutionPolicy", "Bypass", "-Command"])
+            .arg(update_script(&installer, &exe))
+            // DETACHED_PROCESS | CREATE_NO_WINDOW | CREATE_NEW_PROCESS_GROUP: it outlives the app
+            .creation_flags(0x0000_0008 | 0x0800_0000 | 0x0000_0200)
+            .stdin(Stdio::null())
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .spawn()
+            .map_err(|e| format!("could not start the installer: {e}"))?;
+        app.exit(0);
+        Ok(())
+    }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -470,7 +547,8 @@ pub fn run() {
             update_data,
             envsetup,
             apply,
-            cancel_apply
+            cancel_apply,
+            install_update
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
@@ -497,5 +575,40 @@ mod tests {
         assert_eq!(read("apps.yaml"), "edited by the user");
         assert_eq!(read("added.yaml"), "added");
         std::fs::remove_dir_all(&base).unwrap();
+    }
+
+    #[test]
+    fn only_the_downloaded_installer_can_be_run() {
+        let base = std::env::temp_dir().join(format!("envsetup-upd-{}", std::process::id()));
+        let dir = base.join("envsetup-update");
+        std::fs::create_dir_all(&dir).unwrap();
+        let ok = dir.join("envsetup_0.2.1_x64-setup.exe");
+        std::fs::write(&ok, "x").unwrap();
+        // the right kind of file, in the wrong folder
+        let elsewhere = base.join("envsetup_0.2.1_x64-setup.exe");
+        std::fs::write(&elsewhere, "x").unwrap();
+        // the right folder, the wrong kind of file
+        let other = dir.join("calc.exe");
+        std::fs::write(&other, "x").unwrap();
+        let msi = dir.join("envsetup_0.2.1_x64_en-US.msi");
+        std::fs::write(&msi, "x").unwrap();
+        // a path that climbs out of the folder lands outside it
+        let climbing = dir.join("..").join("envsetup_0.2.1_x64-setup.exe");
+
+        assert!(check_installer(&ok, &dir).is_ok());
+        for bad in [&elsewhere, &other, &msi, &climbing, &dir.join("missing-setup.exe")] {
+            assert!(check_installer(bad, &dir).is_err(), "{} must be refused", bad.display());
+        }
+        std::fs::remove_dir_all(&base).unwrap();
+    }
+
+    #[test]
+    fn the_update_script_runs_silently_then_reopens_the_app() {
+        let s = update_script(Path::new(r"C:\Temp\it's\envsetup_0.2.1_x64-setup.exe"), Path::new(r"C:\Apps\envsetup.exe"));
+        assert!(s.contains("-ArgumentList '/S' -Wait"), "{s}");
+        // the installer is awaited before the app is started again
+        assert!(s.find("-Wait").unwrap() < s.rfind("envsetup.exe'").unwrap());
+        // a quote in the path must not end the PowerShell string
+        assert!(s.contains("it''s"), "{s}");
     }
 }

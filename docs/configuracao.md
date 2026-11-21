@@ -189,6 +189,7 @@ taskbar: [explorer, spotify, discord, browser, playnite, retroarch, hydra]   # d
 clear_start: true          # tira os apps fixados do menu Iniciar
 hide_desktop_icons: true
 taskbar_autohide: true     # esconde a barra automaticamente (a dock do Windhawk se esconde junto)
+single_entries: true       # uma entrada por app: atalhos repetidos vão para um backup
 ```
 
 Os ids são os que a aba Preview mostra na "bandeja de apps" (os da lista do Ninite, os que o
@@ -199,8 +200,25 @@ a última para que Playnite, RetroArch e Hydra Launcher já estejam instalados e
 vem o atalho fixado. O item fica pendente de novo quando o arquivo muda. Uma lista vazia deixa a
 barra como está; um app que não está instalado fica de fora.
 
+**Uma entrada por app (`single_entries`, ligado por padrão).** Lançadores como o Raycast listam
+todo `.lnk` do menu Iniciar e das áreas de trabalho, então um app que o instalador também deixou
+na área de trabalho, ou que tem dois atalhos no menu Iniciar (o Discord tem `Discord.lnk` e
+`Discord Inc\Discord.lnk`), aparecia duas vezes. Ao aplicar o layout, dois atalhos são o mesmo app
+quando têm o **mesmo nome e o mesmo programa**; fica o do menu Iniciar (o mais raso, o do usuário
+antes do de todos, o sem argumentos), que é o que recebe o ícone macOS, e os outros **vão para
+`%LOCALAPPDATA%\envsetup\shortcuts-removed\<data>`**, com um `removed.json` dizendo de onde cada
+um veio (para desfazer, é só copiar de volta). Um atalho da área de trabalho sem gêmeo no menu
+Iniciar fica onde está. Um instalador que recria o atalho na área de trabalho (Discord, Spotify,
+Steam ao atualizar) volta a duplicar até o layout ser aplicado de novo. Desligue com
+`single_entries: false`, no arquivo, na aba Preview ou com `envsetup set-layout --single-entries=false`.
+
+O **Dia** é a exceção que um atalho não resolve: o Raycast tira a entrada dele do pacote da loja
+(`TheBrowserCompany.Dia`, com o ícone do app) e não lista o atalho à parte, com ou sem o id do app: sem
+o atalho, ele continua na lista com o mesmo ícone. Então a lista tem uma só entrada do Dia, mas com
+o ícone padrão; o ícone macOS vale para o atalho no menu Iniciar e para o botão fixado na barra.
+
 `browser` é o navegador da máquina: o navegador padrão do Windows (quem abre links https), ou,
-se ele for o Edge, o primeiro instalado entre Dia, Brave, Opera GX, Chrome, Firefox, Vivaldi e Opera. O Dia é um app MSIX, que não tem atalho no menu Iniciar: o item `dia` cria um (`windows/msix-shortcut.ps1`), que abre o app pelo id dele (`TheBrowserCompany.Dia_…!Dia`) e é o que vai fixado na barra e recebe o ícone do pack. Sem esse atalho, ele é fixado pelo id do app.
+se ele for o Edge, o primeiro instalado entre Dia, Brave, Opera GX, Chrome, Firefox, Vivaldi e Opera. O Dia é um app MSIX, que não tem atalho no menu Iniciar: o item `dia` cria um (`windows/msix-shortcut.ps1`), que aponta para o executável do próprio app (o alias `Dia.exe` em `%LOCALAPPDATA%\Microsoft\WindowsApps`) e leva o id dele (`TheBrowserCompany.Dia_…!Dia`) para a janela e o botão da barra serem o mesmo. Esse é o atalho que vai fixado na barra e recebe o ícone do pack. Ele não pode apontar para `explorer.exe shell:AppsFolder\…`: o Windows o confundia com o Explorador de Arquivos e o fixado e o ícone quebravam (um atalho assim, de versões anteriores, é refeito ao aplicar o item `dia`). Sem o atalho, o Dia fica de fora da barra.
 Assim quem escolhe outro navegador mantém a mesma ordem. Se o mesmo atalho aparecer duas vezes
 (`browser` e `brave`, por exemplo), ele só é fixado uma vez.
 

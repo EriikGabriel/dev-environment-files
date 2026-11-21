@@ -53,6 +53,13 @@ A versão que está rodando aparece ao lado do nome, na barra lateral; clicar ne
 envsetup" na busca, Ctrl K) mostra a versão, o sistema e a pasta de dados. A release de mesmo
 nome no GitHub é a que tem o instalador dessa versão.
 
+**Atualizar o app.** Ao abrir, o app procura em silêncio se há uma release mais nova no GitHub
+(sem rede, nada aparece). Se houver, um aviso no topo oferece **Atualizar agora**: no Windows ele
+baixa o instalador da release, confere o SHA-256 do arquivo, fecha, instala em silêncio e abre de
+novo na versão nova, sem desinstalar nada. "Detalhes" abre a seção Atualizações de Sobre, que também
+tem **Procurar atualização** (e a busca, Ctrl K, tem o mesmo comando). No Linux o app só avisa e mostra
+o comando do `install.sh`. Num app rodado do código-fonte (`npm run tauri dev`) a instalação é recusada.
+
 | Aba | Para quê |
 |---|---|
 | **Início** | o sistema detectado, o perfil, o que está pendente e um botão para aplicar |

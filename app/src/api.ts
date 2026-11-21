@@ -156,7 +156,7 @@ export const layout = (root: string, profile: string, apps: string[]) => run<Lay
 
 /** Saves the layout in config/layout.yaml. */
 export const setLayout = (root: string, profile: string, c: LayoutChoice) =>
-  run<LayoutChoice>(root, ["set-layout", "-p", profile, `--taskbar=${c.taskbar.join(",")}`, `--clear-start=${c.clear_start}`, `--hide-icons=${c.hide_desktop_icons}`, `--autohide=${c.taskbar_autohide}`]);
+  run<LayoutChoice>(root, ["set-layout", "-p", profile, `--taskbar=${c.taskbar.join(",")}`, `--clear-start=${c.clear_start}`, `--hide-icons=${c.hide_desktop_icons}`, `--autohide=${c.taskbar_autohide}`, `--single-entries=${c.single_entries}`]);
 
 /** The icon style; `scan` looks for the shortcuts of this machine (slow), `cached` redraws the last scan. */
 export const icons = (root: string, mode: "none" | "cached" | "scan") =>
@@ -300,3 +300,12 @@ export const setRole = (root: string, owner: boolean | null) =>
 /** Opens a group policy to change it by hand: in gpedit at the policy (elevated), or in the Registry Editor at its key. */
 export const openPolicy = (root: string, id: string, registry: boolean) =>
   run<{ id: string; message: string }>(root, ["open-policy", id, ...(registry ? ["--registry"] : [])]);
+
+/** Asks GitHub whether a release newer than `current` is published. Needs no data folder. */
+export const appUpdateCheck = (current: string) => run<import("./types").AppUpdate>("", ["app-update-check", "--current", current]);
+
+/** Downloads the installer of the latest release; it is only kept when its SHA-256 matches GitHub's. */
+export const appUpdateDownload = (current: string) => run<import("./types").UpdateDownload>("", ["app-update-download", "--current", current]);
+
+/** Runs the downloaded installer silently and opens the app again; the app closes itself. Windows only. */
+export const installUpdate = (path: string) => invoke<void>("install_update", { path });

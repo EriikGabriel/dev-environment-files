@@ -6,6 +6,8 @@
 # clear_start        remove the apps pinned to the Start menu
 # hide_desktop_icons hide every icon on the desktop
 # taskbar_autohide   hide the taskbar automatically (the Windhawk dock hides with it)
+# single_entries     one launcher entry per app: a desktop shortcut that repeats a Start
+#                    menu one (same name and program) is moved to a backup folder
 
 taskbar:
     - explorer
@@ -18,3 +20,4 @@ taskbar:
 clear_start: true
 hide_desktop_icons: true
 taskbar_autohide: true
+single_entries: true

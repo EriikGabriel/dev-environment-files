@@ -405,7 +405,13 @@ button.card:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8p
 
 /* desktop layout: preview, taskbar and the tray of apps */
 .layout { display: flex; flex-direction: column; gap: 14px; }
-.layout-options { display: flex; flex-wrap: wrap; gap: 10px 24px; }
+/* the options of the preview: a grid that fits the width, each one a title and a note that wraps */
+.layout-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 12px 24px; }
+.opt { display: flex; align-items: flex-start; gap: 10px; min-width: 0; font-size: 13px; cursor: pointer; }
+.opt input { flex: none; margin: 2px 0 0; }
+.opt-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.opt-title { line-height: 1.35; overflow-wrap: anywhere; }
+.opt-note { font-size: 12px; line-height: 1.4; color: var(--muted); overflow-wrap: anywhere; }
 .app-icon { display: inline-grid; place-items: center; width: 36px; height: 36px; border-radius: 9px; color: #fff; font-weight: 700; font-size: 15px; flex: none; user-select: none; }
 .app-icon.small { width: 26px; height: 26px; border-radius: 7px; font-size: 12px; }
 .wscreen { position: relative; aspect-ratio: 16 / 9; width: 100%; max-width: 960px; min-height: 380px; border-radius: 12px; overflow: hidden; border: 1px solid var(--line); background: radial-gradient(120% 120% at 15% 10%, #3b6fd6 0%, #1f3a8a 45%, #0b1226 100%); }
@@ -754,3 +760,12 @@ button.card:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 14
 .about-list { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 16px 0; }
 .about-list dt { color: var(--muted); }
 .about-list dd { margin: 0; overflow-wrap: anywhere; user-select: text; }
+
+/* the app's own update: a banner at the top and a section of the About page */
+.update-banner { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px 16px; margin-bottom: 12px; }
+.update-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1 1 260px; overflow-wrap: anywhere; }
+.update-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.about-update { display: flex; flex-direction: column; gap: 10px; margin-bottom: 8px; }
+.about-update p { margin: 0; }
+.about-notes { margin: 0; padding: 10px 12px; max-height: 160px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; font: inherit; font-size: 12.5px; color: var(--muted); background: var(--panel-2); border-radius: 8px; }
+.bad-text { color: var(--bad); overflow-wrap: anywhere; }

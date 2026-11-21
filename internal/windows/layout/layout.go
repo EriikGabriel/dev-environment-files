@@ -32,6 +32,13 @@ type Config struct {
 	// TaskbarAutoHide turns "Automatically hide the taskbar" on (the dock of
 	// the Windhawk mod hides with it) or off.
 	TaskbarAutoHide bool `yaml:"taskbar_autohide" json:"taskbar_autohide"`
+	// SingleEntries keeps one launcher entry per app: a desktop shortcut that
+	// repeats a Start menu one (same name, same program), and a second Start
+	// menu shortcut of the same app, are moved to a backup folder. Launchers
+	// such as Raycast list every shortcut, so an app showed up twice, once of
+	// them with the icon the icons step did not reach. On unless the file says
+	// otherwise.
+	SingleEntries bool `yaml:"single_entries" json:"single_entries"`
 }
 
 // Path is where the layout lives in the repo.
@@ -43,11 +50,12 @@ var idRe = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9._:-]*$`)
 func Load(path string) (cfg Config, exists bool, err error) {
 	raw, err := os.ReadFile(path)
 	if os.IsNotExist(err) {
-		return Config{Taskbar: []string{}}, false, nil
+		return Config{Taskbar: []string{}, SingleEntries: true}, false, nil
 	}
 	if err != nil {
 		return cfg, false, err
 	}
+	cfg.SingleEntries = true // a file from before the option has it on
 	dec := yaml.NewDecoder(bytes.NewReader(raw))
 	dec.KnownFields(true)
 	if err := dec.Decode(&cfg); err != nil && !errors.Is(err, io.EOF) {
@@ -85,6 +93,8 @@ const header = `# How the Windows desktop is laid out, edited in the app's Previ
 # clear_start        remove the apps pinned to the Start menu
 # hide_desktop_icons hide every icon on the desktop
 # taskbar_autohide   hide the taskbar automatically (the Windhawk dock hides with it)
+# single_entries     one launcher entry per app: a desktop shortcut that repeats a Start
+#                    menu one (same name and program) is moved to a backup folder
 `
 
 // Save writes the layout, replacing the file.

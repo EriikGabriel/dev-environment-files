@@ -72,6 +72,7 @@ export function WindowsPreviewTab({ root, profile, apps, windows }: Props) {
   const [clearStart, setClearStart] = useState(false);
   const [hideIcons, setHideIcons] = useState(false);
   const [autoHide, setAutoHide] = useState(false);
+  const [singleEntries, setSingleEntries] = useState(true);
   const [dragId, setDragId] = useState<string | null>(null);
   const [overIndex, setOverIndex] = useState<number | null>(null);
   const [icons, setIcons] = useState<Icons | null>(null);
@@ -93,6 +94,8 @@ export function WindowsPreviewTab({ root, profile, apps, windows }: Props) {
       setClearStart(d.clear_start);
       setHideIcons(d.hide_desktop_icons);
       setAutoHide(d.taskbar_autohide);
+      setSingleEntries(d.single_entries);
+      setSingleEntries(d.single_entries);
     } catch (e) {
       setError(errorMessage(e));
     }
@@ -106,7 +109,7 @@ export function WindowsPreviewTab({ root, profile, apps, windows }: Props) {
   if (!data) return error ? <p className="banner bad">{error}</p> : <p className="banner">Lendo o layout…</p>;
 
   const shell = data.shell;
-  const dirty = !sameList(taskbar, data.taskbar) || clearStart !== data.clear_start || hideIcons !== data.hide_desktop_icons || autoHide !== data.taskbar_autohide || !data.saved;
+  const dirty = !sameList(taskbar, data.taskbar) || clearStart !== data.clear_start || hideIcons !== data.hide_desktop_icons || autoHide !== data.taskbar_autohide || singleEntries !== data.single_entries || !data.saved;
 
   // Moves an app to a position of the taskbar (or appends it); an app that is already there is moved.
   const place = (id: string, index?: number) =>
@@ -143,7 +146,7 @@ export function WindowsPreviewTab({ root, profile, apps, windows }: Props) {
       setBusy("");
     }
   };
-  const choice = { taskbar, clear_start: clearStart, hide_desktop_icons: hideIcons, taskbar_autohide: autoHide };
+  const choice = { taskbar, clear_start: clearStart, hide_desktop_icons: hideIcons, taskbar_autohide: autoHide, single_entries: singleEntries };
   const save = () => act("save", async () => {
     await api.setLayout(root, profile, choice);
     await load();
@@ -212,17 +215,33 @@ export function WindowsPreviewTab({ root, profile, apps, windows }: Props) {
       </div>
 
       <div className="card layout-options">
-        <label className="check">
-          <input type="checkbox" checked={clearStart} onChange={(e) => setClearStart(e.target.checked)} /> Limpar o menu Iniciar (tirar os apps fixados)
-          {shell.start_pins_empty && <span className="chip">o arquivo de resposta já faz isso na instalação</span>}
+        <label className="opt">
+          <input type="checkbox" checked={clearStart} onChange={(e) => setClearStart(e.target.checked)} />
+          <span className="opt-text">
+            <span className="opt-title">Limpar o menu Iniciar (tirar os apps fixados)</span>
+            {shell.start_pins_empty && <span className="opt-note">o arquivo de resposta já faz isso na instalação</span>}
+          </span>
         </label>
-        <label className="check">
-          <input type="checkbox" checked={hideIcons} onChange={(e) => setHideIcons(e.target.checked)} /> Ocultar os ícones da área de trabalho
-          <span className="chip">clique direito › Exibir mostra de novo</span>
+        <label className="opt">
+          <input type="checkbox" checked={hideIcons} onChange={(e) => setHideIcons(e.target.checked)} />
+          <span className="opt-text">
+            <span className="opt-title">Ocultar os ícones da área de trabalho</span>
+            <span className="opt-note">clique direito › Exibir mostra de novo</span>
+          </span>
         </label>
-        <label className="check">
-          <input type="checkbox" checked={autoHide} onChange={(e) => setAutoHide(e.target.checked)} /> Esconder a barra de tarefas automaticamente
-          <span className="chip">a dock do Windhawk se esconde junto</span>
+        <label className="opt">
+          <input type="checkbox" checked={autoHide} onChange={(e) => setAutoHide(e.target.checked)} />
+          <span className="opt-text">
+            <span className="opt-title">Esconder a barra de tarefas automaticamente</span>
+            <span className="opt-note">a dock do Windhawk se esconde junto</span>
+          </span>
+        </label>
+        <label className="opt">
+          <input type="checkbox" checked={singleEntries} onChange={(e) => setSingleEntries(e.target.checked)} />
+          <span className="opt-text">
+            <span className="opt-title">Uma entrada por app (sem atalhos repetidos)</span>
+            <span className="opt-note">tira da área de trabalho e do menu Iniciar o que repete outro atalho, para o Raycast não listar o app duas vezes; os atalhos vão para um backup</span>
+          </span>
         </label>
       </div>
 

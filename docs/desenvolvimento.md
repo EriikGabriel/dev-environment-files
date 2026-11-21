@@ -23,7 +23,7 @@ depois de mudar o Go, senão o app usa o binário antigo.
 go test ./...                          # motor e CLI
 GOOS=linux go vet ./...                # confere que os arquivos de Linux continuam compilando no Windows (e vice-versa)
 cd app && npx tsc --noEmit             # tipos do front-end
-cd app/src-tauri && cargo test --lib   # a cópia dos dados (nunca sobrescreve)
+cd app/src-tauri && cargo test --lib   # a cópia dos dados (nunca sobrescreve) e o caminho do instalador da atualização
 ```
 
 No Windows, 4 testes que criam symlinks são pulados, a não ser com o Modo de Desenvolvedor
@@ -39,6 +39,7 @@ cmd/envsetup/          a CLI, um arquivo por assunto
   apply.go             plan, apply (e o modo --json que o app usa)
   edit.go              add, show, set-dirs, desktop, set-dock, add-app, remove-app
   install.go policies.go layout.go icons.go windhawk.go playnite.go retroarch.go   (Windows)
+  appupdate.go        app-update-check, app-update-download (o app se atualiza)
   json.go              formatos JSON comuns
 cmd/iconpack/          ferramenta que refaz windows/icons/mactahoe a partir do tema MacTahoe
 
@@ -46,6 +47,7 @@ internal/
   config/              carrega e edita apps.yaml e os perfis
   engine/              perfil + máquina -> passos idempotentes, e a execução deles
                        sem prefixo: núcleo; linux_*: só Linux; win_*: só Windows
+  appupdate/           a última release no GitHub, a comparação de versões e o download conferido (SHA-256)
   backend/             gerenciadores de pacote (apt, pacman, AUR, flatpak, winget, scoop)
   platform/            detecção do sistema, informações da máquina, abrir links
   windows/             recursos do Windows, um pacote cada:
@@ -57,11 +59,12 @@ internal/
   testutil/            ajudas dos testes
 
 app/
-  src-tauri/src/lib.rs     ponte: roda o envsetup, acha e copia a pasta de dados
+  src-tauri/src/lib.rs     ponte: roda o envsetup, acha e copia a pasta de dados, roda o instalador da atualização
   src/App.tsx              navegação entre as abas
   src/api.ts               uma função por subcomando
   src/types/               formatos JSON, um arquivo por assunto
   src/useApplyRun.ts       estado de uma execução do apply
+  src/useAppUpdate.ts      a procura e a instalação de uma versão nova do app
   src/components/          abas comuns; windows/ e linux/ as específicas
 ```
 

@@ -24,6 +24,7 @@ import { errorMessage } from "./api";
 import { ApplyView } from "./components/ApplyView";
 import { DataFolder } from "./components/DataFolder";
 import { AboutDrawer, useAppVersion } from "./components/AboutDrawer";
+import { UpdateBanner } from "./components/UpdateBanner";
 import { Drawer } from "./components/Drawer";
 import { FileDrawer, type FileTarget } from "./components/FileDrawer";
 import { ENV_LABEL, HomeTab } from "./components/HomeTab";
@@ -44,6 +45,7 @@ import type {
 	Wizard,
 } from "./types";
 import "./styles.css";
+import { useAppUpdate } from "./useAppUpdate";
 import { useApplyRun } from "./useApplyRun";
 
 // The tabs other than Início and Configurar are loaded when first opened:
@@ -96,6 +98,7 @@ export default function App() {
 	const [helpOpen, setHelpOpen] = useState(false);
 	const [aboutOpen, setAboutOpen] = useState(false);
 	const version = useAppVersion();
+	const updater = useAppUpdate(version);
 	const [installMedia, setInstallMedia] = useState<InstallMedia | null>(null);
 	const [paletteOpen, setPaletteOpen] = useState(false);
 
@@ -342,6 +345,7 @@ export default function App() {
 				{ id: "root", label: "Trocar pasta de dados…", group: "Ações", icon: <FolderOpen size={16} />, run: () => void chooseRoot() },
 				{ id: "help", label: "Como funciona", group: "Ações", icon: <Info size={16} />, run: () => setHelpOpen(true) },
 				{ id: "about", label: "Sobre o envsetup", group: "Ações", hint: version ? `v${version}` : undefined, icon: <Info size={16} />, run: () => setAboutOpen(true) },
+				{ id: "update", label: "Procurar atualização do envsetup", group: "Ações", hint: updater.update?.available ? `v${updater.update.latest} disponível` : undefined, icon: <Info size={16} />, run: () => { setAboutOpen(true); void updater.check(); } },
 				...profiles
 					.filter((p) => p.id !== profileId)
 					.map((p) => ({
@@ -435,6 +439,7 @@ export default function App() {
 			</aside>
 
 			<main>
+				<UpdateBanner updater={updater} onDetails={() => setAboutOpen(true)} />
 				<header className="page-head">
 					<AnimatePresence mode="popLayout" initial={false}>
 						<motion.h2
@@ -576,6 +581,7 @@ export default function App() {
 						version={version}
 						root={root}
 						system={info?.os === "windows" ? "Windows" : info?.name || "Linux"}
+						updater={updater}
 						onClose={() => setAboutOpen(false)}
 					/>
 				)}

@@ -35,6 +35,8 @@ export interface Layout {
   hide_desktop_icons: boolean;
   /** "Automatically hide the taskbar" (the Windhawk dock hides with it). */
   taskbar_autohide: boolean;
+  /** One launcher entry per app: duplicate shortcuts (desktop, second Start menu one) go to a backup folder. */
+  single_entries: boolean;
   /** config/layout.yaml exists. */
   saved: boolean;
   shell: Shell;
@@ -49,4 +51,5 @@ export interface LayoutChoice {
   hide_desktop_icons: boolean;
   /** "Automatically hide the taskbar" (the Windhawk dock hides with it). */
   taskbar_autohide: boolean;
+  single_entries: boolean;
 }

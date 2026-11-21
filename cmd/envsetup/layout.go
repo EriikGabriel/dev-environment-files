@@ -20,6 +20,7 @@ type layoutJSON struct {
 	ClearStart       bool     `json:"clear_start"`
 	HideDesktopIcons bool     `json:"hide_desktop_icons"`
 	TaskbarAutoHide  bool     `json:"taskbar_autohide"`
+	SingleEntries    bool     `json:"single_entries"`
 	// Saved is false until config/layout.yaml exists.
 	Saved    bool          `json:"saved"`
 	Shell    install.Shell `json:"shell"`
@@ -54,7 +55,7 @@ func describeLayout(f flags, apps []string) (layoutJSON, error) {
 		// until it is saved, the answer file's own choice is the starting point
 		cfg.ClearStart = out.Shell.StartPinsEmpty
 	}
-	out.Saved, out.ClearStart, out.HideDesktopIcons, out.TaskbarAutoHide = exists, cfg.ClearStart, cfg.HideDesktopIcons, cfg.TaskbarAutoHide
+	out.Saved, out.ClearStart, out.HideDesktopIcons, out.TaskbarAutoHide, out.SingleEntries = exists, cfg.ClearStart, cfg.HideDesktopIcons, cfg.TaskbarAutoHide, cfg.SingleEntries
 	out.Items = layout.Candidates(layout.Inputs{Ninite: md.slugs, Apps: apps, Installs: out.Installs})
 	known := map[string]bool{}
 	for _, it := range out.Items {
@@ -114,7 +115,7 @@ func layoutCommands(f *flags) []*cobra.Command {
 	layoutCmd.Flags().StringVar(&layoutApps, "apps", "", "ids of the profile's apps that are ticked, separated by commas")
 
 	var taskbarList string
-	var clearStart, hideIcons, autoHide bool
+	var clearStart, hideIcons, autoHide, singleEntries bool
 	setLayout := jsonFlag(&cobra.Command{
 		Use:   "set-layout",
 		Short: "Save the desktop layout in config/layout.yaml (applied by apply-layout)",
@@ -151,6 +152,9 @@ func layoutCommands(f *flags) []*cobra.Command {
 			if cmd.Flags().Changed("autohide") {
 				cfg.TaskbarAutoHide = autoHide
 			}
+			if cmd.Flags().Changed("single-entries") {
+				cfg.SingleEntries = singleEntries
+			}
 			if err := layout.Save(path, cfg); err != nil {
 				return err
 			}
@@ -165,6 +169,7 @@ func layoutCommands(f *flags) []*cobra.Command {
 	setLayout.Flags().BoolVar(&clearStart, "clear-start", false, "remove the apps pinned to the Start menu")
 	setLayout.Flags().BoolVar(&hideIcons, "hide-icons", false, "hide the desktop icons")
 	setLayout.Flags().BoolVar(&autoHide, "autohide", false, "hide the taskbar automatically (the Windhawk dock hides with it)")
+	setLayout.Flags().BoolVar(&singleEntries, "single-entries", true, "keep one shortcut per app: move the desktop and Start menu duplicates to a backup folder")
 
 	applyLayout := jsonFlag(&cobra.Command{
 		Use:   "apply-layout",

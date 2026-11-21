@@ -1,8 +1,11 @@
 # Gives an MSIX app (Dia) a Start menu shortcut of this user, so it is themed
 # like the other apps: the icons step only changes .lnk files, and an MSIX app
-# has none. The shortcut opens the app through shell:AppsFolder and carries
-# the app's AppUserModelID, so its taskbar pin and the app's window are the
-# same button. No elevation.
+# has none. The shortcut's target is the app's own executable (its execution
+# alias in %LOCALAPPDATA%/Microsoft/WindowsApps, which a shortcut can start) and
+# it carries the app's AppUserModelID, so its taskbar pin and the app's window
+# are the same button. It must not target explorer.exe (shell:AppsFolder/...):
+# the shell then takes it for File Explorer, and the pin and the icons break.
+# No elevation.
 #
 #   msix-shortcut.ps1 -Package TheBrowserCompany.Dia -Name Dia
 #   msix-shortcut.ps1 -Package TheBrowserCompany.Dia -Name Dia -Check    exit 1 when missing
@@ -22,7 +25,12 @@ if ($Remove) {
   exit 0
 }
 if ($Check) {
-  if (Test-Path -LiteralPath $lnk) { exit 0 } else { exit 1 }
+  if (-not (Test-Path -LiteralPath $lnk)) { exit 1 }
+  # a shortcut an earlier version made opened the app through explorer.exe:
+  # it counts as missing, so the item is pending and the shortcut is redone
+  $t = (New-Object -ComObject WScript.Shell).CreateShortcut($lnk).TargetPath
+  if ([IO.Path]::GetFileName($t) -ieq 'explorer.exe') { exit 1 }
+  exit 0
 }
 if (-not $Package) { throw '-Package is needed' }
 
@@ -33,10 +41,23 @@ if (-not $app) { throw "the package $Package has no application" }
 $aumid = $pkg.PackageFamilyName + '!' + $app.Id
 $exe = if ($app.Executable) { Join-Path $pkg.InstallLocation $app.Executable } else { $null }
 
+# What the shortcut starts: the app's execution alias, which lives in a folder
+# a user can read and which Windows starts as the app (the executable inside
+# Program Files\WindowsApps cannot be started from a shortcut).
+$alias = $null
+foreach ($ext in @($app.Extensions.Extension)) {
+  $a = $ext.AppExecutionAlias.ExecutionAlias.Alias
+  if ($a) {
+    $p = Join-Path $env:LOCALAPPDATA "Microsoft\WindowsApps\$a"
+    if (Test-Path -LiteralPath $p) { $alias = $p; break }
+  }
+}
+if (-not $alias) { throw "the package $Package has no execution alias to start: $Name would have to open through explorer.exe, which the shell takes for File Explorer" }
+
 $sh = New-Object -ComObject WScript.Shell
 $l = $sh.CreateShortcut($lnk)
-$l.TargetPath = Join-Path $env:windir 'explorer.exe'
-$l.Arguments = "shell:AppsFolder\$aumid"
+$l.TargetPath = $alias
+$l.Arguments = ''
 $l.Description = $Name
 # the app's own icon until the icons step points it at the pack's
 if ($exe -and (Test-Path -LiteralPath $exe)) { $l.IconLocation = "$exe,0" }

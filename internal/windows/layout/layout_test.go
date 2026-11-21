@@ -1,6 +1,7 @@
 package layout
 
 import (
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -228,5 +229,63 @@ func TestRepoLayoutPinsTheLaunchersAfterTheBrowser(t *testing.T) {
 	}
 	if !cfg.TaskbarAutoHide {
 		t.Error("the taskbar hides by default")
+	}
+}
+
+// The Start menu shortcut of an MSIX app (Dia) must start the app itself, by
+// its execution alias. Pointing it at explorer.exe (shell:AppsFolder\...) made
+// the shell take it for File Explorer: the pin and the icon broke.
+func TestMsixShortcutStartsTheApp(t *testing.T) {
+	raw, err := os.ReadFile(filepath.Join("..", "..", "..", "windows", "msix-shortcut.ps1"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	s := string(raw)
+	for _, want := range []string{"$l.TargetPath = $alias", "AppExecutionAlias", `Microsoft\WindowsApps`, "-ieq 'explorer.exe'"} {
+		if !strings.Contains(s, want) {
+			t.Errorf("msix-shortcut.ps1 misses %q", want)
+		}
+	}
+	for _, bad := range []string{`'explorer.exe'`, `shell:AppsFolder\$aumid`} {
+		// only the check that recognises an old shortcut may name explorer.exe
+		if strings.Contains(strings.ReplaceAll(s, "-ieq 'explorer.exe'", ""), bad) {
+			t.Errorf("msix-shortcut.ps1 must not start the app through %s", bad)
+		}
+	}
+}
+
+// Launchers (Raycast) list every shortcut: a desktop shortcut that repeats a
+// Start menu one, or a second Start menu shortcut of the same app, made the app
+// show up twice. They are moved to a backup, never deleted.
+func TestSingleEntries(t *testing.T) {
+	on := AdminScript(Config{SingleEntries: true})
+	for _, want := range []string{
+		`$_.Name + '|' + $_.Target`,                    // same name and same program
+		"GetFolderPath('CommonDesktopDirectory')",     // the all-users desktop too
+		"Move-Item -LiteralPath", "shortcuts-removed", // a backup, not a delete
+		"removed.json",
+	} {
+		if !strings.Contains(on, want) {
+			t.Errorf("single entries misses %q", want)
+		}
+	}
+	if strings.Contains(on, "Remove-Item -LiteralPath $x.Item.Path") {
+		t.Error("a duplicate shortcut must be moved to the backup, not deleted")
+	}
+	// it runs before the policies, and a failure there must not stop them
+	if strings.Index(on, "shortcuts-removed") > strings.Index(on, "PolicyManager") || !strings.Contains(on, "one entry per app: skipped") {
+		t.Errorf("single entries comes first and is caught:\n%s", on)
+	}
+	if off := AdminScript(Config{}); strings.Contains(off, "shortcuts-removed") {
+		t.Error("with single_entries off no shortcut is touched")
+	}
+
+	// a layout file from before the option has it on; the repo's says so too
+	cfg, _, err := Load(filepath.Join("..", "..", "..", "config", "layout.yaml"))
+	if err != nil || !cfg.SingleEntries {
+		t.Errorf("config/layout.yaml: single_entries %v, %v", cfg.SingleEntries, err)
+	}
+	if c, exists, _ := Load(filepath.Join(t.TempDir(), "none.yaml")); exists || !c.SingleEntries {
+		t.Error("with no file, single entries is on")
 	}
 }

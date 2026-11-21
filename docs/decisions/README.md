@@ -11,6 +11,7 @@
 | [0007](0007-windhawk-backup.md) | Mods do Windhawk pelo backup do Windhawk 2 | em vigor |
 | [0008](0008-sem-tui-e-dados-no-instalador.md) | Sem TUI, dados no instalador, código reorganizado | em vigor |
 | [0009](0009-fixados-da-barra-do-usuario.md) | Fixados da barra gravados como do usuário, sem a política "Start layout" | em vigor |
+| [0010](0010-atualizacao-pelo-app.md) | O app se atualiza sozinho (consulta o GitHub, confere o SHA-256, instala em silêncio) | em vigor |
 
 Cada arquivo tem Contexto, Decisão e Consequências. Uma decisão nova que muda uma antiga ganha
 um número novo e a antiga é marcada aqui, sem ser reescrita.
