@@ -62,6 +62,39 @@ func TestInstallerCarriesTheScripts(t *testing.T) {
 	}
 }
 
+// Windows PowerShell 5.1 reads a .ps1 without a BOM as ANSI: a UTF-8 accent
+// or Chinese character turns into other characters, some of them quotes,
+// and the script fails to parse before it runs a single line.
+func TestWindowsScriptsReadInWindowsPowerShell(t *testing.T) {
+	root := testutil.RepoRoot(t)
+	n := 0
+	err := filepath.WalkDir(filepath.Join(root, "windows"), func(path string, d os.DirEntry, err error) error {
+		if err != nil || d.IsDir() || !strings.EqualFold(filepath.Ext(path), ".ps1") {
+			return err
+		}
+		n++
+		b, err := os.ReadFile(path)
+		if err != nil {
+			return err
+		}
+		if strings.HasPrefix(string(b), "\xEF\xBB\xBF") {
+			return nil
+		}
+		for i, c := range b {
+			if c > 0x7F {
+				rel, _ := filepath.Rel(root, path)
+				t.Errorf("%s has a non-ASCII byte at %d and no UTF-8 BOM: Windows PowerShell misreads it", rel, i)
+				break
+			}
+		}
+		return nil
+	})
+	must(t, err)
+	if n < 5 {
+		t.Fatalf("too few scripts found under windows/: %d", n)
+	}
+}
+
 func TestAppRunsOnlyAllowedCommands(t *testing.T) {
 	root := testutil.RepoRoot(t)
 	lib, err := os.ReadFile(filepath.Join(root, "app", "src-tauri", "src", "lib.rs"))

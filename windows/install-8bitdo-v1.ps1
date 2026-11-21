@@ -29,7 +29,11 @@ try {
 
   $sig = Get-AuthenticodeSignature -LiteralPath $copyFrom
   if ($sig.Status -ne 'Valid') { throw "the 8BitDo executable signature is not valid: $($sig.Status)" }
-  if ($sig.SignerCertificate.Subject -notmatch '8BitDo|壹位堂|8BITDO') {
+  # 8BitDo signs as its Shenzhen company, whose name is in Chinese: the regex
+  # spells its brand (U+58F9 U+4F4D U+5802) as \u escapes so this file stays
+  # ASCII. Windows PowerShell 5.1 reads a file without a BOM as ANSI, where
+  # those UTF-8 bytes include a quote and the whole script fails to parse.
+  if ($sig.SignerCertificate.Subject -notmatch '8BitDo|\u58F9\u4F4D\u5802') {
     throw "unexpected signer for 8BitDo Ultimate Software V1: $($sig.SignerCertificate.Subject)"
   }
 

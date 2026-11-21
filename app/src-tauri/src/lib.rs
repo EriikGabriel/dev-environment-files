@@ -256,6 +256,31 @@ fn migrate_8bitdo_v1(dst: &Path) -> std::io::Result<bool> {
     Ok(true)
 }
 
+/// Replaces the 8BitDo V1 installer of a data folder with the installer's
+/// copy. copy_missing never overwrites, and the copy shipped by 0.2.4–0.2.6
+/// does not even parse in Windows PowerShell (non-ASCII without a BOM). Like
+/// the catalogue entry, the script is maintained by envsetup.
+fn refresh_8bitdo_v1_script(src: &Path, dst: &Path) -> std::io::Result<bool> {
+    let rel = Path::new("windows").join("install-8bitdo-v1.ps1");
+    let new = match std::fs::read(src.join(&rel)) {
+        Ok(b) => b,
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(false),
+        Err(e) => return Err(e),
+    };
+    let path = dst.join(&rel);
+    match std::fs::read(&path) {
+        Ok(old) if old == new => return Ok(false),
+        Ok(_) => {}
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => {}
+        Err(e) => return Err(e),
+    }
+    if let Some(dir) = path.parent() {
+        std::fs::create_dir_all(dir)?;
+    }
+    std::fs::write(path, new)?;
+    Ok(true)
+}
+
 fn write_marker(app: &AppHandle, dir: &Path) -> Result<(), String> {
     let marker = serde_json::json!({ "version": app.package_info().version.to_string() });
     std::fs::write(dir.join(DATA_MARKER), marker.to_string()).map_err(|e| e.to_string())
@@ -304,6 +329,7 @@ fn seed_data(app: AppHandle) -> Result<String, String> {
     let mut report = CopyReport::default();
     copy_missing(&src, &dst, &mut report).map_err(|e| format!("copy the data to {}: {e}", dst.display()))?;
     migrate_8bitdo_v1(&dst).map_err(|e| format!("migrate 8BitDo data: {e}"))?;
+    refresh_8bitdo_v1_script(&src, &dst).map_err(|e| format!("update the 8BitDo installer: {e}"))?;
     write_marker(&app, &dst)?;
     save_root(&app, &dst)
 }
@@ -320,6 +346,7 @@ fn update_data(app: AppHandle, root: String) -> Result<CopyReport, String> {
     let mut report = CopyReport::default();
     copy_missing(&src, &dst, &mut report).map_err(|e| e.to_string())?;
     migrate_8bitdo_v1(&dst).map_err(|e| e.to_string())?;
+    refresh_8bitdo_v1_script(&src, &dst).map_err(|e| e.to_string())?;
     write_marker(&app, &dst)?;
     Ok(report)
 }
@@ -660,6 +687,25 @@ mod tests {
         assert!(!text.contains("UltimateSoftwareV2"));
         assert!(text.contains("  steam:"));
         assert!(!migrate_8bitdo_v1(&dst).unwrap());
+        std::fs::remove_dir_all(&base).unwrap();
+    }
+
+    #[test]
+    fn replaces_an_old_8bitdo_installer() {
+        let base = std::env::temp_dir().join(format!("envsetup-8bitdo-script-{}", std::process::id()));
+        let (src, dst) = (base.join("src"), base.join("dst"));
+        std::fs::create_dir_all(src.join("windows")).unwrap();
+        std::fs::write(src.join("windows").join("install-8bitdo-v1.ps1"), "new").unwrap();
+
+        // missing in the data folder: copied
+        assert!(refresh_8bitdo_v1_script(&src, &dst).unwrap());
+        // up to date: left alone
+        assert!(!refresh_8bitdo_v1_script(&src, &dst).unwrap());
+        // an older release's copy: replaced
+        std::fs::write(dst.join("windows").join("install-8bitdo-v1.ps1"), "old").unwrap();
+        assert!(refresh_8bitdo_v1_script(&src, &dst).unwrap());
+        let text = std::fs::read_to_string(dst.join("windows").join("install-8bitdo-v1.ps1")).unwrap();
+        assert_eq!(text, "new");
         std::fs::remove_dir_all(&base).unwrap();
     }
 
