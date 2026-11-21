@@ -491,15 +491,29 @@ fn ps_quote(p: &Path) -> String {
 /// The PowerShell that runs the installer silently (NSIS `/S`) and, when it is
 /// done, opens the app: the new version if the install worked, the old one if it
 /// did not. It runs after the app has exited, which is what lets the installer
-/// replace the app's files.
+/// replace the app's files. Each step goes to `update.log` next to the
+/// installer, to see where an update stopped.
 #[cfg_attr(not(windows), allow(dead_code))]
 fn update_script(installer: &Path, exe: &Path) -> String {
+    let log = installer.with_file_name("update.log");
     format!(
-        "Start-Process -FilePath '{}' -ArgumentList '/S' -Wait; Start-Sleep -Seconds 1; Start-Process -FilePath '{}'",
-        ps_quote(installer),
-        ps_quote(exe)
+        "$log = '{log}'; function Log($s) {{ \"$(Get-Date -Format s) $s\" | Out-File -LiteralPath $log -Append -Encoding UTF8 }}; \
+         try {{ Log 'running the installer'; $p = Start-Process -FilePath '{inst}' -ArgumentList '/S' -Wait -PassThru; Log \"installer exited with $($p.ExitCode)\" }} \
+         catch {{ Log \"installer failed: $($_.Exception.Message)\" }}; \
+         Start-Sleep -Seconds 1; \
+         try {{ Start-Process -FilePath '{exe}'; Log 'app reopened' }} catch {{ Log \"could not reopen the app: $($_.Exception.Message)\" }}",
+        log = ps_quote(&log),
+        inst = ps_quote(installer),
+        exe = ps_quote(exe)
     )
 }
+
+/// How the update script is started: CREATE_NO_WINDOW | CREATE_NEW_PROCESS_GROUP.
+#[cfg_attr(not(windows), allow(dead_code))]
+const UPDATE_FLAGS: u32 = 0x0800_0000 | 0x0000_0200;
+/// DETACHED_PROCESS, which the update script must not get.
+#[cfg(test)]
+const DETACHED_PROCESS: u32 = 0x0000_0008;
 
 /// Installs the update the sidecar downloaded and reopens the app. The app
 /// closes itself here so its files are free for the installer.
@@ -522,8 +536,11 @@ fn install_update(app: AppHandle, path: String) -> Result<(), String> {
         Command::new("powershell")
             .args(["-NoProfile", "-NonInteractive", "-WindowStyle", "Hidden", "-ExecutionPolicy", "Bypass", "-Command"])
             .arg(update_script(&installer, &exe))
-            // DETACHED_PROCESS | CREATE_NO_WINDOW | CREATE_NEW_PROCESS_GROUP: it outlives the app
-            .creation_flags(0x0000_0008 | 0x0800_0000 | 0x0000_0200)
+            // CREATE_NO_WINDOW | CREATE_NEW_PROCESS_GROUP: a hidden console of its
+            // own, so it outlives the app. Not DETACHED_PROCESS: Windows
+            // PowerShell started without a console exits without running the
+            // script, which closed the app and never ran the installer.
+            .creation_flags(UPDATE_FLAGS)
             .stdin(Stdio::null())
             .stdout(Stdio::null())
             .stderr(Stdio::null())
@@ -610,5 +627,36 @@ mod tests {
         assert!(s.find("-Wait").unwrap() < s.rfind("envsetup.exe'").unwrap());
         // a quote in the path must not end the PowerShell string
         assert!(s.contains("it''s"), "{s}");
+        // each step is logged next to the installer
+        assert!(s.contains(r"C:\Temp\it''s\update.log"), "{s}");
+    }
+
+    // Windows PowerShell started with DETACHED_PROCESS exits without running
+    // anything: the app closed and the installer never ran. With the flags the
+    // update uses, the script runs, waits for the installer and reopens the app.
+    #[cfg(windows)]
+    #[test]
+    fn the_update_script_is_started_so_that_it_runs() {
+        use std::os::windows::process::CommandExt;
+        assert_eq!(UPDATE_FLAGS & DETACHED_PROCESS, 0);
+        // a harmless program as installer and app
+        let dir = std::env::temp_dir().join(format!("envsetup-upd-script-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let whoami = Path::new(r"C:\Windows\System32\whoami.exe");
+        let installer = dir.join("envsetup_0.0.0_x64-setup.exe");
+        std::fs::copy(whoami, &installer).unwrap();
+        let status = Command::new("powershell")
+            .args(["-NoProfile", "-NonInteractive", "-WindowStyle", "Hidden", "-ExecutionPolicy", "Bypass", "-Command"])
+            .arg(update_script(&installer, whoami))
+            .creation_flags(UPDATE_FLAGS)
+            .stdin(Stdio::null())
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .status()
+            .unwrap();
+        assert!(status.success());
+        let log = std::fs::read_to_string(dir.join("update.log")).unwrap();
+        assert!(log.contains("installer exited with") && log.contains("app reopened"), "{log}");
+        std::fs::remove_dir_all(&dir).unwrap();
     }
 }

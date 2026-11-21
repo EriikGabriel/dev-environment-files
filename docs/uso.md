@@ -59,6 +59,10 @@ baixa o instalador da release, confere o SHA-256 do arquivo, fecha, instala em s
 novo na versão nova, sem desinstalar nada. "Detalhes" abre a seção Atualizações de Sobre, que também
 tem **Procurar atualização** (e a busca, Ctrl K, tem o mesmo comando). No Linux o app só avisa e mostra
 o comando do `install.sh`. Num app rodado do código-fonte (`npm run tauri dev`) a instalação é recusada.
+Cada passo da instalação vai para `%TEMP%\envsetup-update\update.log`. **Até a 0.2.2** o botão
+fechava o app sem instalar nada (o script que roda o instalador era iniciado de um jeito que o
+PowerShell não executa); quem está numa dessas versões precisa instalar a 0.2.3 uma vez à mão
+(o `-setup.exe` da release ou o `install.ps1`), e dali em diante o botão funciona.
 
 | Aba | Para quê |
 |---|---|
