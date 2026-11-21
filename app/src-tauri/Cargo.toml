@@ -1,6 +1,6 @@
 [package]
 name = "envsetup-app"
-version = "0.2.3"
+version = "0.2.4"
 description = "Desktop front-end for envsetup"
 edition = "2024"
 

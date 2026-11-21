@@ -60,7 +60,7 @@ registrada e as seguintes **continuam**.
 |---|---|---|---|
 | **Essenciais** | Visual C++, DirectX, Windows Media Player, Raycast e as extensões dele (`windows/raycast/extensions.txt`), PowerToys, Ninite / 7-Zip, Scoop | winget (o Raycast vem da Microsoft Store; cada extensão abre na loja do Raycast para um clique em Install) | não |
 | **Drivers e hardware** | o software da sua placa de vídeo (NVIDIA App ou AMD Adrenalin, escolhido pela placa detectada), Reset Explode / MSI Afterburner, HWiNFO | site da NVIDIA ou da AMD, winget; o Reset Explode vem do GitHub (`GustavoReset/ResetExplode`, conferido pelo SHA-256 da release) e vai para `%LOCALAPPDATA%\Programs\ResetExplode`, registrado no menu Iniciar | não |
-| **Periféricos** | MCHOSE HUB, Attack Shark Driver, SignalRGB, 8BitDo Ultimate Software V2 | site do fabricante, winget | não |
+| **Periféricos** | MCHOSE HUB, Attack Shark Driver, SignalRGB, 8BitDo Ultimate Software V1 | site do fabricante | não |
 | **Lojas e launchers** | Steam, Epic Games, Hydra Launcher / GOG Galaxy, EA app, Ubisoft Connect, Battle.net | winget | não |
 | **Aparência** | Windhawk e os mods de `windows/windhawk/backup.json`, com as configurações (dock, menu Iniciar, Explorer…), e as opções da ilha do "Ilha e Dock estilo Mac" (`windows/windhawk/mac-island-dock.txt`) | o instalador do Windhawk 2 no GitHub (a versão mais recente, pré-release inclusa) e o repositório de mods dele | não |
 | **Playnite** | o Playnite portable em `C:\Playnite`: biblioteca, capas, trailers, temas, extensões e configurações | HD (`D:\envsetup\Playnite`) e GitHub (`windows/playnite`); sem o HD, o programa e os add-ons vêm da internet | só a biblioteca de jogos e as mídias |

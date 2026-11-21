@@ -159,7 +159,7 @@ envsetup backup-clone --dir=... --url=... --branch=...  # máquina nova: instala
 - **Placa de vídeo.** A etapa Drivers traz o NVIDIA App e o AMD Software (Adrenalin). Vem
   marcado só o da placa desta máquina, e o assistente mostra o motivo ("placa NVIDIA detectada").
 - **Periféricos.** A etapa Periféricos instala, já marcados, o MCHOSE HUB (headset V9 Pro), o
-  Attack Shark Driver (mouse X3 Pro), o SignalRGB e o 8BitDo Ultimate Software V2 (controle
+  Attack Shark Driver (mouse X3 Pro), o SignalRGB e o 8BitDo Ultimate Software V1 (controle
   Ultimate 2.4G). O MCHOSE, o Attack Shark e o 8BitDo vêm marcados só se o aparelho estiver conectado (o assistente
   mostra "conectado: MCHOSE V9 PRO"; campo `devices` em `config/apps.yaml`); o SignalRGB vem sempre.
   Desmarque o que não quiser. Eles não têm configuração para restaurar: as do
